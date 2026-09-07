@@ -1,0 +1,1726 @@
+/* ==========================================================================
+   Fahrstation Düsseldorf — Grundgerüst
+   --------------------------------------------------------------------------
+   Mobile-first: Basis-Styles gelten für Mobile, @media (min-width: …) legt
+   für größere Screens nach. Ausschließlich Werte aus design-tokens.css —
+   keine Farbe, Schrift oder Abstand wird hier neu erfunden.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Reset / Base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  /* Unterdrückt das graue Antipp-Rechteck auf iOS/Android — jedes Element
+     mit eigenem Hover bekommt weiter unten einen echten :active-Zustand,
+     damit Touch-Nutzer:innen trotzdem eine Rückmeldung sehen. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background-color: var(--text-light);
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-base);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Solange das Mobile-Menü offen ist, darf der Hintergrund nicht scrollen. */
+body.has-open-menu {
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Layout-Container
+   -------------------------------------------------------------------------- */
+.site-footer__inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/* Das Banner läuft bewusst über die volle Breite und folgt NICHT dem
+   1200px-Container der übrigen Sektionen — Vorgabe: 20px Rand auf Mobile,
+   4 % auf Desktop. Es ist damit breiter als der Inhalt darunter. */
+.site-header__inner {
+  padding-inline: var(--header-pad);
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   --------------------------------------------------------------------------
+   Das Banner ist EIN Inline-SVG (index.html), vollständig vektorisiert aus
+   assets/logo.png, und besteht aus drei Ebenen in einer Zeichenfläche:
+
+     .banner__bar  Rechtecke im äußeren SVG (Nutzereinheiten = px), an beiden
+                   Enden eingezogen — der gerade Mittelteil, der sich dehnt
+     .banner__cap  preserveAspectRatio="xMinYMid meet"  — Schriftzug, linksbündig
+     .banner__tip  preserveAspectRatio="xMaxYMid meet"  — Spitze, rechtsbündig
+
+   Cap und Tip teilen sich dieselbe viewBox-Höhe (392) und skalieren beide auf
+   100 % der Bannerhöhe, haben also exakt denselben Maßstab. Der Balken wird
+   zuerst gezeichnet, Cap und Tip decken seine Schnittkanten ab — eine
+   Überlappung statt eines Stoßes, deshalb gibt es keine Naht, die
+   auseinanderlaufen könnte. Schriftzug und Spitze behalten ihr
+   Seitenverhältnis, nur der Balken ändert seine Länge.
+
+   Alle Anteile stammen aus design-tokens.css und sind am Logo ausgemessen.
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  /* Höher als .mobile-menu (200): der Header bleibt sichtbar, wenn das
+     Overlay offen ist, damit das Balken-zu-X-Icon auch wirklich zu sehen
+     ist und als Schließen-Button funktioniert. */
+  z-index: 300;
+  background-color: var(--text-light);
+  transition: box-shadow var(--transition-base);
+}
+
+.site-header__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--header-h);
+  transition: height var(--transition-base);
+}
+
+.site-header.is-scrolled {
+  box-shadow: var(--shadow-header);
+}
+
+.site-header__banner {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.banner {
+  display: block;
+  width: 100%;
+  height: var(--banner-h);
+}
+
+/* Geometrie-Eigenschaften (x/y/width/height) werden hier per CSS gesetzt,
+   damit der Balken an beiden Enden einen festen Einzug bekommt — als
+   Attribute ließe sich das nicht ausdrücken, weil der linke Einzug von der
+   linken, der rechte von der rechten Kante aus zählt. */
+.banner__bar {
+  x: calc(var(--banner-h) * var(--bar-inset-l));
+  width: calc(100% - var(--banner-h) * (var(--bar-inset-l) + var(--bar-inset-r)));
+}
+
+.banner__bar--body {
+  y: calc(var(--banner-h) * var(--bar-y));
+  height: calc(var(--banner-h) * var(--bar-h));
+  fill: var(--primary);
+}
+
+.banner__bar--edge-top {
+  y: calc(var(--banner-h) * var(--bar-edge-top));
+  height: calc(var(--banner-h) * var(--bar-edge-h));
+  fill: var(--accent);
+}
+
+.banner__bar--edge-bottom {
+  y: calc(var(--banner-h) * var(--bar-edge-bot));
+  height: calc(var(--banner-h) * var(--bar-edge-h));
+  fill: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   Menü-Icon — drei identische, vollflächig gelbe Balken
+   --------------------------------------------------------------------------
+   Auf der schwarzen Balkenfläche verschwand die frühere Variante mit
+   schwarzem Kern fast; vollflächig gelb liest sie sich sofort als
+   antippbares Element. Sechseckform (beide Enden spitz) bleibt, jetzt
+   schlanker: viewBox 760 × 296, Balken 70 hoch, Abstand 43 (61 % der
+   Balkenhöhe, wie in der Referenz), Spitzentiefe 30 (43 %).
+
+   Der Abstand zur gelben Innenkontur ist proportional (19 % des Kanals oben
+   wie unten) statt fixer 12px: bei 56/112px Bannerhöhe ist der Kanal nur
+   18,7 bzw. 37,4px hoch — 2 × 12px fester Abstand ließe davon nichts übrig.
+   -------------------------------------------------------------------------- */
+.nav-toggle {
+  position: absolute;
+  top: calc(var(--banner-h) * var(--channel-mid) + (var(--header-h) - var(--banner-h)) / 2);
+  right: calc(var(--header-pad) + var(--banner-h) * var(--tip-w));
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  /* Die sichtbare Grafik darf kleiner sein als die Tap-Fläche: das Icon
+     schrumpft, der Button bleibt mindestens 48 × 48px und ragt dabei
+     unsichtbar über den Balken hinaus. */
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+}
+
+.nav-toggle__icon {
+  display: block;
+  height: calc(var(--banner-h) * var(--channel-h) * 0.62);
+  width: auto;
+  overflow: visible;
+}
+
+/* transform-box: fill-box macht die Rotationsmitte jedes Balkens zu seinem
+   eigenen Zentrum statt zum Ursprung des <svg> — sonst würde der Balken um
+   die Ecke der Zeichenfläche kippen statt um sich selbst. */
+.nav-toggle__bar {
+  fill: var(--accent);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 250ms ease-out, opacity 250ms ease-out;
+}
+
+/* 113 = Balkenhöhe + Abstand: der obere und der untere Balken wandern damit
+   exakt auf die Mitte. scaleX verkürzt sie, sonst spannte das X gedreht
+   537 Einheiten und ragte weit über den Kanal hinaus. */
+.nav-toggle[aria-expanded="true"] .nav-toggle__bar--top {
+  transform: translateY(113px) rotate(45deg) scaleX(0.5);
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle__bar--mid {
+  opacity: 0;
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle__bar--bottom {
+  transform: translateY(-113px) rotate(-45deg) scaleX(0.5);
+}
+
+.nav-toggle:focus-visible,
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* --------------------------------------------------------------------------
+   Overlay-Menü — jetzt auf allen Bildschirmgrößen die einzige Navigation
+   (Nav-Links und Telefonnummer sind aus der Kopfzeile selbst entfernt,
+   Logo + durchgehender Balken + Menü-Icon ersetzen sie überall).
+   -------------------------------------------------------------------------- */
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--primary);
+  color: var(--text-light);
+  /* Platz für den Header, der jetzt darüber sichtbar bleibt. */
+  padding-top: var(--header-h);
+}
+
+.mobile-menu[hidden] {
+  display: none;
+}
+
+.mobile-menu__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  /* env() ist 0, wo es kein Notch/Home-Indicator gibt — das Menü bleibt
+     dort exakt wie vorher, nur auf iPhones mit Home-Indicator kommt die
+     Telefonnummer nicht mehr darunter zu liegen. */
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-menu__list {
+  flex: 1;
+}
+
+.mobile-menu__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--tap-target);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.15);
+  font-family: var(--font-display);
+  font-size: var(--font-size-h3);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-display);
+  text-decoration: none;
+}
+
+.mobile-menu__dropdown-icon {
+  transition: transform var(--transition-base);
+}
+
+.mobile-menu__dropdown {
+  display: none;
+  padding-bottom: var(--space-2);
+}
+
+.mobile-menu__dropdown-toggle[aria-expanded="true"] + .mobile-menu__dropdown {
+  display: block;
+}
+
+.mobile-menu__dropdown a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  padding-left: var(--space-4);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  text-decoration: none;
+}
+
+.mobile-menu__phone {
+  margin-top: var(--space-6);
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Sections
+   -------------------------------------------------------------------------- */
+section {
+  scroll-margin-top: var(--header-h);
+}
+
+/* --------------------------------------------------------------------------
+   Hero (#hero)
+   -------------------------------------------------------------------------- */
+.hero-chips {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  animation: hero-enter 400ms ease-out both;
+}
+
+.hero-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.hero-section__title {
+  margin: 0 0 var(--space-6);
+  max-width: 100%;
+  /* Ohne das wird "FAHRSCHULE," bei 320px 9,7px breiter als der verfügbare
+     Platz und dann von .hero-section (overflow: hidden) unsichtbar
+     abgeschnitten, statt umzubrechen — gemessen via Range.getClientRects().
+     hyphens:auto (mit lang="de" auf <html>) bricht an einer echten
+     Silbengrenze statt mitten im Wort, overflow-wrap bleibt als Netz für
+     den Fall, dass der Browser keine Trennstelle findet. */
+  hyphens: auto;
+  overflow-wrap: break-word;
+  font-family: var(--font-display);
+  font-size: var(--font-size-hero-h1);
+  line-height: var(--line-height-hero);
+  letter-spacing: var(--letter-spacing-hero);
+  text-transform: uppercase;
+  color: var(--text-light);
+  animation: hero-enter 400ms ease-out both;
+  animation-delay: 80ms;
+}
+
+.hero-section__subline {
+  margin: 0 0 var(--space-8);
+  max-width: 48ch;
+  color: color-mix(in srgb, var(--text-light) 72%, transparent);
+  line-height: 1.5;
+  animation: hero-enter 400ms ease-out both;
+  animation-delay: 160ms;
+}
+
+.hero-section__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  animation: hero-enter 400ms ease-out both;
+  animation-delay: 240ms;
+}
+
+.hero-section__actions > a {
+  min-height: 52px;
+  width: 100%;
+}
+
+.hero-section__cta {
+  border-radius: 0;
+  /* Abgeschrägte Signage-Silhouette statt runder Ecken — nur dieser
+     Button, .btn-primary bleibt im Header/Footer unverändert. */
+  clip-path: polygon(
+    14px 0,
+    100% 0,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    0 100%,
+    0 14px
+  );
+}
+
+.hero-section__cta-arrow {
+  display: inline-block;
+  transition: transform var(--transition-base);
+}
+
+/* clip-path schneidet outline und äußeren box-shadow mit weg. Der CTA hat
+   keine innere Ebene wie .class-tile, deshalb zeichnet ein inset-Schatten
+   den Ring direkt in die gelbe Fläche — dunkel, damit er auf Gelb trägt. */
+.hero-section__cta:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px var(--primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-section__cta:hover .hero-section__cta-arrow {
+    transform: translateX(4px);
+  }
+}
+
+.hero-section__cta:active .hero-section__cta-arrow {
+  transform: translateX(4px);
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: var(--space-6);
+  left: 50%;
+  z-index: 2;
+  width: 2px;
+  height: 40px;
+  background-color: var(--accent);
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top;
+  opacity: 0;
+  animation: scroll-hint-loop 2.6s ease-in-out infinite;
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-hint-loop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(0);
+  }
+  40%, 70% {
+    opacity: 0.3;
+    transform: translateX(-50%) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Vertrauen (#vertrauen)
+   --------------------------------------------------------------------------
+   Beantwortet "Kann ich denen vertrauen?" ausschließlich mit Zahlen — bewusst
+   ohne Sektionsüberschrift, die Kennzahlen sind die Überschrift. Das gelbe
+   Ticker-Band davor grenzt direkt an, ohne zusätzlichen Rand.
+   -------------------------------------------------------------------------- */
+.trust {
+  background-color: var(--background-light);
+  padding-block: var(--space-20);
+}
+
+.trust__inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+/* --- Kennzahlen ------------------------------------------------------- */
+.trust-stats {
+  display: flex;
+  flex-direction: column;
+}
+
+.trust-stat {
+  position: relative;
+  padding-block: var(--space-6);
+  text-align: center;
+}
+
+/* Gestrichelte Trennlinie zwischen den Kennzahlen, wie eine
+   Fahrbahnmarkierung — 2px breit, 8px Strich, 8px Lücke, 50% Deckkraft.
+   repeating-linear-gradient statt border-style: dashed, weil dessen
+   Strich-/Lückenlänge sich nicht exakt vorgeben lässt. Auf Mobile
+   waagerecht am oberen Rand jeder Kennzahl außer der ersten, auf Desktop
+   senkrecht am linken Rand. */
+.trust-stat:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  background-image: repeating-linear-gradient(
+    to right,
+    color-mix(in srgb, var(--accent) 50%, transparent) 0 8px,
+    transparent 8px 16px
+  );
+  top: 0;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+}
+
+.trust-stat__value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-stat);
+  line-height: var(--line-height-tight);
+  color: var(--text-dark);
+}
+
+.trust-stat__label {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-small);
+  letter-spacing: var(--letter-spacing-loose);
+  text-transform: uppercase;
+  /* 68% statt 60%: 4,41:1 verfehlte WCAG AA für normalen Text (4,5:1) knapp. */
+  color: color-mix(in srgb, var(--text-dark) 68%, transparent);
+}
+
+/* Die Flaggen sind die dritte Kennzahl — kein Zahlenwert, deshalb kein
+   .trust-stat__number darin. font-size skaliert sie auf die optische
+   Höhe der Zahlen daneben, statt in nativer Emoji-Größe zu wirken. */
+.trust-stat__flags {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: calc(var(--font-size-stat) * 0.6);
+  line-height: 1;
+}
+
+.trust-stat__flag {
+  display: inline-block;
+}
+
+/* Vor der Freigabe durch IntersectionObserver unsichtbar — siehe
+   initTrustStats() in script.js. Nur JS setzt --ready, damit ohne
+   JavaScript (oder bei reduzierter Bewegung) die Flaggen von Anfang an
+   sichtbar bleiben, statt für immer ausgeblendet zu sein. */
+.trust-stats--ready .trust-stat__flag {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.trust-stats--visible .trust-stat__flag {
+  animation: flag-in 300ms ease-out both;
+}
+
+.trust-stat__flag:nth-child(1) { animation-delay: 0ms; }
+.trust-stat__flag:nth-child(2) { animation-delay: 60ms; }
+.trust-stat__flag:nth-child(3) { animation-delay: 120ms; }
+.trust-stat__flag:nth-child(4) { animation-delay: 180ms; }
+.trust-stat__flag:nth-child(5) { animation-delay: 240ms; }
+.trust-stat__flag:nth-child(6) { animation-delay: 300ms; }
+
+@keyframes flag-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Zitate ------------------------------------------------------------ */
+.trust-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-18);
+}
+
+/* --------------------------------------------------------------------------
+   Klassen-Übersicht (#klassen)
+   --------------------------------------------------------------------------
+   Beantwortet "welcher Führerschein ist überhaupt für mich?" als reine
+   Übersicht mit Links — die Details folgen auf eigenen Unterseiten.
+   -------------------------------------------------------------------------- */
+.classes {
+  background-color: var(--primary);
+  padding-block: var(--space-20);
+}
+
+.classes__inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.classes__heading {
+  margin: 0 0 var(--space-12);
+  font-family: var(--font-display);
+  font-size: var(--font-size-section-heading);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-light);
+}
+
+/* grid-auto-rows: 1fr gibt allen Zeilen dieselbe Höhe. Ohne das richtet
+   sich jede Zeile nur nach ihrer eigenen höchsten Kachel — sobald eine
+   Kurzinfo umbricht (z. B. Klasse A auf Tablet), wäre Zeile 1 höher als
+   Zeile 2. */
+.classes__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: 1fr;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* display: grid statt flex: ein Grid-Item wird per Voreinstellung in BEIDEN
+   Achsen gestreckt. Mit flex wurde nur die Querachse (Höhe) gestreckt, die
+   Breite blieb inhaltsabhängig — die vier Kacheln waren dadurch
+   unterschiedlich breit (332/287/174/176px statt je 572px). */
+.classes__grid li {
+  display: grid;
+}
+
+/* --------------------------------------------------------------------------
+   Ablauf (#ablauf)
+   --------------------------------------------------------------------------
+   Beantwortet "wie läuft das ab, wie lange dauert es?" in vier nummerierten
+   Schritten. Nach der dunklen Klassen-Sektion wieder hell — wechselnder
+   Rhythmus der Seite.
+   -------------------------------------------------------------------------- */
+.ablauf {
+  background-color: var(--background-light);
+  padding-block: var(--space-20);
+}
+
+.ablauf__inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.ablauf__heading {
+  margin: 0 0 var(--space-16);
+  font-family: var(--font-display);
+  font-size: var(--font-size-section-heading);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-dark);
+}
+
+.ablauf-steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Die Verbindungslinie läuft hinter den Nummern-Badges (z-index 0, die
+   Badges selbst tragen z-index 1). Auf Mobile ist die exakte Mitte von
+   Schritt 1 und Schritt 4 nicht allein aus CSS berechenbar — anders als bei
+   vier gleich BREITEN Desktop-Spalten haben gestapelte Schritte
+   unterschiedliche HÖHE (je nach Zeilenumbruch der Beschreibung), und CSS
+   kennt die Höhe eines Geschwister-Elements nicht. initAblaufLine() in
+   script.js misst deshalb die tatsächliche Position der ersten und letzten
+   Badge und setzt --ablauf-line-start/-end. Ohne JavaScript (oder vor dem
+   ersten Messen) blendet der Fallback-Wert auf die halbe Badge-Höhe —
+   korrekt für Schritt 1, für Schritt 4 eine Annäherung, die im Rahmen der
+   eigenen Badge-Fläche bleibt.  */
+.ablauf-steps::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: calc(var(--step-badge-size) / 2 - 1.5px);
+  top: var(--ablauf-line-start, calc(var(--step-badge-size) / 2));
+  bottom: var(--ablauf-line-end, calc(var(--step-badge-size) / 2));
+  width: 3px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--accent) 60%, transparent) 0 10px,
+    transparent 10px 18px
+  );
+}
+
+.ablauf-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  text-align: left;
+}
+
+/* min-width: 0 verhindert, dass der Flex-Text-Block sich an seinem
+   längsten Wort aufbläht statt im verfügbaren Platz umzubrechen — der
+   Flexbox-Standard (min-width: auto) würde das sonst tun. */
+.ablauf-step__text {
+  min-width: 0;
+}
+
+.ablauf-step__title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-step-title);
+  font-weight: 700;
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-step-title);
+  text-transform: uppercase;
+  color: var(--text-dark);
+}
+
+.ablauf-step__desc {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-step-desc);
+  line-height: var(--line-height-relaxed);
+  color: color-mix(in srgb, var(--text-dark) 65%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   Kontakt (#kontakt)
+   --------------------------------------------------------------------------
+   Die wichtigste Sektion der Seite — hier passiert die Conversion. Ein
+   Primärweg (Anrufen), ein gleichwertiger zweiter (WhatsApp), ein ruhiger
+   dritter (Formular, aufklappbar). Dunkler Hintergrund wie der Hero, damit
+   die Seite dunkel endet, wie sie begonnen hat.
+   -------------------------------------------------------------------------- */
+.contact {
+  background-color: var(--primary);
+  padding-block: var(--space-20);
+}
+
+.contact__inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.contact__heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-contact-heading);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.contact__subline {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-body);
+  text-align: center;
+  color: color-mix(in srgb, var(--text-light) 70%, transparent);
+}
+
+/* --- Block 1: die zwei Direktwege ------------------------------------- */
+.contact-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-12);
+}
+
+.contact-actions > a {
+  flex: 1;
+}
+
+/* --- Block 2: Öffnungszeiten + Adresse --------------------------------- */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-top: var(--space-16);
+}
+
+.contact-hours,
+.contact-address {
+  flex: 1;
+}
+
+.contact-hours__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.contact-hours__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.contact-hours__status--open .contact-hours__dot {
+  background-color: var(--status-open);
+}
+
+.contact-hours__status--closed .contact-hours__dot {
+  background-color: var(--accent);
+}
+
+.contact-hours__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-hours__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-1) 0 var(--space-1) var(--space-3);
+  border-left: 3px solid transparent;
+  font-size: var(--font-size-small);
+  color: color-mix(in srgb, var(--text-light) 65%, transparent);
+}
+
+.contact-hours__row--today {
+  border-left-color: var(--accent);
+  color: var(--text-light);
+}
+
+.contact-address__icon {
+  display: block;
+  width: var(--space-6);
+  height: var(--space-6);
+  margin-bottom: var(--space-2);
+  color: var(--accent);
+}
+
+.contact-address__lines {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-base);
+  color: color-mix(in srgb, var(--text-light) 65%, transparent);
+}
+
+/* position: relative + die beiden ::before darunter vergrößern die Tap-
+   Fläche unsichtbar auf 48px Höhe, ohne die Zeile selbst höher zu machen.
+   Route öffnet nur nach OBEN (in die nicht-antippbare Adresszeile darüber),
+   E-Mail nur nach UNTEN (in freien Raum vor dem Formular-Trigger) — so
+   wächst keine der beiden Flächen in die jeweils andere hinein, und der
+   bestehende 8px-Abstand zwischen beiden Links bleibt erhalten. */
+.contact-address__route {
+  position: relative;
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-small);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.contact-address__route::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--tap-target);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-address__route:hover {
+    text-decoration: underline;
+  }
+}
+
+.contact-address__route:active {
+  text-decoration: underline;
+}
+
+.contact-address__route:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.contact-address__email {
+  position: relative;
+  display: block;
+  font-size: var(--font-size-small);
+  text-decoration: none;
+  color: color-mix(in srgb, var(--text-light) 65%, transparent);
+}
+
+.contact-address__email::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--tap-target);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-address__email:hover {
+    color: var(--text-light);
+  }
+}
+
+.contact-address__email:active {
+  color: var(--text-light);
+}
+
+.contact-address__email:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Block 3: Formular, aufklappbar ------------------------------------ */
+.contact-form-toggle {
+  margin-top: var(--space-16);
+  text-align: center;
+}
+
+.contact-form-toggle__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-target);
+  padding: var(--space-2) 0;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  color: color-mix(in srgb, var(--text-light) 70%, transparent);
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-form-toggle__trigger:hover {
+    color: var(--text-light);
+  }
+}
+
+.contact-form-toggle__trigger:active {
+  color: var(--text-light);
+}
+
+.contact-form-toggle__trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.contact-form-toggle__chevron {
+  display: inline-block;
+  transition: transform var(--transition-base);
+}
+
+.contact-form-toggle__trigger[aria-expanded="true"] .contact-form-toggle__chevron {
+  transform: rotate(90deg);
+}
+
+/* Die Klasse setzt initContactForm() in script.js erst nach dem Laden —
+   ohne JavaScript bleibt das Formular ein normaler, vollständig sichtbarer
+   Block statt für immer unerreichbar zu sein (gleiches Prinzip wie
+   trust-stats--ready in #vertrauen). */
+.contact-form-panel--js {
+  overflow: hidden;
+  transition: max-height var(--transition-panel);
+}
+
+.contact-form-panel__inner {
+  padding-top: var(--space-8);
+  text-align: left;
+}
+
+.contact-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.contact-form__label {
+  font-size: var(--font-size-small);
+  color: color-mix(in srgb, var(--text-light) 80%, transparent);
+}
+
+.contact-form__input,
+.contact-form__select,
+.contact-form__textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--tap-target);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--text-light) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background-color: color-mix(in srgb, var(--text-light) 6%, var(--primary));
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+}
+
+.contact-form__textarea {
+  min-height: calc(var(--tap-target) * 2);
+  resize: vertical;
+}
+
+.contact-form__input:focus-visible,
+.contact-form__select:focus-visible,
+.contact-form__textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Klassischer Honeypot: für echte Nutzer:innen unsichtbar und außerhalb
+   der Tab-Reihenfolge (siehe tabindex="-1" im Markup), aber nicht per
+   display:none — manche Bots überspringen genau diese Erkennung. */
+.contact-form__honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-form__checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.contact-form__checkbox {
+  flex-shrink: 0;
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.contact-form__checkbox-label {
+  font-size: var(--font-size-small);
+  color: color-mix(in srgb, var(--text-light) 80%, transparent);
+}
+
+.contact-form__checkbox-label a {
+  color: var(--accent);
+}
+
+.contact-form__notice {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--text-light);
+  font-size: var(--font-size-small);
+}
+
+.contact-form__submit {
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.site-footer {
+  background-color: var(--primary);
+  color: var(--text-light);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding-block: var(--space-8);
+}
+
+.site-footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.site-footer__logo {
+  height: 28px;
+  width: auto;
+}
+
+.site-footer__address {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--text-light);
+  opacity: 0.8;
+}
+
+.site-footer__links {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.site-footer__links a {
+  position: relative;
+  font-size: var(--font-size-small);
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+/* Unsichtbare Tap-Fläche statt sichtbar größerer Box — "Impressum" und
+   "Datenschutz" sind schon breiter als 48px, nur die Höhe wächst. */
+.site-footer__links a::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--tap-target));
+  height: max(100%, var(--tap-target));
+  transform: translate(-50%, -50%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-footer__links a:hover {
+    opacity: 1;
+  }
+}
+
+.site-footer__links a:active {
+  opacity: 1;
+}
+
+.site-footer__links a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Abstand nur an dieser Stelle auf --space-6 angehoben (lokal auf diesem
+   Selektor, --space-4 bleibt überall sonst unangetastet) — vergrößert die
+   maximal mögliche Tap-Fläche der Icons darunter von 30px auf 38px Breite.
+   Volle 48px wären erst ab --space-10 (40px Lücke) möglich: bei 22px
+   Icon-Breite ist der Mitte-zu-Mitte-Abstand icon+gap, und die größte
+   Trefferbreite, die noch ≥8px Lücke zur Nachbarfläche lässt, ist
+   (icon+gap−8) — bei 24px Lücke also 22+24−8 = 38px, nicht 48px. */
+.site-footer__social {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.site-footer__social a {
+  position: relative;
+  display: flex;
+  color: var(--text-light);
+  opacity: 0.8;
+}
+
+.site-footer__social a::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 38px);
+  height: max(100%, var(--tap-target));
+  transform: translate(-50%, -50%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-footer__social a:hover {
+    opacity: 1;
+  }
+}
+
+.site-footer__social a:active {
+  opacity: 1;
+}
+
+.site-footer__social a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.site-footer__copyright {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--text-light);
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   Breakpoint ≥ 600px — Kachel-Raster #klassen wird 2×2, ab hier bis
+   einschließlich Desktop unverändert (kein weiterer Sprung bei 1024px).
+   ========================================================================== */
+@media (min-width: 600px) {
+  .classes__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================================================
+   Breakpoint ≥ 768px — Tablet/Desktop
+   ========================================================================== */
+@media (min-width: 768px) {
+  .hero-section__title {
+    max-width: 62%;
+  }
+
+  .hero-section__actions {
+    flex-direction: row;
+    width: auto;
+  }
+
+  .hero-section__actions > a {
+    width: auto;
+  }
+
+  .trust {
+    padding-block: var(--space-30);
+  }
+
+  .trust-stats {
+    flex-direction: row;
+  }
+
+  .trust-stat {
+    flex: 1;
+  }
+
+  /* Trennlinie kippt auf Desktop von waagerecht (oben) auf senkrecht
+     (links) — gleiche Strich-/Lückenmaße, andere Richtung. */
+  .trust-stat:not(:first-child)::before {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--accent) 50%, transparent) 0 8px,
+      transparent 8px 16px
+    );
+    top: 20%;
+    left: 0;
+    width: 2px;
+    height: 60%;
+  }
+
+  .trust-quotes {
+    flex-direction: row;
+    align-items: stretch;
+    margin-top: var(--space-24);
+  }
+
+  .trust-quotes .testimonial {
+    flex: 1;
+  }
+
+  .classes {
+    padding-block: var(--space-30);
+  }
+
+  .contact {
+    padding-block: var(--space-30);
+  }
+
+  .contact-actions {
+    flex-direction: row;
+  }
+
+  .contact-info {
+    flex-direction: row;
+    gap: var(--space-16);
+  }
+
+  .site-footer__inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .site-footer__links {
+    order: 2;
+  }
+
+  .site-footer__social {
+    order: 3;
+  }
+
+  .site-footer__copyright {
+    order: 4;
+    margin-left: var(--space-4);
+  }
+}
+
+/* ==========================================================================
+   Breakpoint ≥ 1024px — Desktop breit
+   ========================================================================== */
+@media (min-width: 1024px) {
+  .ablauf {
+    padding-block: var(--space-30);
+  }
+
+  .ablauf-steps {
+    flex-direction: row;
+    gap: var(--space-6);
+  }
+
+  .ablauf-step {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    text-align: center;
+  }
+
+  .ablauf-step__title {
+    margin-top: var(--space-4);
+  }
+
+  .ablauf-step__desc {
+    max-width: 22ch;
+  }
+
+  /* Vier gleich breite Spalten (flex: 1) mit festem Gap: die Distanz von
+     der Außenkante zur Mitte der ersten/letzten Spalte ist bei gleicher
+     Breite eine reine Funktion von Breite und Gap, unabhängig vom Inhalt —
+     Spaltenbreite = (100% − 3 × Gap) / 4, deren Mitte liegt bei der Hälfte
+     davon. Anders als auf Mobile (siehe oben) reicht hier reines CSS, ohne
+     JavaScript-Messung. */
+  .ablauf-steps::before {
+    top: calc(var(--step-badge-size) / 2 - 1.5px);
+    bottom: auto;
+    left: calc((100% - 3 * var(--space-6)) / 8);
+    right: calc((100% - 3 * var(--space-6)) / 8);
+    width: auto;
+    height: 3px;
+    background-image: repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--accent) 60%, transparent) 0 10px,
+      transparent 10px 18px
+    );
+  }
+
+  .site-footer__inner {
+    padding-inline: var(--space-6);
+  }
+}
+
+/* ==========================================================================
+   Vorlage für Unterseiten (site/template.html, site/404.html)
+   --------------------------------------------------------------------------
+   Betrifft ausschließlich Elemente, die auf index.html nicht vorkommen
+   (.page-header, .page-body, .page-cta, .mobile-cta-bar) bzw. dort nie die
+   passende Klasse tragen (.mobile-menu__link.is-active, body.has-mobile-
+   cta-bar) — nichts hier verändert das gerenderte Erscheinungsbild von
+   index.html.
+   ========================================================================== */
+
+/* --- Aktiver Menüpunkt --------------------------------------------------
+   Klasse wird pro Unterseite manuell am passenden <a> gesetzt, siehe
+   Kommentar in template.html. Hier nirgends vorbelegt. */
+.mobile-menu__link.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* --- Breadcrumb ---------------------------------------------------------
+   "Start / [Seitenname]" über der Seitenüberschrift in .page-header. */
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: break-word;
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  color: color-mix(in srgb, var(--text-light) 55%, transparent);
+}
+
+.breadcrumb__link {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .breadcrumb__link:hover {
+    color: var(--text-light);
+  }
+}
+
+.breadcrumb__link:active {
+  color: var(--text-light);
+}
+
+.breadcrumb__link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.breadcrumb__current {
+  color: inherit;
+}
+
+/* --- .page-header ---------------------------------------------------------
+   Kompakter Seitenkopf für Unterseiten — bewusst KEIN bildschirmfüllender
+   Hero wie auf der Startseite. Höhe ~30–35% der Bildschirmhöhe auf Mobile
+   über min-height, nach demselben Muster wie .hero-section. */
+.page-header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: 34svh;
+  background-color: var(--primary);
+  color: var(--text-light);
+}
+
+.page-header__inner {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding: var(--space-16) var(--space-4);
+}
+
+/* Aktualisierter Wert (war zuvor 52px): exakte Vorgabe für die Fahrzeugfoto-
+   Variante, liegt jetzt genau auf der Obergrenze von --font-size-h1
+   (clamp(32px, 8vw, 48px)) — trotzdem literal statt Token, weil
+   design-tokens.css außerhalb des erlaubten Änderungsbereichs lag. */
+.page-header__title {
+  margin: var(--space-3) 0 0;
+  overflow-wrap: break-word;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 7vw, 48px);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+}
+
+.page-header__subtitle {
+  margin: var(--space-2) 0 0;
+  overflow-wrap: break-word;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  color: color-mix(in srgb, var(--text-light) 70%, transparent);
+}
+
+/* --- .page-header--with-photo -----------------------------------------
+   Variante für die vier Klassen-Seiten: Fahrzeugfoto im Signage-Rahmen,
+   auf Mobile unter dem Text, ab 900px daneben (Grund für den eigenen
+   900px-Bruchpunkt statt 768/1024: erst ab da hat ein 5:4-Bild neben dem
+   Text genug Breite, ohne verkrampft zu wirken). Rein additiv über eine
+   Modifier-Klasse — .page-header ohne sie (z. B. site/404.html) bleibt exakt
+   wie zuvor. */
+.page-header--with-photo {
+  border-bottom: 3px solid var(--accent);
+}
+
+.page-header--with-photo .page-header__inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+}
+
+@media (min-width: 900px) {
+  .page-header--with-photo .page-header__inner {
+    grid-template-columns: 45fr 55fr;
+    align-items: center;
+    gap: var(--space-10);
+  }
+}
+
+/* min-width: 0 überschreibt den Grid-Item-Default (auto), der Textzeilen
+   sonst auf ihre ungebrochene Breite aufbläht, statt sie im Grid-Track
+   umzubrechen — sonst würde .page-header__title trotz overflow-wrap den
+   Viewport horizontal sprengen. */
+.page-header__text {
+  min-width: 0;
+}
+
+/* --- .signage-frame -----------------------------------------------------
+   Fotorahmen im Signage-Look: derselbe Zwei-Ebenen-Aufbau wie .class-tile
+   (border + clip-path funktionieren nicht zusammen — siehe Kommentar dort),
+   hier mit demselben Sechseck-Polygon, nicht neu erfunden. Das Foto selbst
+   wird nicht beschnitten (object-fit: contain); der Rahmen ist die
+   gestalterische Antwort auf die dadurch entstehenden Ränder. */
+.page-header__photo {
+  margin: 0;
+}
+
+.signage-frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 5 / 4;
+  width: 100%;
+  max-height: 45vh;
+  background-color: var(--accent);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+}
+
+.signage-frame::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+}
+
+/* Wie bei .class-tile: position: relative hebt Bild/<picture> über das
+   absolut positionierte ::before, ohne z-index, weil positionierte
+   Geschwister in Baumreihenfolge gestapelt werden. */
+.signage-frame > * {
+  position: relative;
+}
+
+.signage-frame picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.signage-frame__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media (min-width: 900px) {
+  .signage-frame {
+    max-width: 620px;
+    max-height: none;
+  }
+}
+
+/* --- .page-body -----------------------------------------------------------
+   Inhaltsbereich der Unterseite. 800px ist ebenfalls ein vorgegebener
+   literaler Wert ohne bestehenden Token (--max-width ist mit 1200px für
+   Fließtext einer Unterseite deutlich zu breit) — hält lange Textzeilen auf
+   großen Bildschirmen lesbar. */
+.page-body {
+  max-width: 800px;
+  margin-inline: auto;
+  padding: var(--space-16) var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .page-body {
+    padding: var(--space-20) var(--space-4);
+  }
+}
+
+/* --- .page-cta --------------------------------------------------------
+   Einheitlicher Abschluss-Block vor dem Footer, auf jeder Unterseite
+   identisch. Nutzt .contact-action/.contact-actions 1:1 wie in #kontakt
+   auf der Startseite — keine eigenen Klassen für die zwei Direktwege. */
+.page-cta {
+  background-color: var(--primary);
+  color: var(--text-light);
+  padding-block: var(--space-20);
+  text-align: center;
+}
+
+.page-cta__inner {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.page-cta__heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+}
+
+.page-cta__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  margin-top: var(--space-6);
+  font-size: var(--font-size-small);
+  color: color-mix(in srgb, var(--text-light) 70%, transparent);
+  text-decoration: underline;
+  transition: color var(--transition-base);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .page-cta__link:hover {
+    color: var(--text-light);
+  }
+}
+
+.page-cta__link:active {
+  color: var(--text-light);
+}
+
+.page-cta__link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .page-cta {
+    padding-block: var(--space-30);
+  }
+}
+
+/* --- .mobile-cta-bar --------------------------------------------------
+   Feste Aktionsleiste am unteren Bildschirmrand, nur Unterseiten
+   (index.html hat sie nicht). Immer sichtbar, kein Ein-/Ausblenden beim
+   Scrollen. z-index 150: unter .mobile-menu (200) und .site-header (300),
+   damit das Overlay-Menü sie beim Öffnen automatisch verdeckt (inset:0
+   deckt den ganzen Viewport ab) — keine eigene JS-Logik nötig. */
+.mobile-cta-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 150;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 12px rgb(22 21 20 / 0.16);
+}
+
+.mobile-cta-bar__item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--space-12) + var(--space-2));
+  font-family: var(--font-display);
+  font-size: var(--font-size-body);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color var(--transition-base);
+}
+
+.mobile-cta-bar__item--call {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
+.mobile-cta-bar__item--whatsapp {
+  background-color: var(--primary);
+  color: var(--text-light);
+  border: 2px solid var(--accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mobile-cta-bar__item--call:hover {
+    background-color: var(--accent-hover);
+  }
+
+  .mobile-cta-bar__item--whatsapp:hover {
+    background-color: color-mix(in srgb, var(--primary) 80%, var(--accent) 20%);
+  }
+}
+
+.mobile-cta-bar__item--call:active {
+  background-color: var(--accent-hover);
+}
+
+.mobile-cta-bar__item--whatsapp:active {
+  background-color: color-mix(in srgb, var(--primary) 80%, var(--accent) 20%);
+}
+
+.mobile-cta-bar__item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+@media (min-width: 768px) {
+  .mobile-cta-bar {
+    display: none;
+  }
+}
+
+/* Platz für die feste Aktionsleiste, damit sie nichts verdeckt — nur auf
+   Seiten mit body.has-mobile-cta-bar. index.html trägt weder diese Klasse
+   noch die Leiste und bleibt dadurch unangetastet. 56px = derselbe Wert wie
+   .mobile-cta-bar__item min-height, damit Leiste und Polsterung exakt
+   zueinander passen. */
+@media (max-width: 767.98px) {
+  body.has-mobile-cta-bar .page-cta,
+  body.has-mobile-cta-bar .site-footer {
+    padding-bottom: calc(var(--space-12) + var(--space-2) + env(safe-area-inset-bottom));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduzierte Bewegung
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header__inner,
+  .nav-toggle__bar,
+  .hero-section__cta-arrow {
+    transition: none;
+  }
+
+  .scroll-hint {
+    animation: none;
+    opacity: 0.3;
+    transform: translateX(-50%) scaleY(1);
+  }
+
+  .hero-chips,
+  .hero-section__title,
+  .hero-section__subline,
+  .hero-section__actions {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Zusätzliche Absicherung: initTrustStats() in script.js bricht unter
+     reduzierter Bewegung bereits vorher ab und setzt --visible nie, diese
+     Regel greift also im Normalfall gar nicht erst — falls doch (z. B. ein
+     künftiger Aufruf ohne den Guard), bleibt die Animation trotzdem aus. */
+  .trust-stats--visible .trust-stat__flag {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

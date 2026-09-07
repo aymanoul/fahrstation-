@@ -1,0 +1,1001 @@
+/* ==========================================================================
+   Fahrstation Düsseldorf — Design Tokens
+   --------------------------------------------------------------------------
+   Einzige Quelle für Farbe, Typografie, Abstand und die wiederverwendbaren
+   Komponentenklassen. Alles Weitere (styles.css, index.html) greift
+   ausschließlich auf die hier definierten Variablen und Klassen zu — es
+   werden nirgendwo sonst Farb-, Schrift- oder Abstandswerte hart codiert.
+
+   Beide Schriften liegen lokal unter ../assets/fonts/ (ehemals per
+   <link> von fonts.googleapis.com/fonts.gstatic.com geladen — das schickte
+   bei jedem Seitenaufruf die IP-Adresse des Besuchers ohne Einwilligung an
+   Google, siehe Datenschutzerklärung). Kein <link> im <head> mehr nötig,
+   diese Datei allein reicht.
+
+   Nur die "latin"-Unicode-Range (U+0000–00FF u. a.) wurde heruntergeladen —
+   die deckt auch ä/ö/ü/ß ab, kyrillische/griechische/vietnamesische
+   Subsets brauchen wir auf einer deutschsprachigen Seite nicht.
+
+   Inter liegt bei Google als *Variable Font* vor (eine Datei, Achse
+   "wght" 100–900) — ein einziges @font-face mit font-weight-Bereich deckt
+   400/500/700 ab, exakt wie Google es selbst für Inter ausliefert. Anton
+   gibt es nur als statischer Schnitt 400. */
+@font-face {
+  font-family: 'Anton';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/anton-latin-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin-400-700.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* ---------------------------------------------------------------------
+     Farben
+     --------------------------------------------------------------------- */
+  /* Schwarz und Gelb sind direkt aus assets/logo.png ausgelesen (Median über
+     die flächigen Bereiche), damit das vektorisierte Header-Banner und alle
+     übrigen Elemente exakt denselben Ton tragen. Zuvor standen hier #0A0A0A
+     und #FFD100 — das Logo-Gelb wich davon mit ΔE 8,3 sichtbar ab. */
+  --primary: #161514;             /* Schwarz — Signage-Körper, dunkle Flächen */
+  --accent: #FDDE01;              /* Signalgelb — CTA, Akzente, Rahmen        */
+  --text-light: #FFFFFF;          /* Text auf dunklem Grund                   */
+  --text-dark: #1A1A1A;           /* Text auf hellem Grund                    */
+  --background-light: #F5F5F5;    /* Helle Flächen                            */
+
+  /* Abgeleitet — keine neuen Farben, nur Varianten der obigen */
+  --accent-hover: #E8CB01;                /* --accent, 8 % abgedunkelt        */
+  --text-muted: #6B6B6B;                  /* Sekundärtext auf hell (4.8:1)    */
+  --overlay-dark: rgb(22 21 20 / 0.65);   /* --primary mit Alpha — Video-Scrim */
+
+  /* Einzige echte Farbneuheit in dieser Datei: Grün kommt in der bisherigen
+     Palette nirgendwo vor (Schwarz/Gelb/Weiß lassen sich nicht zu Grün
+     mischen) und #kontakt braucht es zwingend für den Live-Status-Punkt
+     "Jetzt geöffnet" — dieselbe Ampel-Farbe, die auch Google in den
+     Suchergebnissen für offene Standorte zeigt. Bewusst nicht am
+     Markenschema hergeleitet, nur für diesen einen Zweck bestimmt. */
+  --status-open: #34D399;
+
+  /* ---------------------------------------------------------------------
+     Typografie
+     --------------------------------------------------------------------- */
+  --font-display: 'Anton', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* H1/H2 skalieren fluid mit der Viewport-Breite; 48px bzw. 32px sind das
+     Desktop-Maximum, die Untergrenze verhindert harte Umbrüche auf 360px. */
+  --font-size-h1: clamp(32px, 8vw, 48px);
+  --font-size-h2: clamp(24px, 5vw, 32px);
+  --font-size-h3: 20px;
+  --font-size-body: 16px;
+  --font-size-small: 14px;
+  --font-size-micro: 13px;         /* Chips, Ticker */
+
+  /* Hero-Headline: bewusst größer als --font-size-h1, damit sie auf
+     Desktop die volle Wucht einer Ansage bekommt. */
+  --font-size-hero-h1: clamp(40px, 9vw, 88px);
+
+  /* Kennzahlen in #vertrauen — lautestes Element der Sektion. */
+  --font-size-stat: clamp(38px, 9vw, 64px);
+  --font-size-quote-mark: 48px;
+
+  /* Zentrierte Zwischenüberschrift auf dunklem Grund (z. B. #klassen) —
+     kleiner als --font-size-hero-h1, größer als --font-size-h1/h2. */
+  --font-size-section-heading: clamp(28px, 6vw, 44px);
+  /* Großer Buchstabe (A/B/C/D) in .class-tile — dominantes Element. */
+  --font-size-tile-letter: clamp(56px, 12vw, 88px);
+
+  /* #ablauf — Schrittnummern (01–04) und ihre Beschriftung. */
+  --font-size-step-number: clamp(40px, 8vw, 56px);
+  --font-size-step-title: 18px;
+  --font-size-step-desc: 15px;
+  /* Kantenlänge von .step-number, aus der Zahlengröße abgeleitet statt neu
+     erfunden — wächst mit demselben clamp() wie die Ziffer selbst. */
+  --step-badge-size: calc(var(--font-size-step-number) + var(--space-8));
+
+  /* #kontakt — "BEREIT?", die letzte Ansage der Seite. Kleinere Untergrenze
+     als --font-size-hero-h1, gleiche Obergrenze wie --font-size-stat. */
+  --font-size-contact-heading: clamp(36px, 9vw, 64px);
+
+  --line-height-tight: 1.1;       /* Headlines */
+  --line-height-base: 1.6;        /* Fließtext */
+  --line-height-relaxed: 1.5;     /* Etwas lockerer als --line-height-base, für kurze Beschreibungstexte */
+  --line-height-hero: 0.92;       /* Hero-Headline, dicht gesetzt */
+  --letter-spacing-display: 0.01em;
+  --letter-spacing-loose: 0.04em; /* Kachel-Bezeichnungen, z. B. .class-tile__label */
+  --letter-spacing-step-title: 0.03em;
+  --letter-spacing-badge: 0.06em;
+  --letter-spacing-hero: -0.01em;
+
+  /* ---------------------------------------------------------------------
+     Abstände — 4px-Raster, die Zahl ist der Faktor (--space-6 = 6 × 4px)
+     --------------------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-18: 72px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-30: 120px;
+
+  /* ---------------------------------------------------------------------
+     Layout
+     --------------------------------------------------------------------- */
+  --max-width: 1200px;
+  --tap-target: 48px;             /* Mindestgröße für Touch-Ziele */
+  --badge-notch: 16px;            /* Tiefe der Pfeilspitze in .signage-badge */
+
+  /* Header und Logo-Banner. Das Banner ist niedriger als die Kopfzeile und
+     darin vertikal zentriert. Auf Mobile ist das zwingend: die Wortmarke hat
+     ein Seitenverhältnis von 3,94:1, wäre bei 96px also 378px breit und
+     passte auf kein gängiges Telefon. Bei 56px sind es 221px. */
+  --header-h: 96px;
+  --banner-h: 56px;
+  --header-pad: 20px;             /* seitlicher Rand des Banners */
+
+  /* Anteile der Bannerhöhe, aus assets/logo.png ausgemessen (Banner = 392
+     viewBox-Einheiten): schwarzer Innenkanal y 125–255, Spitze 132 breit.
+     Das Menü-Icon wird daraus positioniert und skaliert. */
+  --channel-top: 0.31888;
+  --channel-h: 0.33418;
+  --channel-mid: 0.48597;
+  --tip-w: 0.3367;
+
+  /* Der gerade Balken als eigene Ebene. Die Einzüge halten ihn von beiden
+     Enden fern, damit er nicht um die Pfeilspitzen herum hervorschaut: links
+     deckt die Platte den Balken erst ab Einheit 75 vollständig ab, rechts
+     beginnt die Verjüngung 91 Einheiten vor der Kante. Balken y 100–279,
+     gelbe Konturen bei 108 und 256, je 17 Einheiten stark. */
+  --bar-y: 0.25510;         /* 100/392 */
+  --bar-h: 0.45918;         /* 180/392 */
+  --bar-edge-top: 0.27551;  /* 108/392 */
+  --bar-edge-bot: 0.65306;  /* 256/392 */
+  --bar-edge-h: 0.04337;    /*  17/392 */
+  --bar-inset-l: 0.25510;   /* 100/392 — sicher hinter der Platte */
+  --bar-inset-r: 0.27551;   /* 108/392 — sicher vor der Verjüngung */
+
+  /* ---------------------------------------------------------------------
+     Rahmen, Radien, Schatten, Bewegung
+     --------------------------------------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --border-signage: 3px solid var(--accent);
+
+  --shadow-header: 0 2px 12px rgb(22 21 20 / 0.12);
+  --shadow-card: 0 2px 8px rgb(22 21 20 / 0.08);
+  --shadow-card-hover: 0 8px 20px rgb(22 21 20 / 0.14);
+  --shadow-testimonial: 0 2px 12px rgb(22 21 20 / 0.06);
+
+  /* Doppelring: außen gelb, innen schwarz — dadurch auf hellem UND dunklem
+     Hintergrund sichtbar. */
+  --focus-ring: 0 0 0 3px var(--primary), 0 0 0 6px var(--accent);
+
+  --transition-base: 0.2s ease;
+  --transition-hover: 0.2s ease-out; /* Hover-Lift auf klickbaren Kacheln */
+  --transition-panel: 0.3s ease;      /* Aufklapp-Animation des Kontaktformulars */
+  --marquee-duration: 30s;
+}
+
+/* Wer Bewegung reduziert haben möchte, bekommt sie über den Token global
+   abgeschaltet — jede Komponente unten nutzt --transition-base. */
+/* Desktop: das Banner darf deutlich größer werden. 112px in einer
+   128px-Zeile lässt 8px Luft oben und unten. */
+@media (min-width: 768px) {
+  :root {
+    --header-h: 128px;
+    --banner-h: 112px;
+    --header-pad: 4%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-base: 0s;
+    --transition-hover: 0s;
+    --transition-panel: 0s;
+  }
+}
+
+/* ==========================================================================
+   Komponenten
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   .btn-primary — Button im Signage-Look: gelbe Fläche, schwarze Schrift.
+   -------------------------------------------------------------------------- */
+.btn-primary {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: var(--accent);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--transition-base), transform var(--transition-base);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+}
+
+.btn-primary:active {
+  background-color: var(--accent-hover);
+  transform: translateY(1px);
+}
+
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* --------------------------------------------------------------------------
+   .signage-badge — hexagonale Richtungsschild-Form: links eingekerbt,
+   rechts spitz zulaufend. Reine CSS-Form über clip-path, kein Bild.
+   Der horizontale Innenabstand muss größer als --badge-notch sein, damit
+   der Text nicht in die Spitzen läuft.
+   -------------------------------------------------------------------------- */
+.signage-badge {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-8);
+  padding: var(--space-2) var(--space-10);
+  background-color: var(--primary);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-badge);
+  text-transform: uppercase;
+  text-decoration: none;
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+}
+
+/* --------------------------------------------------------------------------
+   .card-class — Kachel für die Führerscheinklassen A / B / C / D.
+   Helle Fläche mit gelber Signage-Kante links.
+   -------------------------------------------------------------------------- */
+.card-class {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-left: var(--border-signage);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background-color: var(--background-light);
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-base);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-class:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+.card-class:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-class:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.card-class__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   .testimonial — Bewertungskarte auf reinem Weiß, hebt sich damit vom
+   --background-light der umgebenden Sektion ab. Kein border-radius — die
+   Formsprache ist die abgeschrägte Signage-Kante (rechts oben, per
+   clip-path). Border-left bleibt ein normaler border, weil der Schnitt nur
+   die gegenüberliegende obere rechte Ecke betrifft und die linke Kante
+   dadurch nicht berührt (anders als bei .class-chip, wo alle sechs Seiten
+   einer Form geschnitten werden — dort braucht es die Zwei-Ebenen-Technik).
+   -------------------------------------------------------------------------- */
+.testimonial {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-7);
+  border-left: 4px solid var(--accent);
+  background-color: var(--text-light);
+  color: var(--text-dark);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-base);
+  box-shadow: var(--shadow-testimonial);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% var(--badge-notch),
+    100% 100%,
+    0 100%
+  );
+}
+
+.testimonial__mark {
+  display: block;
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--font-size-quote-mark);
+  line-height: 1;
+  color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* flex: 1 lässt das Zitat den verbleibenden Raum füllen, sobald die Karte
+   durch align-items: stretch (Desktop) höher wird als ihr Inhalt — dadurch
+   sitzt der Name in allen drei Karten bündig unten, ohne dass margin-top:
+   auto nötig wäre (das hätte auf Mobile, wo die Karten nur ihre eigene
+   Inhaltshöhe haben, keinen Effekt und den 16px-Abstand gekostet). */
+.testimonial__quote {
+  flex: 1;
+  margin: 0 0 var(--space-4);
+  font-style: normal;
+}
+
+.testimonial__author {
+  margin: 0;
+  font-style: normal;
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-badge);
+  /* 65% statt 55%: 3,90:1 verfehlte WCAG AA für normalen Text (4,5:1). */
+  color: color-mix(in srgb, var(--text-dark) 65%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   .hero-section — dunkler Vollbild-Block. Das Video liegt ganz unten,
+   darüber der Scrim (::before), ganz oben der Inhalt. Diese Reihenfolge
+   sorgt dafür, dass weißer Text über jedem Videobild lesbar bleibt.
+   -------------------------------------------------------------------------- */
+.hero-section {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 88svh;
+  overflow: hidden;
+  background-color: var(--primary);
+  color: var(--text-light);
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    min-height: 100svh;
+  }
+}
+
+.hero-section__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background-color: var(--primary);
+}
+
+/* iOS-Safari-Rendering-Bug: currentTime läuft nachweislich mit (siehe
+   Debug-Panel), das Bild bleibt aber optisch auf dem ersten Frame stehen.
+   Erzwingt eine eigene Compositing-Ebene fürs Video, statt nur den
+   Container — nur auf #hero-video, nicht auf das Poster-<img>, das
+   dieselbe Klasse teilt. */
+#hero-video {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Verlaufs-Scrim: hält Text über jedem Videobild lesbar, wird unten
+   dunkler, wo die Buttons sitzen. Über color-mix() aus --primary
+   abgeleitet, damit keine neue Farbe eingeführt wird. */
+.hero-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--primary) 35%, transparent) 0%,
+    color-mix(in srgb, var(--primary) 55%, transparent) 45%,
+    color-mix(in srgb, var(--primary) 85%, transparent) 100%
+  );
+}
+
+/* Dezenter gelber Lichtschimmer unten, damit die dunkle Fläche nicht
+   tot wirkt. */
+.hero-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: radial-gradient(
+    ellipse at bottom,
+    color-mix(in srgb, var(--accent) 6%, transparent) 0%,
+    transparent 60%
+  );
+}
+
+.hero-section__content {
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding: var(--space-24) var(--space-6);
+}
+
+/* --------------------------------------------------------------------------
+   .btn-secondary — Zurückhaltender Signage-Button: transparent, gelber
+   Rand. Füllt sich bei Hover mit --accent, passend zu .btn-primary.
+   -------------------------------------------------------------------------- */
+.btn-secondary {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  padding: var(--space-3) var(--space-6);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--text-light);
+  font-family: var(--font-display);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-secondary:hover {
+    background-color: var(--accent);
+    color: var(--primary);
+  }
+}
+
+.btn-secondary:active {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
+.btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* --------------------------------------------------------------------------
+   .class-chip — kleiner, antippbarer Filter-Chip (Klasse A/B/C/D).
+   Nutzt dieselbe Signage-Silhouette wie .signage-badge, aber als
+   zweistufiger Zustand (Standard / aktiv) statt als reines Label.
+   -------------------------------------------------------------------------- */
+/* Border + clip-path zusammen funktionieren nicht: der Rand folgt dem
+   rechteckigen Kasten, nicht der geschnittenen Form, und verschwindet an
+   den Spitzen. Deshalb zwei gestapelte Ebenen: die äußere ist komplett
+   gelb (= der sichtbare Rand), ::before liegt 1px eingerückt darüber und
+   trägt die eigentliche Füllfarbe — zusammen ergibt das einen 1px-Rahmen,
+   der der Sechseck-Silhouette folgt. */
+.class-chip {
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: var(--space-1) var(--space-6);
+  background-color: var(--accent);
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-badge);
+  text-decoration: none;
+  white-space: nowrap;
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+}
+
+.class-chip::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  transition: background-color var(--transition-base);
+}
+
+/* Unsichtbare Tap-Fläche: die sichtbare Kachel bleibt 30px hoch (Vorgabe
+   aus dem Hero-Design), die tatsächliche Trefferfläche wird per ::after
+   auf mindestens 48×48px zentriert vergrößert — ::before trägt bereits die
+   Füllfarbe, deshalb die zweite Pseudo-Ebene. */
+.class-chip::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, var(--tap-target));
+  height: max(100%, var(--tap-target));
+  transform: translate(-50%, -50%);
+}
+
+.class-chip__label {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .class-chip:hover::before {
+    background-color: color-mix(in srgb, var(--primary) 70%, transparent);
+  }
+}
+
+.class-chip:active::before {
+  background-color: color-mix(in srgb, var(--primary) 70%, transparent);
+}
+
+.class-chip--active::before {
+  background-color: var(--accent);
+}
+
+.class-chip--active .class-chip__label {
+  color: var(--primary);
+}
+
+/* clip-path schneidet outline und box-shadow mit weg — sichtbar bleibt nur,
+   was der Form folgt. Der gelbe Rahmen wird deshalb dicker (siehe
+   .class-tile). */
+.class-chip:focus-visible {
+  outline: none;
+}
+
+.class-chip:focus-visible::before {
+  inset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   .class-tile — Übersichts-Kachel für die Führerscheinklassen in #klassen.
+   Gleiche Zwei-Ebenen-Technik wie .class-chip (border + clip-path
+   funktionieren nicht zusammen): die äußere Fläche ist voll --accent und
+   bildet den sichtbaren gelben Rahmen, ::before liegt eingerückt darüber
+   und trägt den dunklen Kern. Bei Hover schrumpft der Einrückung von
+   ::before, wodurch der Rahmen sichtbar kräftiger wirkt.
+   -------------------------------------------------------------------------- */
+.class-tile {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  background-color: var(--accent);
+  color: var(--text-light);
+  text-decoration: none;
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  transition: transform var(--transition-hover);
+}
+
+.class-tile::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  transition: inset var(--transition-hover);
+}
+
+/* position: relative hebt den Inhalt über das absolut positionierte
+   ::before — ein z-index ist dafür nicht nötig, weil positionierte
+   Geschwister in Baumreihenfolge gestapelt werden. */
+.class-tile > * {
+  position: relative;
+}
+
+.class-tile__letter {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--font-size-tile-letter);
+  line-height: var(--line-height-tight);
+  color: var(--accent);
+}
+
+.class-tile__label {
+  display: block;
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  font-weight: 500;
+  letter-spacing: var(--letter-spacing-loose);
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.class-tile__info {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-base);
+  color: color-mix(in srgb, var(--text-light) 65%, transparent);
+}
+
+.class-tile__chevron {
+  align-self: flex-end;
+  margin-top: auto;
+  padding-top: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--font-size-h3);
+  color: var(--accent);
+  transition: transform var(--transition-hover);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .class-tile:hover {
+    transform: translateY(-4px);
+  }
+
+  .class-tile:hover::before {
+    inset: 5px;
+  }
+
+  .class-tile:hover .class-tile__chevron {
+    transform: translateX(4px);
+  }
+}
+
+/* Touch-Pendant zum Hover oben: ohne pointer:fine bekommt der Tap sonst nur
+   den (jetzt unterdrückten) grauen Browser-Flash statt einer Rückmeldung. */
+.class-tile:active {
+  transform: translateY(-2px);
+}
+
+.class-tile:active::before {
+  inset: 5px;
+}
+
+.class-tile:active .class-tile__chevron {
+  transform: translateX(4px);
+}
+
+/* clip-path schneidet ALLES weg, was das Element außerhalb der Form malt —
+   outline und box-shadow gleichermaßen. Auch ein inset-Schatten hilft nicht:
+   an den schrägen Seiten wird er mit abgeschnitten und bleibt nur als
+   Haarlinie oben und unten übrig. Sichtbar bleibt allein, was der Form
+   folgt — deshalb wird der gelbe Rahmen selbst dicker, indem ::before
+   weiter einrückt. */
+.class-tile:focus-visible {
+  outline: none;
+}
+
+.class-tile:focus-visible::before {
+  inset: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   .step-number — Nummern-Badge (01–04) in #ablauf. Dieselbe
+   Sechseck-Silhouette wie .class-tile, aber einlagig: hell gefüllt statt
+   gelb gerahmt, damit die durchlaufende Verbindungslinie sauber dahinter
+   verschwindet. Kein Link, kein Fokus-Zustand nötig — rein informativ.
+   -------------------------------------------------------------------------- */
+.step-number {
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--step-badge-size);
+  height: var(--step-badge-size);
+  background-color: var(--text-light);
+  box-shadow: var(--shadow-card);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  font-family: var(--font-display);
+  font-size: var(--font-size-step-number);
+  line-height: 1;
+  color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   .contact-action — die zwei großen Direktweg-Flächen in #kontakt (Anrufen /
+   WhatsApp). Dieselbe Sechseck-Silhouette wie .class-tile. Anrufen ist eine
+   einfache volle Füllung (kein Rahmen nötig); WhatsApp braucht die
+   Zwei-Ebenen-Technik aus .class-tile/.class-chip, weil "transparent mit
+   2px gelbem Rand" + clip-path sich nicht als normaler CSS-border umsetzen
+   lässt — die innere Ebene ist mit --primary gefüllt, täuscht also
+   Transparenz auf dem dunklen Sektionshintergrund nur vor.
+   -------------------------------------------------------------------------- */
+.contact-action {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--space-24);
+  padding: var(--space-6);
+  text-decoration: none;
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  transition: transform var(--transition-hover);
+}
+
+.contact-action > * {
+  position: relative;
+  z-index: 1;
+}
+
+.contact-action--call {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
+.contact-action--whatsapp {
+  background-color: var(--accent);
+  color: var(--text-light);
+}
+
+.contact-action--whatsapp::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+}
+
+.contact-action__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.contact-action__icon {
+  width: var(--space-7);
+  height: var(--space-7);
+  flex-shrink: 0;
+}
+
+.contact-action__label {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+}
+
+.contact-action__sub {
+  font-size: var(--font-size-small);
+}
+
+.contact-action--call .contact-action__sub {
+  color: color-mix(in srgb, var(--primary) 70%, transparent);
+}
+
+.contact-action--whatsapp .contact-action__sub {
+  color: color-mix(in srgb, var(--text-light) 70%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-action:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.contact-action:active {
+  transform: translateY(-2px);
+}
+
+/* clip-path schneidet auch box-shadow weg — nicht nur an den Spitzen wie
+   bisher dokumentiert, sondern (bei einer so tief eingekerbten Form wie
+   dieser) über weite Teile der Ober- und Unterkante: ein 3px-Inset-Ring
+   liegt dort komplett außerhalb der schon 16px eingekerbten Silhouette und
+   verschwindet fast vollständig — sichtbar bleibt nur ein kurzes Stück an
+   der Spitze. .contact-action--whatsapp hat dank ihres ::before bereits
+   eine der Form folgende Lösung (dickerer Rahmen); .contact-action--call
+   bekommt für den Fokus-Zustand eigens dieselbe Ebene nachgebaut, weil sie
+   im Normalzustand keine braucht (einfarbige Füllung ohne Rahmen). */
+.contact-action:focus-visible {
+  outline: none;
+}
+
+/* Die Ebene ist dunkel gefüllt (wie bei WhatsApp), also muss auch die
+   sonst dunkle Schrift/Icon-Farbe von Anrufen mitkippen — sonst
+   verschwindet der dunkle Text auf dem jetzt ebenfalls dunklen Grund. */
+.contact-action--call:focus-visible {
+  color: var(--text-light);
+}
+
+.contact-action--call:focus-visible .contact-action__sub {
+  color: color-mix(in srgb, var(--text-light) 70%, transparent);
+}
+
+.contact-action--call:focus-visible::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+}
+
+.contact-action--whatsapp:focus-visible::before {
+  inset: 5px;
+}
+
+/* --------------------------------------------------------------------------
+   .hero-ticker — durchlaufendes Proof-Band. Der Inhalt muss im Markup
+   zweimal hintereinander stehen (.hero-ticker__item ×2), damit die
+   Schleife bei -50% Verschiebung nahtlos ist.
+   -------------------------------------------------------------------------- */
+.hero-ticker {
+  overflow: hidden;
+  background-color: var(--accent);
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.hero-ticker__track {
+  display: inline-flex;
+  animation: marquee var(--marquee-duration) linear infinite;
+}
+
+.hero-ticker__item {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--font-size-micro);
+  letter-spacing: var(--letter-spacing-badge);
+  text-transform: uppercase;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Muss nach den Komponenten-Regeln stehen: bei gleicher Spezifität
+   gewinnt die spätere Regel im Quelltext, unabhängig von der
+   Media-Query. Ein früherer Versuch, das hier oben bei :root
+   mitzuregeln, wurde von der späteren .hero-ticker__track-Basisregel
+   überschrieben und lief trotz reduzierter Bewegung weiter.
+
+   Die Animation zu stoppen reicht allein nicht: .hero-ticker__track hat
+   zwei identische .hero-ticker__item-Kopien für die nahtlose Schleife, und
+   im Ruhezustand (kein transform) zeigt overflow:hidden nur den Anfang der
+   ERSTEN Kopie — bei den meisten Viewport-Breiten mitten im Satz
+   abgeschnitten. Deshalb: zweite Kopie ausblenden und die verbleibende auf
+   mehrere Zeilen umbrechen lassen, statt sie einzeilig abzuschneiden. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-ticker__track {
+    animation: none;
+    display: block;
+    width: 100%;
+  }
+
+  .hero-ticker__item {
+    display: block;
+    width: 100%;
+    white-space: normal;
+  }
+
+  .hero-ticker__item:nth-child(2) {
+    display: none;
+  }
+}
