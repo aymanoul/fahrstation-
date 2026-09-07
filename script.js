@@ -313,7 +313,7 @@
     }
 
     var source = document.createElement('source');
-    source.src = '../assets/hero.mp4';
+    source.src = 'assets/hero.mp4';
     source.type = 'video/mp4';
     video.appendChild(source);
     video.load();

@@ -19,8 +19,15 @@ GitHub Pages kann keinen beliebigen Unterordner als Quelle verwenden (nur
 `/klasse-b` automatisch auf. Deshalb ist die Struktur hier leicht
 umgebaut: jede Unterseite liegt in einem eigenen Ordner mit `index.html`
 darin (`klasse-b.html` → `klasse-b/index.html`), damit `/klasse-b` genauso
-funktioniert wie auf der eigentlichen Vercel-Seite — ganz ohne die
-Original-Struktur in `aymanoul/Ayman` zu verändern.
+funktioniert wie auf der eigentlichen Vercel-Seite.
+
+**Alle internen Links und die vier gemeinsamen Dateien
+(design-tokens.css/styles.css/script.js/manifest.json) sind bewusst
+komplett RELATIV verlinkt** (nicht root-absolut wie `/styles.css`) — GitHub
+Pages liefert Projektseiten wie diese unter einem Unterpfad
+(`/fahrstation-/...`), keinem echten Domain-Root. Root-absolute Pfade
+würden dort ins Leere laufen. Relative Pfade funktionieren unabhängig
+vom tatsächlichen URL-Präfix.
 
 ## Live-URL
 
