@@ -4,10 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Impressum | Fahrstation Düsseldorf</title>
-  <meta name="description" content="Impressum der Fahrschule Fahrstation Düsseldorf: Anbieterkennzeichnung nach § 5 TMG, Kontakt, Handelsregister und Aufsichtsbehörde.">
-  <meta name="robots" content="noindex, follow">
-  <link rel="canonical" href="https://ayman-one.vercel.app/impressum">
+  <title>Seminare, Intensivkurs &amp; Führerschein umschreiben | Fahrstation Düsseldorf</title>
+  <meta name="description" content="Sicherheitstraining, Intensivkurs und BKF-Weiterbildung bei der Fahrstation Düsseldorf. Wir schreiben auch Euren ausländischen Führerschein um. Jetzt anfragen!">
+  <link rel="canonical" href="https://ayman-one.vercel.app/seminare">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_DE">
@@ -25,31 +24,28 @@
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Start", "item": "https://ayman-one.vercel.app/" },
-      { "@type": "ListItem", "position": 2, "name": "Impressum", "item": "https://ayman-one.vercel.app/impressum" }
+      { "@type": "ListItem", "position": 2, "name": "Seminare", "item": "https://ayman-one.vercel.app/seminare" }
     ]
   }
   </script>
 
-  <!-- Seiten-eigene Komponenten für impressum.html: bewusst NICHT in
-       styles.css, wie bei den übrigen Unterseiten. Kein CTA-Button und
-       keine .page-cta-/.mobile-cta-bar-Sektion (Rechtsseite), deshalb
-       auch keine body-Klasse "has-mobile-cta-bar". Inhalt wortwörtlich
-       aus dem alten Impressum übernommen — Steuernummer bewusst
-       weggelassen (keine Pflichtangabe, USt-IdNr. genügt), siehe
-       WARTUNG.md für die beiden offenen Prüfpunkte (ODR-Verweis,
-       unvollständiger Urheberrechts-Absatz). -->
+  <!-- Seiten-eigene Komponenten für seminare.html: bewusst NICHT in
+       styles.css, wie bei den übrigen Unterseiten. Kein Course-Schema für
+       die Gesamtseite (vier verschiedene, ungleichartige Angebote) - siehe
+       Rückfrage an den Auftraggeber zu einem möglichen Schema pro Karte,
+       das hier bewusst NICHT umgesetzt wurde. Baustein 2 ("Fahren in
+       Deutschland") nutzt bewusst die VORHANDENEN Klassen .contact-actions/
+       .contact-action aus #kontakt der Startseite (dort schon für dunklen
+       Hintergrund ausgelegt, reines Wiederverwenden, keine Anpassung
+       nötig). -->
   <style>
 
-    .impressum-section {
-      margin: 0 0 var(--space-10);
+    .seminare-section {
+      margin: 0 0 var(--space-16);
     }
 
-    .impressum-section:last-of-type {
-      margin-bottom: var(--space-8);
-    }
-
-    .impressum-heading {
-      margin: 0 0 var(--space-4);
+    .seminare-heading {
+      margin: 0 0 var(--space-6);
       font-family: var(--font-display);
       font-size: var(--font-size-h2);
       line-height: var(--line-height-tight);
@@ -58,28 +54,27 @@
       color: var(--text-dark);
     }
 
-    .impressum-section p {
-      margin: 0 0 var(--space-4);
-      font-family: var(--font-body);
-      font-size: var(--font-size-body);
-      line-height: var(--line-height-base);
+    .seminare-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
     }
 
-    .impressum-section p:last-child {
-      margin-bottom: 0;
+    @media (min-width: 700px) {
+      .seminare-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
 
-    /* Firmenname/Adresse deutlich von Fließtext abgesetzt, statt als
-       normaler Absatz zu laufen. */
-    .impressum-company {
+    .seminare-card {
       padding: var(--space-6);
       background-color: var(--background-light);
       border-left: var(--border-signage);
       border-radius: 0 var(--radius-md) var(--radius-md) 0;
     }
 
-    .impressum-company__name {
-      margin: 0 0 var(--space-2);
+    .seminare-card__title {
+      margin: 0 0 var(--space-3);
       font-family: var(--font-display);
       font-size: var(--font-size-h3);
       line-height: var(--line-height-tight);
@@ -88,37 +83,85 @@
       color: var(--text-dark);
     }
 
-    .impressum-company__address {
+    .seminare-card__text {
       margin: 0;
       font-family: var(--font-body);
       font-size: var(--font-size-body);
       line-height: var(--line-height-base);
-      font-style: normal;
     }
 
-    .impressum-contact {
+    /* Fett + zarter Akzent-Unterlegung statt reiner Akzentfarbe als
+       Textfarbe -- Signalgelb auf hellem Kartengrund als Fließtextfarbe
+       hätte einen zu geringen Kontrast (WCAG). */
+    .seminare-figure {
+      font-weight: 700;
+      background-color: color-mix(in srgb, var(--accent) 35%, transparent);
+      padding: 0 0.2em;
+      border-radius: 2px;
+    }
+
+    /* Baustein 2 -- eigener, deutlich abgesetzter Block: volle Breite,
+       eigener Hintergrund, deshalb außerhalb von .page-body als
+       eigenständige <section>, genau wie .page-cta am Seitenende. */
+    .seminare-highlight {
+      background-color: var(--primary);
+      color: var(--text-light);
+      padding-block: var(--space-20);
+      text-align: center;
+    }
+
+    .seminare-highlight__inner {
+      max-width: 800px;
+      margin-inline: auto;
+      padding-inline: var(--space-4);
+    }
+
+    .seminare-highlight__heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--font-size-h2);
+      line-height: var(--line-height-tight);
+      letter-spacing: var(--letter-spacing-display);
+      text-transform: uppercase;
+    }
+
+    .seminare-highlight__subheading {
+      margin: var(--space-2) 0 0;
+      font-family: var(--font-body);
+      font-size: var(--font-size-small);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-loose);
+      color: var(--accent);
+    }
+
+    .seminare-highlight__text {
       margin: var(--space-6) 0 0;
-      padding: 0;
-      list-style: none;
       font-family: var(--font-body);
       font-size: var(--font-size-body);
       line-height: var(--line-height-base);
+      color: color-mix(in srgb, var(--text-light) 85%, transparent);
+      text-align: left;
     }
 
-    .impressum-contact li {
-      margin: 0 0 var(--space-1);
+    /* Auf dunklem Grund ist reine Akzentfarbe als Text unproblematisch
+       (guter Kontrast) -- anders als auf hellem Kartengrund oben. */
+    .seminare-highlight__deadline {
+      font-weight: 700;
+      color: var(--accent);
     }
 
-    .impressum-contact li:last-child {
-      margin-bottom: 0;
+    .seminare-highlight .contact-actions {
+      margin-top: var(--space-8);
+      text-align: left;
     }
 
-    .impressum-contact a {
-      text-decoration: underline;
+    .seminare-cta {
+      margin: var(--space-10) 0 0;
+      text-align: center;
     }
   </style>
 </head>
-<body>
+<body class="has-mobile-cta-bar">
 
 <header class="site-header" id="site-header">
     <div class="site-header__inner">
@@ -149,7 +192,7 @@
           </ul>
         </li>
         <li><a class="mobile-menu__link" href="../theorie/">Theorie</a></li>
-        <li><a class="mobile-menu__link" href="../seminare/">Seminare</a></li>
+        <li><a class="mobile-menu__link is-active" href="../seminare/">Seminare</a></li>
         <li><a class="mobile-menu__link" href="../#kontakt">Kontakt</a></li>
       </ul>
       <a class="btn-primary mobile-menu__phone" href="tel:+4921115828104">0211 15828104</a>
@@ -162,82 +205,113 @@
         <nav class="breadcrumb" aria-label="Brotkrumen">
           <a class="breadcrumb__link" href="../">Start</a>
           <span class="breadcrumb__sep" aria-hidden="true">/</span>
-          <span class="breadcrumb__current" aria-current="page">Impressum</span>
+          <span class="breadcrumb__current" aria-current="page">Seminare</span>
         </nav>
 
-        <h1 class="page-header__title">Impressum</h1>
+        <h1 class="page-header__title">Seminare</h1>
+
+        <p class="page-header__subtitle">Sicherheitstraining, Intensivkurs, BKF-Weiterbildung &ndash; und Hilfe beim Umschreiben</p>
       </div>
     </section>
 
     <div class="page-body">
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Anbieter</h2>
-        <p>Anbieter nach § 5 TMG und Verantwortlicher gem. § 55 Abs. 2 RStV für journalistisch-redaktionell gestaltete Angebote:</p>
-        <div class="impressum-company">
-          <p class="impressum-company__name">Fahrschule Fahrstation DUS GmbH &amp; Co. KG</p>
-          <p class="impressum-company__address">Kölner Straße 292<br>40227 Düsseldorf</p>
-          <ul class="impressum-contact">
-            <li>Festnetz: <a href="tel:+4921115828104">0211 15828104</a></li>
-            <li>Fax: 0211 15828105</li>
-            <li>Mobil: <a href="tel:+4915229653650">01522 9653650</a></li>
-            <li>E-Mail: <a href="mailto:info@fahrstation.de">info@fahrstation.de</a></li>
-          </ul>
+      <div class="seminare-section">
+        <h2 class="seminare-heading">Unsere Seminare</h2>
+
+        <div class="seminare-grid">
+      <div class="seminare-card">
+        <h3 class="seminare-card__title">Sicherheitstraining</h3>
+        <p class="seminare-card__text">Ihr seid schon gute Fahrer und wollt einfach Euer Können vertiefen oder noch ein paar Skills dazulernen? Dann sind unsere Sicherheitstrainings oder unsere Auffrischungskurse genau die richtige Wahl. Sprecht uns einfach an.</p>
+      </div>
+
+      <div class="seminare-card">
+        <h3 class="seminare-card__title">Intensivkurs</h3>
+        <p class="seminare-card__text">Der Führerschein muss endlich her &ndash; und das möglichst schnell? Wir können Euch einen Intensivkurs anbieten, bei dem Ihr in kurzer Zeit alles lernt, was Ihr wissen und können müsst, um die Prüfung zu bestehen. Die Bedingungen könnt Ihr in unserer Fahrstation einfach erfragen.</p>
+      </div>
+
+      <div class="seminare-card">
+        <h3 class="seminare-card__title">BKF &ndash; Berufskraftfahrer-Weiterbildung</h3>
+        <p class="seminare-card__text">In nur <span class="seminare-figure">35 Stunden</span> schafft Ihr es, einen LKW-Führerschein beruflich nutzbar zu machen. Für den 95er-Eintrag müsst Ihr <span class="seminare-figure">5 Tage à 7 Stunden</span> ins Seminar in Eure Fahrschule, die Fahrstation, um Eure Leidenschaft fürs Fahren zum Beruf zu machen.</p>
+      </div>
+
+        </div>
+      </div>
+    </div>
+
+    <section class="seminare-highlight">
+      <div class="seminare-highlight__inner">
+        <h2 class="seminare-highlight__heading">Fahren in Deutschland</h2>
+        <p class="seminare-highlight__subheading">Führerschein aus dem Ausland umschreiben</p>
+        <p class="seminare-highlight__text">Wenn Ihr Eure Fahrerlaubnis nicht in Deutschland erworben habt, müsst Ihr diese <span class="seminare-highlight__deadline">nach sechs Monaten</span> umschreiben lassen, sofern Euer Wohnsitz hier ist. Was genau Ihr dafür tun müsst, hängt davon ab, ob Ihr Eure Fahrprüfung in einem EU-Land absolviert habt, in einem EWR-Staat oder in einem anderen Land. Fragt einfach bei Eurer Fahrschule nach, wir erklären Euch alle notwendigen Schritte und schreiben Eure Fahrerlaubnis gemeinsam um.</p>
+
+        <div class="contact-actions">
+          <a class="contact-action contact-action--call" href="tel:+4921115828104">
+            <span class="contact-action__row">
+              <svg class="contact-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M6.6 10.8c1.5 3 4 5.4 7 6.9l2.3-2.3c.3-.3.7-.4 1.1-.3 1.2.4 2.5.6 3.8.6.6 0 1.1.5 1.1 1.1v3.6c0 .6-.5 1.1-1.1 1.1C10.9 21.5 2.5 13.1 2.5 2.9 2.5 2.3 3 1.8 3.6 1.8h3.6c.6 0 1.1.5 1.1 1.1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8z"/>
+              </svg>
+              <span class="contact-action__label">0211 15828104</span>
+            </span>
+            <span class="contact-action__sub">Mo–Fr 10:30–18:00 · Sa 11:00–15:00</span>
+          </a>
+
+          <a class="contact-action contact-action--whatsapp" href="https://wa.me/4915229653650" target="_blank" rel="noopener">
+            <span class="contact-action__row">
+              <svg class="contact-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 2C6.5 2 2 6 2 11c0 2.1.8 4 2.2 5.6L3 22l5.6-1.5C10 21 11 21 12 21c5.5 0 10-4 10-10S17.5 2 12 2z"/>
+              </svg>
+              <span class="contact-action__label">WhatsApp</span>
+            </span>
+            <span class="contact-action__sub">Auch außerhalb der Öffnungszeiten</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="page-body">
+      <p class="seminare-cta">
+        <a class="btn-primary" href="../#kontakt">Jetzt voranmelden</a>
+      </p>
+    </div>
+
+    <!-- Abschluss-CTA — identisch auf jeder Unterseite, nicht als Platzhalter gedacht -->
+    <section class="page-cta">
+      <div class="page-cta__inner">
+        <h2 class="page-cta__heading">Noch Fragen?</h2>
+
+        <div class="contact-actions">
+          <a class="contact-action contact-action--call" href="tel:+4921115828104">
+            <span class="contact-action__row">
+              <svg class="contact-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M6.6 10.8c1.5 3 4 5.4 7 6.9l2.3-2.3c.3-.3.7-.4 1.1-.3 1.2.4 2.5.6 3.8.6.6 0 1.1.5 1.1 1.1v3.6c0 .6-.5 1.1-1.1 1.1C10.9 21.5 2.5 13.1 2.5 2.9 2.5 2.3 3 1.8 3.6 1.8h3.6c.6 0 1.1.5 1.1 1.1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8z"/>
+              </svg>
+              <span class="contact-action__label">0211 15828104</span>
+            </span>
+            <span class="contact-action__sub">Mo–Fr 10:30–18:00 · Sa 11:00–15:00</span>
+          </a>
+
+          <a class="contact-action contact-action--whatsapp" href="https://wa.me/4915229653650" target="_blank" rel="noopener">
+            <span class="contact-action__row">
+              <svg class="contact-action__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 2C6.5 2 2 6 2 11c0 2.1.8 4 2.2 5.6L3 22l5.6-1.5C10 21 11 21 12 21c5.5 0 10-4 10-10S17.5 2 12 2z"/>
+              </svg>
+              <span class="contact-action__label">WhatsApp</span>
+            </span>
+            <span class="contact-action__sub">Auch außerhalb der Öffnungszeiten</span>
+          </a>
         </div>
 
+        <a class="page-cta__link" href="../#kontakt">Alle Infos &amp; Formular &rsaquo;</a>
       </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Geschäftsführer</h2>
-        <p>Najim Bouraada</p>
-
-      </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Zuständige Aufsichtsbehörde</h2>
-        <p>Straßenverkehrsamt Düsseldorf &ndash; Fahrlehrerstelle</p>
-
-      </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Erlaubnisse</h2>
-        <p>Betriebserlaubnis verliehen in: Deutschland<br>Fahrschulerlaubnis verliehen von: Straßenverkehrsamt Düsseldorf, Fahrlehrerstelle</p>
-
-      </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Registereintrag</h2>
-        <p>Amtsgericht Düsseldorf<br>HRA 28275</p>
-
-      </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Umsatzsteuer-Identifikationsnummer</h2>
-        <p>USt-IdNr. gemäß § 27a UStG: DE457559313</p>
-
-      </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Urheberrecht</h2>
-        <p>Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht.</p>
-
-      </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Online-Streitbeilegung</h2>
-        <p>Die Europäische Kommission stellt unter <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a> eine Plattform zur Online-Streitbeilegung bereit, die Verbraucher für die Beilegung einer Streitigkeit nutzen können und auf der weitere Informationen zum Thema Streitschlichtung zu finden sind.</p>
-
-      </div>
-
-      <div class="impressum-section">
-        <h2 class="impressum-heading">Außergerichtliche Streitbeilegung</h2>
-        <p>Wir sind weder verpflichtet noch dazu bereit, im Falle einer Streitigkeit mit einem Verbraucher an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
-
-      </div>
-
-    </div>
+    </section>
   </main>
 
-<footer class="site-footer">
+  <div class="mobile-cta-bar">
+    <a class="mobile-cta-bar__item mobile-cta-bar__item--call" href="tel:+4921115828104">Anrufen</a>
+    <a class="mobile-cta-bar__item mobile-cta-bar__item--whatsapp" href="https://wa.me/4915229653650" target="_blank" rel="noopener">WhatsApp</a>
+  </div>
+
+  <footer class="site-footer">
     <div class="site-footer__inner">
       <div class="site-footer__brand">
         <img class="site-footer__logo" src="../assets/logo.png" alt="Fahrstation Düsseldorf">
