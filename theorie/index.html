@@ -189,6 +189,31 @@
       margin: 0;
       text-align: center;
     }
+
+    /* Raumfoto zwischen Baustein 1 (Aufmacher) und Baustein 2 (Crashkurs-
+       Kennzahlen) -- bewusst OHNE Signage-Rahmen/object-fit: contain wie
+       bei den Fahrzeugfotos, das würde von der Neon-Atmosphäre ablenken.
+       4:3 statt 16:9, weil das Originalfoto (1176×941) dafür nur minimal
+       beschnitten werden musste (59px Höhe) und der Neon-Schriftzug sowie
+       die Deckenleuchte dadurch vollständig sichtbar bleiben. */
+    .theorie-photo {
+      margin: 0 0 var(--space-16);
+    }
+
+    .theorie-photo__img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+    }
+
+    .theorie-photo__caption {
+      margin: var(--space-3) 0 0;
+      font-family: var(--font-body);
+      font-size: var(--font-size-small);
+      color: color-mix(in srgb, var(--text-dark) 65%, transparent);
+    }
   </style>
 </head>
 <body class="has-mobile-cta-bar">
@@ -249,6 +274,14 @@
         <p class="theorie-hook__quote">Schon wieder Theorieunterricht.<br>Das ist immer so langweilig.</p>
         <p class="theorie-hook__reply">Das hören wir oft. Aber man kommt auf dem Weg zum Führerschein leider nicht um das theoretische Wissen herum. Bei der Fahrstation geht auch das mit Spaß – nicht, dass wir auf die Theoriestunden verzichten. Wir gestalten diese einfach so, dass Ihr jederzeit den praktischen Nutzen erkennen könnt, und lassen keine Langeweile aufkommen. Glaubt Ihr nicht? Probiert es einfach aus.</p>
       </div>
+
+      <figure class="theorie-photo">
+        <picture>
+          <source srcset="../assets/theorie-raum.webp" type="image/webp">
+          <img class="theorie-photo__img" src="../assets/theorie-raum.jpg" alt="Moderner Theorieraum der Fahrstation mit Neon-Schriftzug 'Feel Good Drive Good' und Sitzplätzen für den Unterricht" loading="lazy">
+        </picture>
+        <figcaption class="theorie-photo__caption">Unser Theorieraum in der Fahrstation</figcaption>
+      </figure>
 
       <div class="theorie-crashkurs">
         <h2 class="theorie-heading">Crashkurs</h2>
