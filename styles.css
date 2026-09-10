@@ -875,7 +875,7 @@ section {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .contact-form__label {
@@ -923,7 +923,7 @@ section {
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 /* 13px Browser-Standard ist als Antippziel zu klein; 20px plus das per
@@ -1211,13 +1211,16 @@ section {
     max-width: 62%;
   }
 
+  /* Seit "Anrufen" wegfiel bleibt nur noch ein Button übrig — der soll auf
+     Desktop dieselbe Spaltenbreite wie der Hero-Titel einnehmen (62%),
+     statt nur seiner Textbreite zu folgen. */
   .hero-section__actions {
-    flex-direction: row;
-    width: auto;
+    width: 100%;
+    max-width: 62%;
   }
 
   .hero-section__actions > a {
-    width: auto;
+    width: 100%;
   }
 
   .trust {

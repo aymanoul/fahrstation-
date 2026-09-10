@@ -115,7 +115,9 @@
   --line-height-tight: 1.1;       /* Headlines */
   --line-height-base: 1.6;        /* Fließtext */
   --line-height-relaxed: 1.5;     /* Etwas lockerer als --line-height-base, für kurze Beschreibungstexte */
-  --line-height-hero: 0.92;       /* Hero-Headline, dicht gesetzt */
+  --line-height-hero: 0.98;       /* Hero-Headline, dicht gesetzt — vorher 0.92: das
+                                      Komma nach "FAHRSCHULE," lief fast in das "D"
+                                      von "DIE" in der Zeile darunter */
   --letter-spacing-display: 0.01em;
   --letter-spacing-loose: 0.04em; /* Kachel-Bezeichnungen, z. B. .class-tile__label */
   --letter-spacing-step-title: 0.03em;
@@ -534,36 +536,29 @@
 
 /* --------------------------------------------------------------------------
    .btn-signage — die beiden Haupt-CTAs auf Basis der Originalgrafiken
-   (assets/btn-voranmelden.png, assets/btn-anrufen.png).
-   --------------------------------------------------------------------------
-   Umgesetzt als border-image mit Drei-Spalten-Schnitt: die linke Kappe
-   (Spitze + Doppelstreifen) und die rechte Spitze bleiben unverzerrt, nur
-   der Mittelteil wird auf die jeweilige Buttonbreite gestreckt. Deshalb
-   enthalten die PNGs auch nur ein 60px schmales Mittelstück — mehr wird nie
-   gebraucht und würde nur Dateigröße kosten.
-
-   Kappenbreite = Slice-Breite × (Buttonhöhe / Bildhöhe). Dadurch behält die
-   Schräge exakt den Winkel der Vorlage, unabhängig von der Buttonhöhe. Die
-   beiden Grafiken sind unterschiedlich hoch (320 bzw. 296px), darum steht
-   der Faktor je Variante einzeln.
+   (nur noch "Jetzt voranmelden"/"Absenden" — "Anrufen" als Bild-Variante
+   entfernt). War bis hierher ein border-image auf Basis von
+   assets/btn-voranmelden.png/assets/btn-anrufen.png; jetzt echtes CSS:
+   Zwei-Ebenen-Technik wie .class-tile/.signage-frame (äußere Fläche in
+   --primary = sichtbarer Rahmen, ::before 3px eingerückt in --accent = die
+   gelbe Füllung), plus ein ::after mit zwei diagonalen Streifen links, in
+   Anlehnung an die alte Grafik und die Doppelstreifen im Logo-Banner.
 
    Der Beschriftungstext bleibt echter HTML-Text in --font-display, ist also
    auf jedem Display scharf, vorlesbar und jederzeit änderbar.
    -------------------------------------------------------------------------- */
 .btn-signage {
   --btn-signage-h: 56px;
+  --btn-signage-notch: 20px;
   box-sizing: border-box;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: var(--btn-signage-h);
-  /* Für <button>: ohne beides scheint der Default-Grund des Browsers an den
-     transparenten Ecken der Spitzen durch. */
-  appearance: none;
-  background-color: transparent;
-  border-style: solid;
-  border-image-repeat: stretch;
-  border-image-slice: 0 160 0 320 fill;
+  padding: 0 var(--space-8) 0 76px;
+  background-color: var(--primary);
+  color: var(--primary);
   font-family: var(--font-display);
   font-size: var(--font-size-body);
   line-height: var(--line-height-tight);
@@ -572,25 +567,54 @@
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+  clip-path: polygon(
+    0 50%,
+    var(--btn-signage-notch) 0,
+    calc(100% - var(--btn-signage-notch)) 0,
+    100% 50%,
+    calc(100% - var(--btn-signage-notch)) 100%,
+    var(--btn-signage-notch) 100%
+  );
   transition: transform var(--transition-base);
 }
 
-/* Die linke Kappe ist doppelt so breit wie die rechte (Slice 320 zu 160).
-   Ohne Ausgleich säße der zwischen beiden Kappen zentrierte Text sichtbar
-   rechts der Mitte — das padding-right schiebt ihn um die halbe Differenz
-   zurück und entspricht damit exakt der Breite der rechten Kappe. */
-.btn-signage--voranmelden {
-  border-width: 0 calc(160 / 320 * var(--btn-signage-h)) 0 var(--btn-signage-h);
-  padding-right: calc(160 / 320 * var(--btn-signage-h));
-  border-image-source: url("assets/btn-voranmelden.png");
-  color: var(--primary);
+.btn-signage::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: var(--accent);
+  clip-path: polygon(
+    0 50%,
+    calc(var(--btn-signage-notch) - 3px) 0,
+    calc(100% - (var(--btn-signage-notch) - 3px)) 0,
+    100% 50%,
+    calc(100% - (var(--btn-signage-notch) - 3px)) 100%,
+    calc(var(--btn-signage-notch) - 3px) 100%
+  );
+  z-index: 0;
 }
 
-.btn-signage--anrufen {
-  border-width: 0 calc(160 / 296 * var(--btn-signage-h)) 0 calc(320 / 296 * var(--btn-signage-h));
-  padding-right: calc(160 / 296 * var(--btn-signage-h));
-  border-image-source: url("assets/btn-anrufen.png");
-  color: var(--text-light);
+/* Liegt bewusst als einfaches Rechteck 10px hinter der linken Spitze, statt
+   selbst zuzuschneiden — an dieser Stelle ist die Fläche schon rechteckig,
+   ein eigener clip-path würde nur unnötig verzerren. */
+.btn-signage::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 30px;
+  width: 28px;
+  background-image: repeating-linear-gradient(
+    115deg,
+    var(--primary) 0 6px,
+    transparent 6px 20px
+  );
+  z-index: 1;
+}
+
+.btn-signage > * {
+  position: relative;
+  z-index: 2;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1040,7 +1064,12 @@
 
 .hero-ticker__item {
   display: inline-block;
-  padding: var(--space-2) var(--space-4);
+  /* Horizontal auf --space-2 reduziert (vorher --space-4): zusammen mit dem
+     padding-left der jeweils folgenden Kopie ergab das eine 32px-Lücke
+     zwischen einem Durchlauf und dem nächsten — spürbar länger als die
+     Wortabstände innerhalb eines Durchlaufs, dadurch wirkte der Übergang wie
+     eine Pause statt wie ein durchlaufendes Band. */
+  padding: var(--space-2);
   font-family: var(--font-display);
   font-size: var(--font-size-micro);
   letter-spacing: var(--letter-spacing-badge);
