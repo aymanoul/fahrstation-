@@ -1,6 +1,27 @@
 (function () {
   'use strict';
 
+  /* ======================================================================
+     HIER DEN FORMULAR-DIENST EINTRAGEN — die einzige Stelle im ganzen Code.
+     ======================================================================
+     Leer lassen = das Formular prüft zwar die Eingaben, sendet aber nichts
+     und zeigt stattdessen den Hinweis, dass man anrufen oder per WhatsApp
+     schreiben soll. Ein scheinbar erfolgreiches Absenden ins Leere wäre
+     schlimmer als gar kein Formular.
+
+     Sobald der Dienst feststeht, hier dessen Endpunkt-URL eintragen, z. B.
+       'https://formspree.io/f/xxxxxxx'      (Formspree)
+       'https://api.web3forms.com/submit'    (Web3Forms, braucht zusätzlich
+                                              ein access_key-Feld im Markup)
+
+     Beide erwarten dasselbe: POST mit FormData und Accept: application/json.
+     Deshalb genügt für den Wechsel diese eine Zeile.
+
+     NICHT VERGESSEN: mit dem Eintragen wird der Abschnitt zum
+     Kontaktformular in site/datenschutz.html falsch — dort steht aktuell,
+     dass keine Daten übertragen werden (siehe WARTUNG.md). */
+  var CONTACT_FORM_ENDPOINT = '';
+
   function initStickyHeader() {
     var header = document.getElementById('site-header');
     if (!header) return;
@@ -293,6 +314,160 @@
     });
   }
 
+  /* Formular auf site/kontakt.html. Prüft die Pflichtfelder selbst, statt die
+     Browser-Meldungen zu nutzen: die sind je nach Browser anders formuliert,
+     teils englisch, und lassen sich nicht unter dem Feld platzieren. */
+  function initKontaktForm() {
+    var form = document.getElementById('kontakt-form');
+    if (!form) return;
+
+    var notice = document.getElementById('kontakt-form-notice');
+    var success = document.getElementById('kontakt-form-success');
+    var submit = form.querySelector('.contact-form__submit');
+
+    var rules = [
+      { id: 'kontakt-name', leer: 'Bitte trag deinen Namen ein.' },
+      {
+        id: 'kontakt-email',
+        leer: 'Bitte trag deine E-Mail-Adresse ein.',
+        // Bewusst grob: alles mit @ und einem Punkt dahinter. Strengere
+        // Muster sortieren regelmäßig gültige Adressen aus, und ob die
+        // Adresse wirklich existiert, zeigt sich ohnehin erst beim Antworten.
+        pruefen: function (wert) { return /.+@.+\..+/.test(wert); },
+        ungueltig: 'Diese E-Mail-Adresse sieht nicht vollständig aus.'
+      },
+      { id: 'kontakt-message', leer: 'Bitte schreib uns kurz, worum es geht.' },
+      { id: 'kontakt-privacy', leer: 'Ohne dein Einverständnis dürfen wir die Anfrage nicht bearbeiten.' }
+    ];
+
+    function fehlerZeigen(regel, text) {
+      var feld = document.getElementById(regel.id);
+      var box = document.getElementById(regel.id + '-error');
+      if (box) {
+        box.textContent = text;
+        box.hidden = false;
+      }
+      if (feld && feld.type !== 'checkbox') feld.setAttribute('aria-invalid', 'true');
+    }
+
+    function fehlerLoeschen(regel) {
+      var feld = document.getElementById(regel.id);
+      var box = document.getElementById(regel.id + '-error');
+      if (box) {
+        box.textContent = '';
+        box.hidden = true;
+      }
+      if (feld) feld.removeAttribute('aria-invalid');
+    }
+
+    function pruefen(regel) {
+      var feld = document.getElementById(regel.id);
+      if (!feld) return true;
+
+      var wert = feld.type === 'checkbox' ? feld.checked : feld.value.trim();
+
+      if (!wert) {
+        fehlerZeigen(regel, regel.leer);
+        return false;
+      }
+      if (regel.pruefen && !regel.pruefen(wert)) {
+        fehlerZeigen(regel, regel.ungueltig);
+        return false;
+      }
+      fehlerLoeschen(regel);
+      return true;
+    }
+
+    // Erst nach dem ersten Absendeversuch live nachprüfen: sonst steht die
+    // Fehlermeldung schon da, während man das Feld noch ausfüllt.
+    //
+    // Bewusst 'input' statt 'blur': beim Ausblenden einer Fehlermeldung
+    // rutscht alles darunter nach oben. Passiert das erst beim Verlassen des
+    // Feldes, verschiebt es sich genau in dem Moment, in dem man das nächste
+    // Element antippt — mousedown und mouseup landen dann auf verschiedenen
+    // Elementen und der Tipp verpufft. Beim Tippen ist das Layout dagegen
+    // längst wieder ruhig, bevor der nächste Tipp kommt.
+    //
+    // Während des Tippens werden Fehler nur ENTFERNT, nie neu gesetzt: eine
+    // Meldung "E-Mail unvollständig" nach dem ersten Buchstaben wäre nur
+    // lästig.
+    var wurdeAbgeschickt = false;
+    rules.forEach(function (regel) {
+      var feld = document.getElementById(regel.id);
+      if (!feld) return;
+
+      if (feld.type === 'checkbox') {
+        feld.addEventListener('change', function () {
+          if (wurdeAbgeschickt) pruefen(regel);
+        });
+        return;
+      }
+
+      feld.addEventListener('input', function () {
+        if (!wurdeAbgeschickt) return;
+        var box = document.getElementById(regel.id + '-error');
+        if (box && box.hidden) return;
+        pruefen(regel);
+      });
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      wurdeAbgeschickt = true;
+
+      var ersterFehler = null;
+      rules.forEach(function (regel) {
+        if (!pruefen(regel) && !ersterFehler) ersterFehler = document.getElementById(regel.id);
+      });
+
+      if (ersterFehler) {
+        ersterFehler.focus();
+        return;
+      }
+
+      // Honeypot: ausgefüllt heißt Bot. Nach außen sieht das aus wie ein
+      // erfolgreicher Versand, damit der Bot es nicht erneut versucht.
+      var honeypot = document.getElementById('kontakt-website');
+      if (honeypot && honeypot.value) {
+        form.hidden = true;
+        if (success) success.hidden = false;
+        return;
+      }
+
+      if (!CONTACT_FORM_ENDPOINT) {
+        if (notice) {
+          notice.textContent = 'Das Formular ist noch nicht freigeschaltet. Ruf uns bitte an oder schreib uns per WhatsApp — wir melden uns sofort.';
+          notice.hidden = false;
+        }
+        return;
+      }
+
+      if (notice) notice.hidden = true;
+      if (submit) submit.disabled = true;
+
+      window.fetch(CONTACT_FORM_ENDPOINT, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' }
+      })
+        .then(function (antwort) {
+          if (!antwort.ok) throw new Error('Status ' + antwort.status);
+          form.hidden = true;
+          if (success) {
+            success.hidden = false;
+            success.focus();
+          }
+        })
+        .catch(function () {
+          if (submit) submit.disabled = false;
+          if (notice) {
+            notice.textContent = 'Das hat gerade nicht geklappt. Versuch es bitte noch einmal oder ruf uns direkt an.';
+            notice.hidden = false;
+          }
+        });
+    });
+  }
+
   /* Hero-Video: das <video> im Markup hat bewusst keine <source> — ohne
      JavaScript (oder bei reduzierter Bewegung/Data-Saver) bleibt einfach
      das poster-Bild stehen, statt Bandbreite für ein Video zu verbrauchen,
@@ -336,6 +511,7 @@
     initAblaufLine();
     initOpeningStatus();
     initContactForm();
+    initKontaktForm();
     initHeroVideo();
   });
 })();

@@ -52,6 +52,12 @@
   --text-dark: #1A1A1A;           /* Text auf hellem Grund                    */
   --background-light: #F5F5F5;    /* Helle Flächen                            */
 
+  /* Einzige Farbe außerhalb der Signage-Palette. Formularfehler brauchen ein
+     Signal, das sich von --accent unterscheidet: Gelb ist hier durchgehend
+     die Farbe für "hier entlang, jetzt klicken" und würde als Fehlermeldung
+     falsch gelesen. Kontrast auf --primary: 7,16:1 (AA erfüllt, AAA knapp). */
+  --error: #FF7A6B;               /* Fehlermeldungen im Formular              */
+
   /* Abgeleitet — keine neuen Farben, nur Varianten der obigen */
   --accent-hover: #E8CB01;                /* --accent, 8 % abgedunkelt        */
   --text-muted: #6B6B6B;                  /* Sekundärtext auf hell (4.8:1)    */

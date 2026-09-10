@@ -985,9 +985,14 @@ section {
   margin-bottom: var(--space-4);
 }
 
+/* 13px Browser-Standard ist als Antippziel zu klein; 20px plus das per
+   for-Attribut ebenfalls klickbare Label ergeben zusammen eine bequeme
+   Trefferfläche. */
 .contact-form__checkbox {
   flex-shrink: 0;
-  margin-top: 3px;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
   accent-color: var(--accent);
 }
 
@@ -1011,6 +1016,115 @@ section {
 
 .contact-form__submit {
   width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Kontaktseite (site/kontakt.html)
+   --------------------------------------------------------------------------
+   Nutzt den dunklen .contact-Abschnitt der Startseite mit, damit die
+   bestehenden Formular-, Öffnungszeiten- und Adress-Stile unverändert
+   greifen — sie sind alle für dunklen Grund gebaut.
+   -------------------------------------------------------------------------- */
+.kontakt-heading {
+  margin: var(--space-16) 0 var(--space-6);
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+/* Zwei-Ebenen-Technik wie bei .contact-action--whatsapp: ein normaler border
+   folgt der geschnittenen Silhouette nicht (clip-path schneidet ihn an den
+   Schrägen weg). Die äußere Fläche ist deshalb komplett gelb und wird vom
+   2px eingerückten, dunkel gefüllten __inner bis auf einen Rahmen verdeckt.
+   Hier bewusst ein echtes Kindelement statt ::before — der Rahmen umschließt
+   ein hohes Formular im Textfluss, eine absolut positionierte Ebene müsste
+   dessen Höhe erst nachbilden. */
+/* Auf dieser Seite stehen die Direktwege ganz oben, direkt unter dem
+   Seitenkopf — der Vorschub aus .contact-actions käme zum padding des
+   Abschnitts hinzu und risse eine Lücke auf. */
+.contact__inner > .contact-actions:first-child {
+  margin-top: 0;
+}
+
+/* Der Rahmen entsteht als padding der äußeren Fläche, nicht als margin der
+   inneren: bei margin würden der obere und untere Wert mit denen des
+   Elternelements verschmelzen (margin-collapsing) und der Rahmen wäre nur
+   noch links und rechts zu sehen. */
+.kontakt-form-card {
+  --kontakt-card-notch: 28px;
+  padding: 2px;
+  background-color: var(--accent);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--kontakt-card-notch)) 0,
+    100% var(--kontakt-card-notch),
+    100% 100%,
+    var(--kontakt-card-notch) 100%,
+    0 calc(100% - var(--kontakt-card-notch))
+  );
+}
+
+.kontakt-form-card__inner {
+  padding: var(--space-6);
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--kontakt-card-notch)) 0,
+    100% var(--kontakt-card-notch),
+    100% 100%,
+    var(--kontakt-card-notch) 100%,
+    0 calc(100% - var(--kontakt-card-notch))
+  );
+}
+
+@media (min-width: 768px) {
+  .kontakt-form-card__inner {
+    padding: var(--space-10);
+  }
+}
+
+.contact-form__required {
+  color: var(--accent);
+}
+
+.contact-form__error {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--error);
+}
+
+/* Die Checkbox-Fehlermeldung steht außerhalb von .contact-form__field und
+   damit ohne dessen gap — der Abstand nach oben muss hier selbst kommen. */
+.contact-form__error--checkbox {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+}
+
+.contact-form__input[aria-invalid="true"],
+.contact-form__textarea[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.contact-form__success {
+  padding: var(--space-6) 0;
+  text-align: center;
+}
+
+.contact-form__success-heading {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.contact-form__success-text {
+  margin: 0;
+  color: color-mix(in srgb, var(--text-light) 80%, transparent);
 }
 
 /* --------------------------------------------------------------------------
