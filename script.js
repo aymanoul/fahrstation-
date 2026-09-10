@@ -264,56 +264,6 @@
     if (todayRow) todayRow.classList.add('contact-hours__row--today');
   }
 
-  /* Formular in #kontakt: standardmäßig sichtbar im Markup (funktioniert
-     ohne JavaScript), wird hier erst zu einem aufklappbaren Panel mit
-     Höhen-Animation. Der Submit-Handler verhindert das Absenden, weil noch
-     kein Backend angebunden ist — ein scheinbar erfolgreiches Absenden ins
-     Leere wäre schlimmer als kein Formular. */
-  function initContactForm() {
-    var trigger = document.getElementById('contact-form-trigger');
-    var panel = document.getElementById('contact-form-panel');
-
-    if (trigger && panel) {
-      panel.classList.add('contact-form-panel--js');
-      panel.style.maxHeight = '0px';
-      panel.setAttribute('inert', '');
-      trigger.setAttribute('aria-expanded', 'false');
-
-      trigger.addEventListener('click', function () {
-        var isOpen = trigger.getAttribute('aria-expanded') === 'true';
-
-        if (isOpen) {
-          panel.style.maxHeight = panel.scrollHeight + 'px';
-          window.requestAnimationFrame(function () {
-            panel.style.maxHeight = '0px';
-          });
-          panel.setAttribute('inert', '');
-          trigger.setAttribute('aria-expanded', 'false');
-        } else {
-          panel.removeAttribute('inert');
-          panel.style.maxHeight = panel.scrollHeight + 'px';
-          trigger.setAttribute('aria-expanded', 'true');
-        }
-      });
-
-      panel.addEventListener('transitionend', function (event) {
-        if (event.propertyName !== 'max-height') return;
-        if (trigger.getAttribute('aria-expanded') === 'true') {
-          panel.style.maxHeight = 'none';
-        }
-      });
-    }
-
-    var form = document.getElementById('contact-form');
-    var notice = document.getElementById('contact-form-notice');
-    if (!form) return;
-
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
-      if (notice) notice.hidden = false;
-    });
-  }
-
   /* Formular auf site/kontakt.html. Prüft die Pflichtfelder selbst, statt die
      Browser-Meldungen zu nutzen: die sind je nach Browser anders formuliert,
      teils englisch, und lassen sich nicht unter dem Feld platzieren. */
@@ -510,7 +460,6 @@
     initTrustStats();
     initAblaufLine();
     initOpeningStatus();
-    initContactForm();
     initKontaktForm();
     initHeroVideo();
   });

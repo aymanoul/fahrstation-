@@ -302,63 +302,7 @@
           </div>
         </div>
 
-        <div class="contact-form-toggle">
-          <button class="contact-form-toggle__trigger" type="button" id="contact-form-trigger" aria-expanded="true" aria-controls="contact-form-panel">
-            Lieber schreiben? Formular öffnen <span class="contact-form-toggle__chevron" aria-hidden="true">&rsaquo;</span>
-          </button>
-
-          <div class="contact-form-panel" id="contact-form-panel">
-            <div class="contact-form-panel__inner">
-              <!-- TODO: Backend-Endpunkt anbinden, danach preventDefault entfernen und Erfolgs-/Fehlermeldung einbauen -->
-              <form class="contact-form" id="contact-form" novalidate>
-                <div class="contact-form__field">
-                  <label class="contact-form__label" for="contact-name">Name</label>
-                  <input class="contact-form__input" id="contact-name" name="name" type="text" required aria-required="true" autocomplete="name">
-                </div>
-
-                <div class="contact-form__field">
-                  <label class="contact-form__label" for="contact-phone">Telefon</label>
-                  <input class="contact-form__input" id="contact-phone" name="phone" type="tel" required aria-required="true" autocomplete="tel">
-                </div>
-
-                <div class="contact-form__field">
-                  <label class="contact-form__label" for="contact-email">E-Mail (optional)</label>
-                  <input class="contact-form__input" id="contact-email" name="email" type="email" autocomplete="email">
-                </div>
-
-                <div class="contact-form__field">
-                  <label class="contact-form__label" for="contact-class">Gewünschte Klasse</label>
-                  <select class="contact-form__select" id="contact-class" name="class">
-                    <option value="a">A – Motorrad</option>
-                    <option value="b">B – Auto</option>
-                    <option value="c">C – LKW</option>
-                    <option value="d">D – Bus</option>
-                    <option value="unsure" selected>Weiß ich noch nicht</option>
-                  </select>
-                </div>
-
-                <div class="contact-form__field">
-                  <label class="contact-form__label" for="contact-message">Nachricht (optional)</label>
-                  <textarea class="contact-form__textarea" id="contact-message" name="message" rows="4"></textarea>
-                </div>
-
-                <div class="contact-form__honeypot" aria-hidden="true">
-                  <label for="contact-website">Website</label>
-                  <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off">
-                </div>
-
-                <div class="contact-form__checkbox-field">
-                  <input class="contact-form__checkbox" id="contact-privacy" name="privacy" type="checkbox" required aria-required="true">
-                  <label class="contact-form__checkbox-label" for="contact-privacy">Ich habe die <a href="datenschutz/">Datenschutzerklärung</a> gelesen.</label>
-                </div>
-
-                <p class="contact-form__notice" id="contact-form-notice" role="status" hidden>Das Formular ist noch nicht aktiv. Ruf uns bitte an oder schreib uns per WhatsApp.</p>
-
-                <button class="btn-signage btn-signage--voranmelden contact-form__submit" type="submit">Jetzt voranmelden</button>
-              </form>
-            </div>
-          </div>
-        </div>
+        <a class="page-cta__link" href="kontakt/">Zum Kontaktformular &rsaquo;</a>
       </div>
     </section>
   </main>

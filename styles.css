@@ -870,64 +870,7 @@ section {
   outline-offset: 2px;
 }
 
-/* --- Block 3: Formular, aufklappbar ------------------------------------ */
-.contact-form-toggle {
-  margin-top: var(--space-16);
-  text-align: center;
-}
-
-.contact-form-toggle__trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--tap-target);
-  padding: var(--space-2) 0;
-  background: none;
-  border: none;
-  font-family: var(--font-body);
-  font-size: var(--font-size-small);
-  color: color-mix(in srgb, var(--text-light) 70%, transparent);
-  cursor: pointer;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .contact-form-toggle__trigger:hover {
-    color: var(--text-light);
-  }
-}
-
-.contact-form-toggle__trigger:active {
-  color: var(--text-light);
-}
-
-.contact-form-toggle__trigger:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.contact-form-toggle__chevron {
-  display: inline-block;
-  transition: transform var(--transition-base);
-}
-
-.contact-form-toggle__trigger[aria-expanded="true"] .contact-form-toggle__chevron {
-  transform: rotate(90deg);
-}
-
-/* Die Klasse setzt initContactForm() in script.js erst nach dem Laden —
-   ohne JavaScript bleibt das Formular ein normaler, vollständig sichtbarer
-   Block statt für immer unerreichbar zu sein (gleiches Prinzip wie
-   trust-stats--ready in #vertrauen). */
-.contact-form-panel--js {
-  overflow: hidden;
-  transition: max-height var(--transition-panel);
-}
-
-.contact-form-panel__inner {
-  padding-top: var(--space-8);
-  text-align: left;
-}
-
+/* --- Block 3: Formular (site/kontakt.html) ----------------------------- */
 .contact-form__field {
   display: flex;
   flex-direction: column;
@@ -941,7 +884,6 @@ section {
 }
 
 .contact-form__input,
-.contact-form__select,
 .contact-form__textarea {
   box-sizing: border-box;
   width: 100%;
@@ -961,7 +903,6 @@ section {
 }
 
 .contact-form__input:focus-visible,
-.contact-form__select:focus-visible,
 .contact-form__textarea:focus-visible {
   outline: none;
   border-color: var(--accent);
