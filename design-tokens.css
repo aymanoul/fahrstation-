@@ -46,11 +46,37 @@
      die flächigen Bereiche), damit das vektorisierte Header-Banner und alle
      übrigen Elemente exakt denselben Ton tragen. Zuvor standen hier #0A0A0A
      und #FFD100 — das Logo-Gelb wich davon mit ΔE 8,3 sichtbar ab. */
-  --primary: #161514;             /* Schwarz — Signage-Körper, dunkle Flächen */
-  --accent: #FDDE01;              /* Signalgelb — CTA, Akzente, Rahmen        */
+  /* Auftrag "Farbsystem umstellen" (Stufe 2): reines Schwarz + ein einziges
+     Neongelb (#EAFF00). Diese Kopplung ans Logo gilt ab hier nicht mehr —
+     assets/logo.png und die Buttongrafiken behalten vorerst ihre alten
+     Farben, siehe Kommentar bei --accent-press unten. Alte Werte je als
+     auskommentierte Zeile direkt darüber, für einen Rollback. */
+  /* alt: --primary: #161514; */
+  --primary: #000000;             /* Schwarz — Signage-Körper, dunkle Flächen */
+  /* alt: --accent: #FDDE01; */
+  --accent: #EAFF00;              /* Neongelb — einziges Gelb im Projekt      */
   --text-light: #FFFFFF;          /* Text auf dunklem Grund                   */
-  --text-dark: #1A1A1A;           /* Text auf hellem Grund                    */
-  --background-light: #F5F5F5;    /* Helle Flächen                            */
+  /* alt: --text-dark: #1A1A1A; */
+  /* Name wird durch die Umstellung inhaltlich fraglich (die einstige
+     "helle" und die "dunkle" Textfarbe sind jetzt beide reines Schwarz) —
+     Name in Auftrag 2 prüfen, hier nur der Wert gesetzt (auf Wunsch
+     identisch zu --on-accent). */
+  --text-dark: #000000;           /* Text auf hellem Grund                    */
+  /* alt: --background-light: #F5F5F5; */
+  /* Name wird durch die Umstellung inhaltlich falsch ("hell" ist jetzt
+     Schwarz) — Name in Auftrag 2 prüfen, hier nur der Wert gesetzt. */
+  --background-light: #000000;    /* Helle Flächen                            */
+
+  /* Neue Basis-Tokens (Auftrag 1, Stufe 2). Aktuell inert: noch keine Klasse
+     im Projekt verweist auf --bg/--surface/--line/--line-soft/--text/--glow
+     — das Umschreiben der Einzeldateien auf diese Tokens ist Auftrag 2. */
+  --bg: #000000;
+  --surface: #000000;
+  --on-accent: #000000;
+  --line: rgba(234, 255, 0, 0.20);
+  --line-soft: rgba(255, 255, 255, 0.10);
+  --text: #FFFFFF;
+  --glow: 0 0 24px rgba(234, 255, 0, 0.25);
 
   /* Einzige Farbe außerhalb der Signage-Palette. Formularfehler brauchen ein
      Signal, das sich von --accent unterscheidet: Gelb ist hier durchgehend
@@ -59,8 +85,18 @@
   --error: #FF7A6B;               /* Fehlermeldungen im Formular              */
 
   /* Abgeleitet — keine neuen Farben, nur Varianten der obigen */
-  --accent-hover: #E8CB01;                /* --accent, 8 % abgedunkelt        */
-  --text-muted: #6B6B6B;                  /* Sekundärtext auf hell (4.8:1)    */
+  /* alt: --accent-hover: #E8CB01; */
+  /* Auf Wunsch identisch zu --accent-press gesetzt, beide Namen bleiben
+     parallel bestehen (Entscheidung vom Nutzer, Stufe 2). */
+  --accent-hover: #C4D600;                /* = --accent-press                 */
+  --accent-press: #C4D600;                /* Hover/Active-Zustand von --accent.
+                                              assets/btn-anrufen.png und
+                                              assets/btn-voranmelden.png sind
+                                              Rasterbilder mit altem Gelb/Schwarz
+                                              eingebrannt und folgen diesem Token
+                                              NICHT — separates, späteres Thema. */
+  /* alt: --text-muted: #6B6B6B; */
+  --text-muted: #9A9A9A;                  /* Sekundärtext auf hell (4.8:1)    */
   --overlay-dark: rgb(22 21 20 / 0.65);   /* --primary mit Alpha — Video-Scrim */
 
   /* Einzige echte Farbneuheit in dieser Datei: Grün kommt in der bisherigen
