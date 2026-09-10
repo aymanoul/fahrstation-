@@ -527,6 +527,86 @@
 }
 
 /* --------------------------------------------------------------------------
+   .btn-signage — die beiden Haupt-CTAs auf Basis der Originalgrafiken
+   (assets/btn-voranmelden.png, assets/btn-anrufen.png).
+   --------------------------------------------------------------------------
+   Umgesetzt als border-image mit Drei-Spalten-Schnitt: die linke Kappe
+   (Spitze + Doppelstreifen) und die rechte Spitze bleiben unverzerrt, nur
+   der Mittelteil wird auf die jeweilige Buttonbreite gestreckt. Deshalb
+   enthalten die PNGs auch nur ein 60px schmales Mittelstück — mehr wird nie
+   gebraucht und würde nur Dateigröße kosten.
+
+   Kappenbreite = Slice-Breite × (Buttonhöhe / Bildhöhe). Dadurch behält die
+   Schräge exakt den Winkel der Vorlage, unabhängig von der Buttonhöhe. Die
+   beiden Grafiken sind unterschiedlich hoch (320 bzw. 296px), darum steht
+   der Faktor je Variante einzeln.
+
+   Der Beschriftungstext bleibt echter HTML-Text in --font-display, ist also
+   auf jedem Display scharf, vorlesbar und jederzeit änderbar.
+   -------------------------------------------------------------------------- */
+.btn-signage {
+  --btn-signage-h: 56px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--btn-signage-h);
+  /* Für <button>: ohne beides scheint der Default-Grund des Browsers an den
+     transparenten Ecken der Spitzen durch. */
+  appearance: none;
+  background-color: transparent;
+  border-style: solid;
+  border-image-repeat: stretch;
+  border-image-slice: 0 160 0 320 fill;
+  font-family: var(--font-display);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--transition-base);
+}
+
+/* Die linke Kappe ist doppelt so breit wie die rechte (Slice 320 zu 160).
+   Ohne Ausgleich säße der zwischen beiden Kappen zentrierte Text sichtbar
+   rechts der Mitte — das padding-right schiebt ihn um die halbe Differenz
+   zurück und entspricht damit exakt der Breite der rechten Kappe. */
+.btn-signage--voranmelden {
+  border-width: 0 calc(160 / 320 * var(--btn-signage-h)) 0 var(--btn-signage-h);
+  padding-right: calc(160 / 320 * var(--btn-signage-h));
+  border-image-source: url("assets/btn-voranmelden.png");
+  color: var(--primary);
+}
+
+.btn-signage--anrufen {
+  border-width: 0 calc(160 / 296 * var(--btn-signage-h)) 0 calc(320 / 296 * var(--btn-signage-h));
+  padding-right: calc(160 / 296 * var(--btn-signage-h));
+  border-image-source: url("assets/btn-anrufen.png");
+  color: var(--text-light);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-signage:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.btn-signage:active {
+  transform: translateY(1px);
+}
+
+/* Rechteckiger Ring um die Randbox statt einer der Silhouette folgenden
+   Kontur: der Doppelring aus --focus-ring ist auf hellem wie dunklem Grund
+   sichtbar, was bei einer einfarbigen Kontur auf dem Hero-Video nicht
+   gegeben wäre. */
+.btn-signage:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* --------------------------------------------------------------------------
    .class-chip — kleiner, antippbarer Filter-Chip (Klasse A/B/C/D).
    Nutzt dieselbe Signage-Silhouette wie .signage-badge, aber als
    zweistufiger Zustand (Standard / aktiv) statt als reines Label.
