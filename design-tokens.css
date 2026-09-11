@@ -594,22 +594,43 @@
   z-index: 0;
 }
 
-/* Liegt bewusst als einfaches Rechteck 10px hinter der linken Spitze, statt
-   selbst zuzuschneiden — an dieser Stelle ist die Fläche schon rechteckig,
-   ein eigener clip-path würde nur unnötig verzerren. */
-.btn-signage::after {
-  content: "";
+/* Korrektur (nach Regression): der repeating-linear-gradient lag zu nah an
+   der linken Spitze und verschmolz optisch mit ihr (sah abgeschnitten/wie
+   überlappende Pfeile aus). Ersetzt durch zwei echte, feststehende Balken
+   in einem eigenen <span>, die deutlich hinter der Spitze beginnen — die
+   Spitze selbst bleibt dadurch ein sauberes, ungestörtes Dreieck. */
+/* Selektor bewusst als .btn-signage > .btn-signage__stripes (statt nur
+   .btn-signage__stripes): dieselbe Spezifität wie .btn-signage > * weiter
+   unten würde sonst per Quellreihenfolge gewinnen und position:relative
+   statt absolute setzen — die Höhe wäre dann 0, weil top/bottom auf einem
+   relativ positionierten, leeren Span nichts strecken. */
+.btn-signage > .btn-signage__stripes {
   position: absolute;
   top: 3px;
   bottom: 3px;
-  left: 30px;
-  width: 28px;
-  background-image: repeating-linear-gradient(
-    115deg,
-    var(--primary) 0 6px,
-    transparent 6px 20px
-  );
+  left: 34px;
+  width: 22px;
+  overflow: hidden;
   z-index: 1;
+}
+
+.btn-signage__stripes::before,
+.btn-signage__stripes::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  width: 7px;
+  background-color: var(--primary);
+  transform: skewX(-18deg);
+}
+
+.btn-signage__stripes::before {
+  left: 0;
+}
+
+.btn-signage__stripes::after {
+  left: 13px;
 }
 
 .btn-signage > * {

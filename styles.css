@@ -556,6 +556,12 @@ section {
   color: var(--text-light);
 }
 
+/* Bleibt gelb hervorgehoben, unabhängig davon, ob "willst du?" beim
+   Zeilenumbruch auf Mobile in eine eigene zweite Zeile fällt. */
+.classes__heading-accent {
+  color: var(--accent);
+}
+
 /* grid-auto-rows: 1fr gibt allen Zeilen dieselbe Höhe. Ohne das richtet
    sich jede Zeile nur nach ihrer eigenen höchsten Kachel — sobald eine
    Kurzinfo umbricht (z. B. Klasse A auf Tablet), wäre Zeile 1 höher als
@@ -1417,6 +1423,20 @@ section {
   min-height: 34svh;
   background-color: var(--primary);
   color: var(--text-light);
+}
+
+/* Für Seiten ohne .page-header__subtitle (aktuell nur kontakt.html): die
+   34svh waren für Überschrift + Unterzeile bemessen, mit nur der
+   Überschrift bleibt sonst durch align-items:center viel toter Raum
+   stehen. min-height allein reicht nicht — .page-header__inner trägt sein
+   eigenes, für zwei Zeilen bemessenes Padding (--space-16), das hier
+   ebenfalls reduziert werden muss. */
+.page-header--compact {
+  min-height: auto;
+}
+
+.page-header--compact .page-header__inner {
+  padding-block: var(--space-10);
 }
 
 .page-header__inner {
