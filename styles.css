@@ -564,13 +564,14 @@ section {
   color: var(--accent);
 }
 
-/* grid-auto-rows: 1fr gibt allen Zeilen dieselbe Höhe — wichtig, sobald
-   Klasse A auf Mobile auf vier Alters-Badges statt zwei kommt und dadurch
-   höher wird als B/C/D. */
+/* Auf Mobile bewusst KEIN grid-auto-rows: 1fr: in der einspaltigen Ansicht
+   steht jede Karte für sich, gleiche Höhen würden die kürzeren Karten (B/C/D
+   mit nur einer Badge-Zeile) nur auf die Höhe von A aufblasen und unter der
+   Fußzeile ein leeres Loch erzeugen. Nebeneinander ab 768px ist es
+   umgekehrt — dort wird 1fr wieder gesetzt. */
 .classes__grid {
   display: grid;
   grid-template-columns: 1fr;
-  grid-auto-rows: 1fr;
   gap: var(--space-6);
   margin: 0;
   padding: 0;
@@ -579,9 +580,18 @@ section {
 
 /* display: grid statt flex: ein Grid-Item wird per Voreinstellung in BEIDEN
    Achsen gestreckt (siehe .class-tile-Vorgänger — flex ließ die vier
-   Kacheln unterschiedlich breit werden). */
+   Kacheln unterschiedlich breit werden).
+
+   Der gelbe Glow hängt hier am Elternelement und NICHT an .class-card:
+   deren clip-path schneidet box-shadow restlos weg. filter: drop-shadow
+   arbeitet dagegen auf der bereits geclippten Silhouette des Kindes und
+   folgt ihr exakt. Zwei gestaffelte Schatten (eng/kräftig + weit/schwach)
+   ergeben die weiche Aura statt einer harten Neon-Kante. */
 .classes__item {
   display: grid;
+  filter:
+    drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 26%, transparent))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--accent) 13%, transparent));
 }
 
 /* --------------------------------------------------------------------------
@@ -596,7 +606,7 @@ section {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   padding: var(--space-4);
   background-color: var(--accent);
   text-decoration: none;
@@ -669,31 +679,40 @@ section {
   );
 }
 
-/* Fahrzeug-Bühne — helle Fläche (statt der sonst dunklen Kartenfläche),
-   damit der große dunkle "Geister"-Buchstabe dahinter überhaupt als
-   Wasserzeichen sichtbar wird, plus weicher gelber Glow. Feste Höhe: alle
-   vier Fahrzeugfotos (sehr unterschiedliche Seitenverhältnisse) sitzen auf
-   derselben Bühnengröße, object-fit: contain zeigt jedes vollständig. */
+/* Fahrzeug-Bühne — ohne eigene Fläche: das freigestellte Fahrzeug steht
+   direkt auf dem Kartenschwarz, dahinter nur der weiche gelbe Radial-Glow,
+   der nach außen ins Schwarz ausläuft. Der Glow endet bei 72 % und erreicht
+   die Bühnenkante nie, deshalb entsteht trotz overflow: hidden keine
+   sichtbare Abrisskante.
+
+   Mobile ist die Bühne ein flaches Querband: Geister-Buchstabe links,
+   Fahrzeug rechts daneben. Ab 768px zentriert (siehe Breakpoints unten).
+   overflow: hidden begrenzt den Geister-Buchstaben aufs Band, damit er
+   nicht in die Logo-Zeile läuft. */
 .class-card__stage {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 170px;
+  justify-content: flex-end;
+  height: 130px;
   overflow: hidden;
-  background-color: var(--background-light);
 }
 
+/* Auf dem schwarzen Kartengrund muss der Buchstabe aus Weiß mit sehr
+   niedriger Deckkraft gemischt werden statt aus Schwarz — schwarz auf
+   schwarz wäre unsichtbar. Das Ergebnis ist trotzdem ein dunkles Grau
+   (~#323130), also klar als Form erkennbar, aber weit unter jeder
+   Textkontrastschwelle. */
 .class-card__ghost {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-family: var(--font-display);
-  font-size: clamp(96px, 26vw, 140px);
+  font-size: clamp(96px, 30vw, 124px);
   line-height: 1;
-  color: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: color-mix(in srgb, var(--text-light) 15%, transparent);
   user-select: none;
 }
 
@@ -703,18 +722,30 @@ section {
   inset: 0;
   background-image: radial-gradient(
     closest-side,
-    color-mix(in srgb, var(--accent) 30%, transparent),
-    transparent 70%
+    color-mix(in srgb, var(--accent) 26%, transparent),
+    transparent 72%
   );
 }
 
-.class-card__vehicle {
-  position: relative;
+/* Das Flex-Kind der Bühne ist <picture>, nicht <img> — eine Prozent-Höhe am
+   Bild löst deshalb gegen die inhaltsabhängige <picture>-Höhe auf und bleibt
+   wirkungslos (das Bild lief so über die Bandhöhe hinaus und wurde von
+   overflow: hidden beschnitten). <picture> wird darum absolut auf die Bühne
+   gelegt, das Bild füllt es vollständig, und object-fit: contain übernimmt
+   die Einpassung. Mobile sitzt es rechts und lässt links Platz für den
+   Geister-Buchstaben. */
+.class-card__stage picture {
+  position: absolute;
   z-index: 1;
-  max-width: 92%;
-  max-height: 86%;
-  width: auto;
-  height: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 76%;
+}
+
+.class-card__vehicle {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -725,31 +756,55 @@ section {
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-display);
   text-transform: uppercase;
+  text-align: center;
   color: var(--text-light);
 }
 
 .class-card__ages {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-2);
 }
 
-/* Kein border (funktioniert nicht zusammen mit clip-path, siehe .class-card
-   oben) — stattdessen einfarbige Füllung mit zwei angeschrägten Ecken statt
-   der vollen Sechseck-Silhouette, die bei diesen kleinen Maßen zu spitz
-   geriete. */
+/* Dünner gelber Rahmen an einer abgeschrägten Form: border + clip-path
+   funktionieren nicht zusammen (der Rand folgt dem Schnitt nicht), deshalb
+   die Zwei-Ebenen-Technik wie bei .class-chip — hier aber ohne zusätzliches
+   Label-Element im Markup: beide Ebenen liegen auf z-index -1 und damit
+   zwischen Elementhintergrund und Inline-Text. ::after (dunkle Füllung)
+   zeichnet nach ::before (gelbe Fläche) und lässt davon genau 1px als
+   Rahmen stehen. isolation: isolate hält das negative z-index innerhalb
+   des Badges, sonst fiele es hinter die Kartenfläche. */
 .class-card__age {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   padding: var(--space-1) var(--space-3);
-  background-color: color-mix(in srgb, var(--text-light) 12%, var(--primary));
   color: var(--accent);
   font-family: var(--font-body);
   font-size: var(--font-size-micro);
   font-weight: 700;
   letter-spacing: var(--letter-spacing-loose);
   text-transform: uppercase;
+}
+
+.class-card__age::before,
+.class-card__age::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
   clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+
+.class-card__age::before {
+  inset: 0;
+  background-color: var(--accent);
+}
+
+.class-card__age::after {
+  inset: 1px;
+  background-color: var(--primary);
 }
 
 .class-card__divider {
@@ -757,12 +812,14 @@ section {
   background-color: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
+/* Kein margin-top: auto mehr — der Restplatz gleich hoher Karten wandert
+   über flex: 1 an der Bühne ins Fahrzeugfoto statt in ein leeres Loch über
+   der Fußzeile (Karten mit nur zwei Badges hatten genau das). */
 .class-card__bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-top: auto;
 }
 
 .class-card__icon {
@@ -1501,12 +1558,37 @@ section {
   /* 2×2 statt einer Spalte — ausdrücklich nur für dieses Tablet-Fenster
      (768–1023px), nicht für Desktop (siehe ≥1024px-Block: dort eine Zeile
      mit allen vier Karten). */
+  /* Nebeneinander stehende Karten sollen gleich hoch sein und unten bündig
+     abschließen; den Höhenunterschied (A/B mit zwei Badge-Zeilen gegen C/D
+     mit einer) nimmt die Bühne über flex: 1 auf, er landet also im Foto und
+     nicht in einer Lücke über der Fußzeile. */
   .classes__grid {
     grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
   }
 
+  /* Ab hier sind die Spalten hochformatig: Fahrzeug wieder mittig statt im
+     flachen Querband. */
   .class-card__stage {
-    height: 190px;
+    flex: 1;
+    height: auto;
+    min-height: 170px;
+    justify-content: center;
+  }
+
+  .class-card__ghost {
+    justify-content: center;
+    font-size: clamp(150px, 20vw, 200px);
+  }
+
+  /* Die Fotos füllen die Bühne hier fast vollständig und würden den
+     Geister-Buchstaben sonst ganz verdecken — besonders bei den flächigen
+     weißen Fahrzeugen (C/D). Der schmale seitliche Einzug lässt seine
+     Flanken wieder durchscheinen, wie in der Vorlage. */
+  .class-card__stage picture {
+    left: 7%;
+    right: 7%;
+    width: auto;
   }
 
   .contact {
@@ -1553,7 +1635,11 @@ section {
   }
 
   .class-card__stage {
-    height: 200px;
+    min-height: 150px;
+  }
+
+  .class-card__ghost {
+    font-size: clamp(170px, 17vw, 230px);
   }
 
   .ablauf {
