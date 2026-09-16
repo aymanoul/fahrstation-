@@ -545,6 +545,10 @@ section {
   padding-inline: var(--space-4);
 }
 
+/* Fest zweizeilig (<br> im Markup) statt natürlichem Umbruch über ein
+   Leerzeichen — auf breiten Screens hätte "Welchen Führerschein willst
+   du?" sonst in eine Zeile gepasst, hier soll die Zeilenaufteilung aber
+   nicht vom Viewport abhängen. */
 .classes__heading {
   margin: 0 0 var(--space-12);
   font-family: var(--font-display);
@@ -556,16 +560,13 @@ section {
   color: var(--text-light);
 }
 
-/* Bleibt gelb hervorgehoben, unabhängig davon, ob "willst du?" beim
-   Zeilenumbruch auf Mobile in eine eigene zweite Zeile fällt. */
 .classes__heading-accent {
   color: var(--accent);
 }
 
-/* grid-auto-rows: 1fr gibt allen Zeilen dieselbe Höhe. Ohne das richtet
-   sich jede Zeile nur nach ihrer eigenen höchsten Kachel — sobald eine
-   Kurzinfo umbricht (z. B. Klasse A auf Tablet), wäre Zeile 1 höher als
-   Zeile 2. */
+/* grid-auto-rows: 1fr gibt allen Zeilen dieselbe Höhe — wichtig, sobald
+   Klasse A auf Mobile auf vier Alters-Badges statt zwei kommt und dadurch
+   höher wird als B/C/D. */
 .classes__grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -577,11 +578,239 @@ section {
 }
 
 /* display: grid statt flex: ein Grid-Item wird per Voreinstellung in BEIDEN
-   Achsen gestreckt. Mit flex wurde nur die Querachse (Höhe) gestreckt, die
-   Breite blieb inhaltsabhängig — die vier Kacheln waren dadurch
-   unterschiedlich breit (332/287/174/176px statt je 572px). */
-.classes__grid li {
+   Achsen gestreckt (siehe .class-tile-Vorgänger — flex ließ die vier
+   Kacheln unterschiedlich breit werden). */
+.classes__item {
   display: grid;
+}
+
+/* --------------------------------------------------------------------------
+   .class-card — Klassen-Kachel im Kartenlook (Wortmarke, großer Buchstabe,
+   freigestelltes Fahrzeugfoto, Alters-Badges, CTA). Zwei-Ebenen-Technik wie
+   .class-tile: äußere Fläche voll --accent (sichtbarer gelber Rahmen),
+   ::before liegt eingerückt darüber und trägt den dunklen Kern — border +
+   clip-path funktionieren an dieser Sechseck-Silhouette nicht zusammen.
+   -------------------------------------------------------------------------- */
+.class-card {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--accent);
+  text-decoration: none;
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  transition: transform var(--transition-hover);
+}
+
+.class-card::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  transition: inset var(--transition-hover);
+}
+
+.class-card > * {
+  position: relative;
+}
+
+.class-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Originale Wortmarke aus dem Header (per <use> auf #wordmark-badge, siehe
+   Sprite gleich nach <body>) — nicht neu gezeichnet, nicht vereinfacht,
+   exakt dieselben drei Pfade wie im Banner, nur klein skaliert. */
+.class-card__brand {
+  width: 84px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.class-card__letter {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-12);
+  padding: var(--space-2) var(--space-6);
+  background-color: var(--accent);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 36px);
+  line-height: 1;
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+}
+
+/* Fahrzeug-Bühne — helle Fläche (statt der sonst dunklen Kartenfläche),
+   damit der große dunkle "Geister"-Buchstabe dahinter überhaupt als
+   Wasserzeichen sichtbar wird, plus weicher gelber Glow. Feste Höhe: alle
+   vier Fahrzeugfotos (sehr unterschiedliche Seitenverhältnisse) sitzen auf
+   derselben Bühnengröße, object-fit: contain zeigt jedes vollständig. */
+.class-card__stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 170px;
+  overflow: hidden;
+  background-color: var(--background-light);
+}
+
+.class-card__ghost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: clamp(96px, 26vw, 140px);
+  line-height: 1;
+  color: color-mix(in srgb, var(--primary) 12%, transparent);
+  user-select: none;
+}
+
+.class-card__stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--accent) 30%, transparent),
+    transparent 70%
+  );
+}
+
+.class-card__vehicle {
+  position: relative;
+  z-index: 1;
+  max-width: 92%;
+  max-height: 86%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.class-card__heading {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.class-card__ages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Kein border (funktioniert nicht zusammen mit clip-path, siehe .class-card
+   oben) — stattdessen einfarbige Füllung mit zwei angeschrägten Ecken statt
+   der vollen Sechseck-Silhouette, die bei diesen kleinen Maßen zu spitz
+   geriete. */
+.class-card__age {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  background-color: color-mix(in srgb, var(--text-light) 12%, var(--primary));
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-loose);
+  text-transform: uppercase;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+
+.class-card__divider {
+  height: 2px;
+  background-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.class-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+}
+
+.class-card__icon {
+  width: 26px;
+  height: 26px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.class-card__cta {
+  font-family: var(--font-display);
+  font-size: var(--font-size-small);
+  letter-spacing: var(--letter-spacing-badge);
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .class-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .class-card:hover::before {
+    inset: 5px;
+  }
+
+  .class-card:hover .class-card__cta {
+    text-decoration: underline;
+  }
+}
+
+.class-card:active {
+  transform: translateY(-2px);
+}
+
+.class-card:active::before {
+  inset: 5px;
+}
+
+/* clip-path schneidet outline weg wie bei .class-tile — der gelbe Rahmen
+   selbst wird als Fokus-Indikator dicker, indem ::before weiter einrückt. */
+.class-card:focus-visible {
+  outline: none;
+}
+
+.class-card:focus-visible::before {
+  inset: 8px;
 }
 
 /* --------------------------------------------------------------------------
@@ -1269,6 +1498,17 @@ section {
     padding-block: var(--space-30);
   }
 
+  /* 2×2 statt einer Spalte — ausdrücklich nur für dieses Tablet-Fenster
+     (768–1023px), nicht für Desktop (siehe ≥1024px-Block: dort eine Zeile
+     mit allen vier Karten). */
+  .classes__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .class-card__stage {
+    height: 190px;
+  }
+
   .contact {
     padding-block: var(--space-30);
   }
@@ -1306,6 +1546,16 @@ section {
    Breakpoint ≥ 1024px — Desktop breit
    ========================================================================== */
 @media (min-width: 1024px) {
+  /* Eine Zeile mit allen vier Karten statt des 2×2-Rasters aus dem
+     768px-Fenster — ausdrücklich so vorgegeben (nicht 2×2 auf Desktop). */
+  .classes__grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .class-card__stage {
+    height: 200px;
+  }
+
   .ablauf {
     padding-block: var(--space-30);
   }
