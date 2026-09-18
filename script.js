@@ -519,35 +519,29 @@
       if (ticks >= 10) clearInterval(ticker);
     }, 500);
 
-    // "Nudge"-Loop — direkte Reaktion auf den bestätigten Gerätebefund:
-    // ein zufälliger DOM-Mutation-Repaint (durch das Debug-Panel selbst)
-    // hat einmalig ein neues Bild erzwungen, während currentTime die ganze
-    // Zeit sauber weiterlief. Das zeigt: WebKit dekodiert zuverlässig,
-    // gibt die neuen Frames aber nicht von selbst an den Compositor weiter
-    // — erst eine externe Layer-Invalidierung stößt das an. Dieser rAF-Loop
-    // bildet genau das nach, kontinuierlich statt zufällig: er wechselt bei
-    // jedem Frame zwischen zwei GPU-Layer-Zuständen (translateZ(0) und ein
-    // Hundertstel Pixel versetzt), was für das Auge nicht wahrnehmbar ist,
-    // WebKit aber zwingt, die Video-Ebene jedes Mal neu zu kompositieren.
-    // Ersetzt damit die bisherige rein statische transform: translateZ(0)
-    // aus design-tokens.css (bleibt als Basis stehen), die nur EINMAL beim
-    // Layout greift und deshalb laufende Frame-Updates nicht erzwingen kann.
-    // Läuft nur während echter Wiedergabe und pausiert im Hintergrund-Tab
-    // (Akku); { stop } wird aktuell nicht aufgerufen, da das Video ohnehin
-    // endlos loopen soll, solange die Seite offen ist.
+    // "Nudge"-Loop, Version 2 — Version 1 (transform: translateZ(0) vs.
+    // translateZ(0.01px) bei jedem rAF-Frame) wurde am Gerät getestet und
+    // hat NICHT geholfen: Bild blieb weiterhin stehen. Vermuteter Grund im
+    // Nachhinein: ein transform ändert nur die Position der bereits
+    // vorhandenen (ggf. veralteten) Layer-Textur — er zwingt WebKit nicht
+    // dazu, überhaupt neu vom Video-Decoder zu lesen. Bewegen einer alten
+    // Textur sieht weiterhin wie das alte Bild aus.
+    //
+    // Version 2 setzt stattdessen am will-change-Wert an: das entfernt und
+    // erzeugt die komposit(ier)te GPU-Ebene selbst, statt sie nur zu
+    // verschieben. Eine neu erzeugte Ebene sollte ihren Bildinhalt frisch
+    // vom Video im Moment der Erzeugung beziehen. Absichtlich per
+    // setInterval (150ms), nicht pro rAF-Frame — Ebenen-Neuaufbau ist
+    // teurer als eine reine Transform-Änderung, 60×/s wäre unnötig teuer.
+    // Läuft nur während echter Wiedergabe, pausiert im Hintergrund-Tab.
     (function startHeroVideoNudge() {
       var toggle = false;
-      log('Nudge-Loop gestartet (erzwingt fortlaufenden Compositor-Refresh).');
-      function tick() {
-        if (!video.paused && !document.hidden) {
-          toggle = !toggle;
-          var value = toggle ? 'translateZ(0.01px)' : 'translateZ(0)';
-          video.style.transform = value;
-          video.style.webkitTransform = value;
-        }
-        requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
+      log('Nudge-Loop v2 gestartet (will-change-Toggle, erzwingt Ebenen-Neuaufbau alle 150ms).');
+      setInterval(function () {
+        if (video.paused || document.hidden) return;
+        toggle = !toggle;
+        video.style.willChange = toggle ? 'auto' : 'transform';
+      }, 150);
     })();
 
     // Manche Browser blockieren Autoplay trotz muted/playsinline (seltene

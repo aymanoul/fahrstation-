@@ -115,6 +115,17 @@
       <video class="hero-section__video" id="hero-video" autoplay muted loop playsinline preload="auto" poster="assets/hero-poster.jpg" aria-hidden="true"></video>
       <img class="hero-section__video" id="hero-poster-img" src="assets/hero-poster.jpg" alt="" aria-hidden="true" hidden>
 
+      <!-- Waren bis hierher .hero-section::before/::after (Pseudo-Elemente).
+           Als echte Geschwister-Elemente umgebaut: Verdacht auf dem iPhone
+           ist ein WebKit-Bug, bei dem ein Video unter halbtransparenten
+           Overlays im selben Stacking-Context nicht neu gezeichnet wird,
+           obwohl es weiterläuft (currentTime bestätigt) — Pseudo-Elemente
+           teilen sich das Compositing manchmal anders mit ihrem Host-Element
+           als echte DOM-Knoten. Rein strukturelle Änderung, keine optische:
+           identische Gradients, identische Position/z-index. -->
+      <span class="hero-section__scrim" aria-hidden="true"></span>
+      <span class="hero-section__glow" aria-hidden="true"></span>
+
       <div class="hero-section__content">
         <h1 class="hero-section__title">Fahr&shy;schule,<br>die Spaß macht.</h1>
         <!-- Button-Bereich vorerst entfernt (parkiert) — kommt später als

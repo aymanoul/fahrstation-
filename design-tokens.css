@@ -462,12 +462,16 @@
 
 /* Verlaufs-Scrim: hält Text über jedem Videobild lesbar, wird unten
    dunkler, wo die Buttons sitzen. Über color-mix() aus --primary
-   abgeleitet, damit keine neue Farbe eingeführt wird. */
-.hero-section::before {
-  content: "";
+   abgeleitet, damit keine neue Farbe eingeführt wird.
+
+   TEMPORÄR als echtes <span>-Geschwisterelement statt ::before/::after —
+   Diagnose des iPhone-Repaint-Bugs (siehe .hero-section__video-Kommentar
+   und Commit-Historie). Identische Optik, nur andere DOM-Herkunft. */
+.hero-section__scrim {
   position: absolute;
   inset: 0;
   z-index: 1;
+  display: block;
   background-image: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--primary) 35%, transparent) 0%,
@@ -477,12 +481,12 @@
 }
 
 /* Dezenter gelber Lichtschimmer unten, damit die dunkle Fläche nicht
-   tot wirkt. */
-.hero-section::after {
-  content: "";
+   tot wirkt. Ebenfalls TEMPORÄR als echtes Element, siehe oben. */
+.hero-section__glow {
   position: absolute;
   inset: 0;
   z-index: 1;
+  display: block;
   background-image: radial-gradient(
     ellipse at bottom,
     color-mix(in srgb, var(--accent) 6%, transparent) 0%,
