@@ -519,6 +519,37 @@
       if (ticks >= 10) clearInterval(ticker);
     }, 500);
 
+    // "Nudge"-Loop — direkte Reaktion auf den bestätigten Gerätebefund:
+    // ein zufälliger DOM-Mutation-Repaint (durch das Debug-Panel selbst)
+    // hat einmalig ein neues Bild erzwungen, während currentTime die ganze
+    // Zeit sauber weiterlief. Das zeigt: WebKit dekodiert zuverlässig,
+    // gibt die neuen Frames aber nicht von selbst an den Compositor weiter
+    // — erst eine externe Layer-Invalidierung stößt das an. Dieser rAF-Loop
+    // bildet genau das nach, kontinuierlich statt zufällig: er wechselt bei
+    // jedem Frame zwischen zwei GPU-Layer-Zuständen (translateZ(0) und ein
+    // Hundertstel Pixel versetzt), was für das Auge nicht wahrnehmbar ist,
+    // WebKit aber zwingt, die Video-Ebene jedes Mal neu zu kompositieren.
+    // Ersetzt damit die bisherige rein statische transform: translateZ(0)
+    // aus design-tokens.css (bleibt als Basis stehen), die nur EINMAL beim
+    // Layout greift und deshalb laufende Frame-Updates nicht erzwingen kann.
+    // Läuft nur während echter Wiedergabe und pausiert im Hintergrund-Tab
+    // (Akku); { stop } wird aktuell nicht aufgerufen, da das Video ohnehin
+    // endlos loopen soll, solange die Seite offen ist.
+    (function startHeroVideoNudge() {
+      var toggle = false;
+      log('Nudge-Loop gestartet (erzwingt fortlaufenden Compositor-Refresh).');
+      function tick() {
+        if (!video.paused && !document.hidden) {
+          toggle = !toggle;
+          var value = toggle ? 'translateZ(0.01px)' : 'translateZ(0)';
+          video.style.transform = value;
+          video.style.webkitTransform = value;
+        }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+
     // Manche Browser blockieren Autoplay trotz muted/playsinline (seltene
     // Ausnahmefälle). Schlägt play() fehl, bleibt einfach das poster-Bild
     // sichtbar — kein Fehler, keine Meldung für Besucher:innen.
