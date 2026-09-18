@@ -308,6 +308,42 @@ section {
 }
 
 /* --------------------------------------------------------------------------
+   Anton-Headline-Schrägstellung — projektweit, zentral über eine einzige
+   Selektorliste statt an jeder Stelle einzeln (Stufe-1-Vorschau an der
+   Hero-Headline geprüft und freigegeben, siehe Commit-Historie).
+
+   Bewusst NUR echte Überschriften, keine kleinen Anton-Stellen (Badges,
+   Buttons, Navigation) und keine großen Zahlen-/Deko-Displays — beide
+   waren nicht Teil des Auftrags und blieben nach Prüfung ausgeschlossen:
+   - Buttons/Navigation (.btn-primary, .btn-signage, .contact-action__label,
+     .mobile-menu__link, .mobile-cta-bar__item, .class-card__cta,
+     .hero-ticker__item, .class-card__heading): UI-Chrome, kein
+     Überschriften-Text. Vergleichsrender bei 20px (.mobile-menu__link)
+     zeigte sichtbar schlechtere Wirkung — der Pfeil daneben bleibt gerade,
+     kurze Einzelworte wirken unruhig statt dynamisch.
+   - Große Zahlen-/Deko-Displays (.trust-stat__value, .step-number,
+     .class-card__letter, .class-card__ghost, .testimonial__mark): keine
+     Fließtext-Überschriften, sondern Zahlen/Buchstaben-Badges bzw. ein
+     rein dekoratives Wasserzeichen.
+
+   .hero-section__title bekommt den Skew nicht direkt aus dieser Regel,
+   weil ihre Eintritts-Animation (hero-enter-title) eine gleichzeitig
+   gesetzte statische transform-Eigenschaft überschreibt (siehe dortiger
+   Kommentar) — sie steht trotzdem mit in der Liste, damit diese Regel die
+   vollständige, verbindliche Liste aller Headline-Selektoren bleibt. */
+.hero-section__title,
+.classes__heading,
+.ablauf__heading,
+.contact__heading,
+.kontakt-heading,
+.page-header__title,
+.page-cta__heading,
+.contact-form__success-heading {
+  transform: skewX(-8deg);
+  transform-origin: left bottom;
+}
+
+/* --------------------------------------------------------------------------
    Hero (#hero)
    -------------------------------------------------------------------------- */
 .hero-chips {
@@ -341,8 +377,19 @@ section {
   letter-spacing: var(--letter-spacing-hero);
   text-transform: uppercase;
   color: var(--text-light);
-  animation: hero-enter 400ms ease-out both;
+  animation: hero-enter-title 400ms ease-out both;
   animation-delay: 80ms;
+  /* Der projektweite Skew (siehe Selektorliste weiter oben, Abschnitt
+     "Anton-Headline-Schrägstellung") würde hier von der Eintritts-Animation
+     überschrieben: animierte Properties gewinnen für die Dauer der
+     Animation UND danach (fill-mode: both hält den Endzustand). Eigene
+     Keyframes (hero-enter-title) statt des gemeinsamen hero-enter tragen
+     den Skew deshalb selbst mit — letzteres teilen sich außerdem
+     .hero-chips/__subline/__actions, der Skew wäre sonst dort mit
+     gelandet. transform-origin: left bottom verankert die Grundlinie der
+     ERSTEN Zeile an ihrer eigenen linken Kante statt an der Blockmitte
+     (Standardwert), sonst würde der zweizeilige Text als Ganzes nach
+     links aus dem Container wandern. */
 }
 
 .hero-section__subline {
@@ -389,6 +436,20 @@ section {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* STUFE-1-VORSCHAU: identisch zu hero-enter, nur mit dem Skew der Headline
+   in beiden Keyframes mitgeführt, damit er nach Animationsende erhalten
+   bleibt (siehe Kommentar bei .hero-section__title). */
+@keyframes hero-enter-title {
+  from {
+    opacity: 0;
+    transform: translateY(12px) skewX(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) skewX(-8deg);
   }
 }
 
