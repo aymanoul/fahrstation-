@@ -418,6 +418,36 @@
     });
   }
 
+  // TEMPORÄR — sichtbares Debug-Overlay für das Hero-Video-Problem auf
+  // iPhone (bekannt: currentTime läuft, das Bild bleibt aber auf dem
+  // Poster-Frame stehen). Konsole ist auf dem Gerät ohne Mac nicht
+  // erreichbar. Entfernen, sobald die Ursache am Gerät bestätigt/behoben
+  // ist — siehe gleichnamigen Zwischenstand in der Commit-Historie.
+  var MEDIA_ERROR_MEANINGS = {
+    1: 'MEDIA_ERR_ABORTED — Abspielen wurde abgebrochen',
+    2: 'MEDIA_ERR_NETWORK — Netzwerkfehler beim Laden',
+    3: 'MEDIA_ERR_DECODE — Fehler beim Dekodieren der Datei',
+    4: 'MEDIA_ERR_SRC_NOT_SUPPORTED — Format/Quelle nicht unterstützt'
+  };
+
+  function createHeroVideoDebugPanel() {
+    var panel = document.createElement('div');
+    panel.id = 'hero-video-debug';
+    panel.style.cssText = [
+      'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
+      'max-height:45vh', 'overflow-y:auto', 'background:#000', 'color:#fff',
+      'font:11px/1.5 ui-monospace,Menlo,Consolas,monospace', 'padding:8px 10px',
+      'box-sizing:border-box', 'white-space:pre-wrap', 'word-break:break-all'
+    ].join(';');
+    document.body.appendChild(panel);
+    return function log(line) {
+      var row = document.createElement('div');
+      row.textContent = line;
+      panel.appendChild(row);
+      console.log('[hero-video]', line);
+    };
+  }
+
   /* Hero-Video: das <video> im Markup hat bewusst keine <source> — ohne
      JavaScript (oder bei reduzierter Bewegung/Data-Saver) bleibt einfach
      das poster-Bild stehen, statt Bandbreite für ein Video zu verbrauchen,
@@ -428,10 +458,14 @@
     var posterImg = document.getElementById('hero-poster-img');
     if (!video) return;
 
+    var log = createHeroVideoDebugPanel();
+
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var saveData = !!(navigator.connection && navigator.connection.saveData);
+    log('reducedMotion=' + reducedMotion + ' saveData=' + saveData);
 
     if (reducedMotion || saveData) {
+      log('Abbruch: Video wird entfernt, Poster-Bild wird gezeigt (reducedMotion/saveData aktiv).');
       video.remove();
       if (posterImg) posterImg.hidden = false;
       return;
@@ -441,15 +475,82 @@
     source.src = 'assets/hero.mp4';
     source.type = 'video/mp4';
     video.appendChild(source);
+    log('source.src gesetzt auf: ' + source.src);
     video.load();
+    log('load() aufgerufen. currentSrc=' + video.currentSrc);
+
+    function logState(prefix) {
+      var msg = prefix + ' — readyState=' + video.readyState + ' networkState=' + video.networkState +
+        ' paused=' + video.paused + ' currentTime=' + video.currentTime.toFixed(2);
+      if (video.error) {
+        msg += ' | error.code=' + video.error.code + ' (' + (MEDIA_ERROR_MEANINGS[video.error.code] || 'unbekannt') + ')';
+      }
+      log(msg);
+    }
+
+    ['loadstart', 'loadedmetadata', 'canplay', 'playing', 'error', 'stalled', 'abort', 'emptied', 'suspend'].forEach(function (ev) {
+      video.addEventListener(ev, function () {
+        logState('event: ' + ev);
+      });
+    });
+
+    // Verdacht (aus dem letzten Debug-Durchlauf): das Video dekodiert und
+    // spielt tatsächlich (currentTime läuft), aber WebKit malt weiterhin
+    // das poster-Bild statt der echten Frames. removeAttribute('poster')
+    // erst NACH bestätigtem Start (statt blind beim Laden) — so bleibt der
+    // Sofort-Effekt des Posters erhalten (kein schwarzer Rahmen vor dem
+    // ersten Frame), er wird nur genau in dem Moment entfernt, in dem er
+    // laut bekanntem Bug hängen bleiben könnte. { once: true } genügt,
+    // das Attribut wird nur einmal gebraucht.
+    video.addEventListener('playing', function () {
+      if (video.hasAttribute('poster')) {
+        video.removeAttribute('poster');
+        log('poster-Attribut entfernt bei currentTime=' + video.currentTime.toFixed(2) + ' (Video läuft laut "playing"-Event).');
+      }
+    }, { once: true });
+
+    // Live-Ticker: zeigt currentTime alle 500ms für 5s. Läuft currentTime
+    // sichtbar hoch, während das Bild auf dem Gerät trotzdem stehen bleibt,
+    // ist das der endgültige Beleg für einen reinen Repaint-Bug (Decode ok,
+    // nur der Bildschirm zeigt es nicht) statt eines Autoplay-Problems.
+    var ticks = 0;
+    var ticker = setInterval(function () {
+      logState('Ticker ' + (++ticks) + '/10');
+      if (ticks >= 10) clearInterval(ticker);
+    }, 500);
 
     // Manche Browser blockieren Autoplay trotz muted/playsinline (seltene
     // Ausnahmefälle). Schlägt play() fehl, bleibt einfach das poster-Bild
     // sichtbar — kein Fehler, keine Meldung für Besucher:innen.
     var playPromise = video.play();
+    log('play() aufgerufen.');
     if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise.catch(function () {});
+      playPromise
+        .then(function () { log('play() resolved'); })
+        .catch(function (err) { log('play() rejected: ' + (err && err.name) + ': ' + (err && err.message)); });
+    } else {
+      log('play() lieferte kein Promise (sehr alter Browser).');
     }
+
+    // Sicherheitsnetz: manche mobilen Browser verlangen für Autoplay eine
+    // (beliebige) erste Nutzer-Geste in dieser Sitzung, obwohl muted+
+    // playsinline gesetzt sind — play() schlägt dann beim Laden fehl,
+    // klappt aber bei erneutem Aufruf nach der Geste. Einmaliger Versuch,
+    // nur falls das Video zu diesem Zeitpunkt noch pausiert ist; kein
+    // Effekt, wenn Autoplay ohnehin schon lief.
+    function retryPlayOnFirstGesture() {
+      if (video.paused) {
+        log('Erneuter play()-Versuch nach erster Nutzer-Geste.');
+        var p = video.play();
+        if (p && typeof p.catch === 'function') p.catch(function () {});
+      }
+      window.removeEventListener('touchstart', retryPlayOnFirstGesture);
+      window.removeEventListener('scroll', retryPlayOnFirstGesture);
+      window.removeEventListener('click', retryPlayOnFirstGesture);
+    }
+    window.addEventListener('touchstart', retryPlayOnFirstGesture, { passive: true, once: true });
+    window.addEventListener('scroll', retryPlayOnFirstGesture, { passive: true, once: true });
+    window.addEventListener('click', retryPlayOnFirstGesture, { once: true });
   }
 
   document.addEventListener('DOMContentLoaded', function () {

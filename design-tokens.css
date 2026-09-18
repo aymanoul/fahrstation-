@@ -409,9 +409,19 @@
    darüber der Scrim (::before), ganz oben der Inhalt. Diese Reihenfolge
    sorgt dafür, dass weißer Text über jedem Videobild lesbar bleibt.
    -------------------------------------------------------------------------- */
+/* isolation: isolate erzwingt einen eigenen, sauber abgegrenzten
+   Stacking-Context für Video + Verlaufs-Overlay + Inhalt. Verdacht: der
+   bekannte iOS-Safari-Bug, bei dem ein Video unter einem halbtransparenten
+   Overlay dekodiert (currentTime läuft), aber nie neu gezeichnet wird,
+   hängt mit uneindeutiger Layer-Zuordnung zusammen, wenn der Container
+   selbst keinen eigenen Compositing-Rahmen hat (position: relative allein
+   reicht dafür nicht, nur position + z-index ≠ auto tut es). Rein additiv,
+   keine sichtbare Wirkung im Normalfall — nur zur Diagnose des Video-Bugs
+   gesetzt, siehe Commit-Historie zu #hero-video. */
 .hero-section {
   box-sizing: border-box;
   position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   min-height: 88svh;
