@@ -418,54 +418,42 @@
     });
   }
 
-  // TEMPORÄR — sichtbares Debug-Overlay für das Hero-Video-Problem auf
-  // iPhone (bekannt: currentTime läuft, das Bild bleibt aber auf dem
-  // Poster-Frame stehen). Konsole ist auf dem Gerät ohne Mac nicht
-  // erreichbar. Entfernen, sobald die Ursache am Gerät bestätigt/behoben
-  // ist — siehe gleichnamigen Zwischenstand in der Commit-Historie.
-  var MEDIA_ERROR_MEANINGS = {
-    1: 'MEDIA_ERR_ABORTED — Abspielen wurde abgebrochen',
-    2: 'MEDIA_ERR_NETWORK — Netzwerkfehler beim Laden',
-    3: 'MEDIA_ERR_DECODE — Fehler beim Dekodieren der Datei',
-    4: 'MEDIA_ERR_SRC_NOT_SUPPORTED — Format/Quelle nicht unterstützt'
-  };
-
-  function createHeroVideoDebugPanel() {
-    var panel = document.createElement('div');
-    panel.id = 'hero-video-debug';
-    panel.style.cssText = [
-      'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
-      'max-height:45vh', 'overflow-y:auto', 'background:#000', 'color:#fff',
-      'font:11px/1.5 ui-monospace,Menlo,Consolas,monospace', 'padding:8px 10px',
-      'box-sizing:border-box', 'white-space:pre-wrap', 'word-break:break-all'
-    ].join(';');
-    document.body.appendChild(panel);
-    return function log(line) {
-      var row = document.createElement('div');
-      row.textContent = line;
-      panel.appendChild(row);
-      console.log('[hero-video]', line);
-    };
-  }
-
   /* Hero-Video: das <video> im Markup hat bewusst keine <source> — ohne
      JavaScript (oder bei reduzierter Bewegung/Data-Saver) bleibt einfach
      das poster-Bild stehen, statt Bandbreite für ein Video zu verbrauchen,
      das niemand zu sehen bekommt. Nur wenn beides erlaubt ist, hängt diese
-     Funktion die echte Quelle an und versucht die Wiedergabe zu starten. */
+     Funktion die echte Quelle an und versucht die Wiedergabe zu starten.
+
+     Darstellung läuft über ein per JS erzeugtes <canvas> statt direkt über
+     das <video> — Hintergrund: iOS Safari hat das Video zuverlässig
+     dekodiert (currentTime lief immer sauber weiter), aber die neuen
+     Frames nie von selbst an den Compositor weitergegeben, das Bild blieb
+     auf dem Poster-Frame stehen. Mehrere direkte Fixes dafür (isolation:
+     isolate, Verlaufs-Overlay als echte Elemente statt Pseudo-Elemente,
+     zwei Varianten eines periodischen Compositor-"Nudge") wurden am Gerät
+     getestet und halfen nicht — bestätigt behoben erst mit dieser
+     Canvas-Umgehung. Das <video> bleibt die unsichtbare Dekodier-Quelle
+     (per JS erst nach dem ersten erfolgreich gezeichneten Frame auf
+     opacity: 0 gesetzt, nicht vorher und nicht per display:none/
+     visibility:hidden — beide können auf manchen Geräten die Dekodierung
+     selbst pausieren). Das <canvas> übernimmt danach die sichtbare
+     Darstellung, ein Frame pro Aufruf von requestVideoFrameCallback().
+
+     Sicherheitsnetz ist kein Sonderfall-Code, sondern die Reihenfolge
+     selbst: video.style.opacity wird nur nach dem ersten erfolgreich
+     gezeichneten Frame gesetzt. Schlägt Canvas-Context, Laden oder
+     Dekodieren fehl, passiert dieser Schritt einfach nie — das Video
+     bleibt mit seinem poster-Attribut sichtbar, kein kaputter oder
+     leerer Zustand. */
   function initHeroVideo() {
     var video = document.getElementById('hero-video');
     var posterImg = document.getElementById('hero-poster-img');
     if (!video) return;
 
-    var log = createHeroVideoDebugPanel();
-
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var saveData = !!(navigator.connection && navigator.connection.saveData);
-    log('reducedMotion=' + reducedMotion + ' saveData=' + saveData);
 
     if (reducedMotion || saveData) {
-      log('Abbruch: Video wird entfernt, Poster-Bild wird gezeigt (reducedMotion/saveData aktiv).');
       video.remove();
       if (posterImg) posterImg.hidden = false;
       return;
@@ -475,71 +463,20 @@
     source.src = 'assets/hero.mp4';
     source.type = 'video/mp4';
     video.appendChild(source);
-    log('source.src gesetzt auf: ' + source.src);
     video.load();
-    log('load() aufgerufen. currentSrc=' + video.currentSrc);
 
-    function logState(prefix) {
-      var msg = prefix + ' — readyState=' + video.readyState + ' networkState=' + video.networkState +
-        ' paused=' + video.paused + ' currentTime=' + video.currentTime.toFixed(2);
-      if (video.error) {
-        msg += ' | error.code=' + video.error.code + ' (' + (MEDIA_ERROR_MEANINGS[video.error.code] || 'unbekannt') + ')';
-      }
-      log(msg);
-    }
-
-    ['loadstart', 'loadedmetadata', 'canplay', 'playing', 'error', 'stalled', 'abort', 'emptied', 'suspend'].forEach(function (ev) {
-      video.addEventListener(ev, function () {
-        logState('event: ' + ev);
-      });
-    });
-
-    // Live-Ticker: zeigt currentTime alle 500ms für 5s. Läuft currentTime
-    // sichtbar hoch, während das Bild auf dem Gerät trotzdem stehen bleibt,
-    // ist das der endgültige Beleg für einen reinen Repaint-Bug (Decode ok,
-    // nur der Bildschirm zeigt es nicht) statt eines Autoplay-Problems.
-    var ticks = 0;
-    var ticker = setInterval(function () {
-      logState('Ticker ' + (++ticks) + '/10');
-      if (ticks >= 10) clearInterval(ticker);
-    }, 500);
-
-    // --- Canvas-Eskalation ---------------------------------------------
-    // Vorherige Ansätze — isolation: isolate, Scrim als echte Geschwister-
-    // Elemente statt Pseudo-Elemente, zwei Nudge-Loop-Varianten
-    // (transform- bzw. will-change-Toggle) — wurden alle am Gerät
-    // getestet und haben nicht geholfen: das Video dekodiert nachweislich
-    // (currentTime lief immer sauber), WebKit gab die neuen Frames aber
-    // nie von selbst an den Compositor weiter. Diese Eskalation umgeht
-    // das Problem, statt es zu reparieren: statt das <video> selbst
-    // anzuzeigen, wird jedes Frame aktiv per drawImage() in ein <canvas>
-    // gezeichnet. Das Video bleibt die unsichtbare Dekodier-Quelle
-    // (opacity: 0, NICHT display:none/visibility:hidden — beide können
-    // auf manchen Geräten die Dekodierung selbst pausieren), das <canvas>
-    // übernimmt die sichtbare Darstellung.
-    //
-    // Sicherheitsnetz ist kein Sonderfall-Code, sondern die Reihenfolge
-    // selbst: das <video> bleibt mit seinem poster-Attribut sichtbar, bis
-    // der ERSTE Frame erfolgreich gezeichnet wurde — erst dann wird
-    // video.style.opacity auf 0 gesetzt. Schlägt irgendetwas fehl (kein
-    // 2D-Context, Video lädt nie, kein Frame kommt je an), passiert dieser
-    // Schritt einfach nie — das Poster bleibt stehen, kein kaputter oder
-    // leerer Zustand.
     var canvas = document.createElement('canvas');
     canvas.className = 'hero-section__video';
     canvas.setAttribute('aria-hidden', 'true');
     var ctx = canvas.getContext && canvas.getContext('2d');
 
     if (!ctx) {
-      log('Canvas-2D-Context nicht verfügbar — Video bleibt mit Poster sichtbar (Fallback).');
-      // Ohne Canvas gibt es keine Sichtbarkeits-/Play-Steuerung weiter
-      // unten — hier also der normale direkte Play-Versuch wie zuvor.
+      // Fallback ohne Canvas-Unterstützung: direkter Play-Versuch wie vor
+      // der Canvas-Umstellung, Video bleibt mit seinem poster-Attribut
+      // sichtbar, falls play() fehlschlägt.
       var fallbackPlayPromise = video.play();
-      log('play() aufgerufen (Canvas-Fallback-Pfad).');
       if (fallbackPlayPromise && typeof fallbackPlayPromise.catch === 'function') {
-        fallbackPlayPromise
-          .then(function () { log('play() resolved'); })
-          .catch(function (err) { log('play() rejected: ' + (err && err.name) + ': ' + (err && err.message)); });
+        fallbackPlayPromise.catch(function () {});
       }
     } else {
       // Direkt nach dem poster-<img> einfügen (falls vorhanden, sonst nach
@@ -550,25 +487,19 @@
       // Text-Inhalt (z-index:2) — unverändert wie zuvor mit dem Video.
       var insertAfter = posterImg || video;
       insertAfter.parentNode.insertBefore(canvas, insertAfter.nextSibling);
-      log('Canvas erzeugt und eingefügt.');
 
       var box = video.parentElement; // .hero-section
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       var hasDrawnFirstFrame = false;
       var shouldPlay = false; // kombiniert Sichtbarkeit + Vordergrund
       var supportsRVFC = 'requestVideoFrameCallback' in video;
-      log('requestVideoFrameCallback unterstützt: ' + supportsRVFC);
 
       function resizeCanvas() {
         var w = Math.round(box.clientWidth * dpr);
         var h = Math.round(box.clientHeight * dpr);
-        // ResizeObserver feuert nach observe() immer einmal sofort zusätzlich
-        // zu diesem ersten manuellen Aufruf — ohne den Gleichheits-Check gäbe
-        // es beim Start zwei identische Log-Zeilen im Debug-Panel.
         if (w === canvas.width && h === canvas.height) return;
         canvas.width = w;
         canvas.height = h;
-        log('Canvas-Größe: ' + w + 'x' + h + ' (dpr=' + dpr + ')');
       }
       resizeCanvas();
 
@@ -610,7 +541,6 @@
         if (!hasDrawnFirstFrame) {
           hasDrawnFirstFrame = true;
           video.style.opacity = '0';
-          log('Erster Frame gezeichnet — Video (mit Poster) ausgeblendet, Canvas übernimmt.');
         }
       }
 
@@ -648,28 +578,22 @@
         if (wantPlay === shouldPlay) return;
         shouldPlay = wantPlay;
         if (shouldPlay) {
-          log('Sichtbar + Vordergrund — play() + Zeichenschleife.');
           var p = video.play();
-          if (p && typeof p.catch === 'function') {
-            p.catch(function (err) { log('play() rejected: ' + (err && err.name) + ': ' + (err && err.message)); });
-          }
+          if (p && typeof p.catch === 'function') p.catch(function () {});
           scheduleNextFrame();
         } else {
-          log('Unsichtbar oder Hintergrund — pause() (Akku/CPU).');
           video.pause();
         }
       }
 
       var intersectionObserver = new IntersectionObserver(function (entries) {
         heroVisible = entries[0].isIntersecting;
-        log('IntersectionObserver: heroVisible=' + heroVisible);
         updatePlayState();
       }, { threshold: 0 });
       intersectionObserver.observe(box);
 
       document.addEventListener('visibilitychange', function () {
         pageVisible = !document.hidden;
-        log('visibilitychange: pageVisible=' + pageVisible);
         updatePlayState();
       });
     }
@@ -682,7 +606,6 @@
     // Effekt, wenn Autoplay ohnehin schon lief.
     function retryPlayOnFirstGesture() {
       if (video.paused) {
-        log('Erneuter play()-Versuch nach erster Nutzer-Geste.');
         var p = video.play();
         if (p && typeof p.catch === 'function') p.catch(function () {});
       }
