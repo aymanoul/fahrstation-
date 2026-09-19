@@ -494,21 +494,6 @@
       });
     });
 
-    // Verdacht (aus dem letzten Debug-Durchlauf): das Video dekodiert und
-    // spielt tatsächlich (currentTime läuft), aber WebKit malt weiterhin
-    // das poster-Bild statt der echten Frames. removeAttribute('poster')
-    // erst NACH bestätigtem Start (statt blind beim Laden) — so bleibt der
-    // Sofort-Effekt des Posters erhalten (kein schwarzer Rahmen vor dem
-    // ersten Frame), er wird nur genau in dem Moment entfernt, in dem er
-    // laut bekanntem Bug hängen bleiben könnte. { once: true } genügt,
-    // das Attribut wird nur einmal gebraucht.
-    video.addEventListener('playing', function () {
-      if (video.hasAttribute('poster')) {
-        video.removeAttribute('poster');
-        log('poster-Attribut entfernt bei currentTime=' + video.currentTime.toFixed(2) + ' (Video läuft laut "playing"-Event).');
-      }
-    }, { once: true });
-
     // Live-Ticker: zeigt currentTime alle 500ms für 5s. Läuft currentTime
     // sichtbar hoch, während das Bild auf dem Gerät trotzdem stehen bleibt,
     // ist das der endgültige Beleg für einen reinen Repaint-Bug (Decode ok,
@@ -519,42 +504,174 @@
       if (ticks >= 10) clearInterval(ticker);
     }, 500);
 
-    // "Nudge"-Loop, Version 2 — Version 1 (transform: translateZ(0) vs.
-    // translateZ(0.01px) bei jedem rAF-Frame) wurde am Gerät getestet und
-    // hat NICHT geholfen: Bild blieb weiterhin stehen. Vermuteter Grund im
-    // Nachhinein: ein transform ändert nur die Position der bereits
-    // vorhandenen (ggf. veralteten) Layer-Textur — er zwingt WebKit nicht
-    // dazu, überhaupt neu vom Video-Decoder zu lesen. Bewegen einer alten
-    // Textur sieht weiterhin wie das alte Bild aus.
+    // --- Canvas-Eskalation ---------------------------------------------
+    // Vorherige Ansätze — isolation: isolate, Scrim als echte Geschwister-
+    // Elemente statt Pseudo-Elemente, zwei Nudge-Loop-Varianten
+    // (transform- bzw. will-change-Toggle) — wurden alle am Gerät
+    // getestet und haben nicht geholfen: das Video dekodiert nachweislich
+    // (currentTime lief immer sauber), WebKit gab die neuen Frames aber
+    // nie von selbst an den Compositor weiter. Diese Eskalation umgeht
+    // das Problem, statt es zu reparieren: statt das <video> selbst
+    // anzuzeigen, wird jedes Frame aktiv per drawImage() in ein <canvas>
+    // gezeichnet. Das Video bleibt die unsichtbare Dekodier-Quelle
+    // (opacity: 0, NICHT display:none/visibility:hidden — beide können
+    // auf manchen Geräten die Dekodierung selbst pausieren), das <canvas>
+    // übernimmt die sichtbare Darstellung.
     //
-    // Version 2 setzt stattdessen am will-change-Wert an: das entfernt und
-    // erzeugt die komposit(ier)te GPU-Ebene selbst, statt sie nur zu
-    // verschieben. Eine neu erzeugte Ebene sollte ihren Bildinhalt frisch
-    // vom Video im Moment der Erzeugung beziehen. Absichtlich per
-    // setInterval (150ms), nicht pro rAF-Frame — Ebenen-Neuaufbau ist
-    // teurer als eine reine Transform-Änderung, 60×/s wäre unnötig teuer.
-    // Läuft nur während echter Wiedergabe, pausiert im Hintergrund-Tab.
-    (function startHeroVideoNudge() {
-      var toggle = false;
-      log('Nudge-Loop v2 gestartet (will-change-Toggle, erzwingt Ebenen-Neuaufbau alle 150ms).');
-      setInterval(function () {
-        if (video.paused || document.hidden) return;
-        toggle = !toggle;
-        video.style.willChange = toggle ? 'auto' : 'transform';
-      }, 150);
-    })();
+    // Sicherheitsnetz ist kein Sonderfall-Code, sondern die Reihenfolge
+    // selbst: das <video> bleibt mit seinem poster-Attribut sichtbar, bis
+    // der ERSTE Frame erfolgreich gezeichnet wurde — erst dann wird
+    // video.style.opacity auf 0 gesetzt. Schlägt irgendetwas fehl (kein
+    // 2D-Context, Video lädt nie, kein Frame kommt je an), passiert dieser
+    // Schritt einfach nie — das Poster bleibt stehen, kein kaputter oder
+    // leerer Zustand.
+    var canvas = document.createElement('canvas');
+    canvas.className = 'hero-section__video';
+    canvas.setAttribute('aria-hidden', 'true');
+    var ctx = canvas.getContext && canvas.getContext('2d');
 
-    // Manche Browser blockieren Autoplay trotz muted/playsinline (seltene
-    // Ausnahmefälle). Schlägt play() fehl, bleibt einfach das poster-Bild
-    // sichtbar — kein Fehler, keine Meldung für Besucher:innen.
-    var playPromise = video.play();
-    log('play() aufgerufen.');
-    if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise
-        .then(function () { log('play() resolved'); })
-        .catch(function (err) { log('play() rejected: ' + (err && err.name) + ': ' + (err && err.message)); });
+    if (!ctx) {
+      log('Canvas-2D-Context nicht verfügbar — Video bleibt mit Poster sichtbar (Fallback).');
+      // Ohne Canvas gibt es keine Sichtbarkeits-/Play-Steuerung weiter
+      // unten — hier also der normale direkte Play-Versuch wie zuvor.
+      var fallbackPlayPromise = video.play();
+      log('play() aufgerufen (Canvas-Fallback-Pfad).');
+      if (fallbackPlayPromise && typeof fallbackPlayPromise.catch === 'function') {
+        fallbackPlayPromise
+          .then(function () { log('play() resolved'); })
+          .catch(function (err) { log('play() rejected: ' + (err && err.name) + ': ' + (err && err.message)); });
+      }
     } else {
-      log('play() lieferte kein Promise (sehr alter Browser).');
+      // Direkt nach dem poster-<img> einfügen (falls vorhanden, sonst nach
+      // dem Video) — beide teilen sich mit dem Canvas dieselbe Klasse und
+      // damit denselben z-index:0; unter gleichem z-index gewinnt beim
+      // Malen die spätere DOM-Position. So liegt das Canvas über Video
+      // UND Poster-<img>, bleibt aber unter dem Scrim (z-index:1) und dem
+      // Text-Inhalt (z-index:2) — unverändert wie zuvor mit dem Video.
+      var insertAfter = posterImg || video;
+      insertAfter.parentNode.insertBefore(canvas, insertAfter.nextSibling);
+      log('Canvas erzeugt und eingefügt.');
+
+      var box = video.parentElement; // .hero-section
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var hasDrawnFirstFrame = false;
+      var shouldPlay = false; // kombiniert Sichtbarkeit + Vordergrund
+      var supportsRVFC = 'requestVideoFrameCallback' in video;
+      log('requestVideoFrameCallback unterstützt: ' + supportsRVFC);
+
+      function resizeCanvas() {
+        var w = Math.round(box.clientWidth * dpr);
+        var h = Math.round(box.clientHeight * dpr);
+        // ResizeObserver feuert nach observe() immer einmal sofort zusätzlich
+        // zu diesem ersten manuellen Aufruf — ohne den Gleichheits-Check gäbe
+        // es beim Start zwei identische Log-Zeilen im Debug-Panel.
+        if (w === canvas.width && h === canvas.height) return;
+        canvas.width = w;
+        canvas.height = h;
+        log('Canvas-Größe: ' + w + 'x' + h + ' (dpr=' + dpr + ')');
+      }
+      resizeCanvas();
+
+      // ticking-Flag wie bei initAblaufLine/initStickyHeader weiter oben in
+      // dieser Datei — verhindert Reflow-Spam durch iOS' Adressleisten-
+      // Ein-/Ausblenden beim Scrollen.
+      var resizeTicking = false;
+      var resizeObserver = new ResizeObserver(function () {
+        if (resizeTicking) return;
+        resizeTicking = true;
+        requestAnimationFrame(function () {
+          resizeCanvas();
+          resizeTicking = false;
+        });
+      });
+      resizeObserver.observe(box);
+
+      // object-fit: cover von Hand nachgebaut (object-position ist immer
+      // "center", der einzige im Projekt verwendete Wert): die kürzere
+      // Kante der Video-Quelle füllt die entsprechende Canvas-Kante
+      // vollständig, die längere wird mittig beschnitten.
+      function drawFrame() {
+        if (!video.videoWidth || !video.videoHeight) return;
+        var boxRatio = canvas.width / canvas.height;
+        var videoRatio = video.videoWidth / video.videoHeight;
+        var sx, sy, sWidth, sHeight;
+        if (videoRatio > boxRatio) {
+          sHeight = video.videoHeight;
+          sWidth = sHeight * boxRatio;
+          sx = (video.videoWidth - sWidth) / 2;
+          sy = 0;
+        } else {
+          sWidth = video.videoWidth;
+          sHeight = sWidth / boxRatio;
+          sx = 0;
+          sy = (video.videoHeight - sHeight) / 2;
+        }
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        if (!hasDrawnFirstFrame) {
+          hasDrawnFirstFrame = true;
+          video.style.opacity = '0';
+          log('Erster Frame gezeichnet — Video (mit Poster) ausgeblendet, Canvas übernimmt.');
+        }
+      }
+
+      // requestVideoFrameCallback feuert genau einmal pro tatsächlich neu
+      // dekodiertem Frame — koppelt die Zeichenrate von selbst ans
+      // Video-Intervall, ohne Quell-Framerate raten oder manuell timen zu
+      // müssen. Fallback für Browser ohne diese API (vor Safari 15.4):
+      // rAF mit Zeitstempel-Gate, hart auf 24fps gedeckelt statt voller
+      // Bildwiederholrate.
+      function scheduleNextFrame() {
+        if (!shouldPlay) return;
+        if (supportsRVFC) {
+          video.requestVideoFrameCallback(function () {
+            drawFrame();
+            scheduleNextFrame();
+          });
+        } else {
+          var last = 0;
+          (function tick(ts) {
+            if (!shouldPlay) return;
+            if (ts - last >= 41) {
+              last = ts;
+              drawFrame();
+            }
+            requestAnimationFrame(tick);
+          })(performance.now());
+        }
+      }
+
+      var heroVisible = false;
+      var pageVisible = !document.hidden;
+
+      function updatePlayState() {
+        var wantPlay = heroVisible && pageVisible;
+        if (wantPlay === shouldPlay) return;
+        shouldPlay = wantPlay;
+        if (shouldPlay) {
+          log('Sichtbar + Vordergrund — play() + Zeichenschleife.');
+          var p = video.play();
+          if (p && typeof p.catch === 'function') {
+            p.catch(function (err) { log('play() rejected: ' + (err && err.name) + ': ' + (err && err.message)); });
+          }
+          scheduleNextFrame();
+        } else {
+          log('Unsichtbar oder Hintergrund — pause() (Akku/CPU).');
+          video.pause();
+        }
+      }
+
+      var intersectionObserver = new IntersectionObserver(function (entries) {
+        heroVisible = entries[0].isIntersecting;
+        log('IntersectionObserver: heroVisible=' + heroVisible);
+        updatePlayState();
+      }, { threshold: 0 });
+      intersectionObserver.observe(box);
+
+      document.addEventListener('visibilitychange', function () {
+        pageVisible = !document.hidden;
+        log('visibilitychange: pageVisible=' + pageVisible);
+        updatePlayState();
+      });
     }
 
     // Sicherheitsnetz: manche mobilen Browser verlangen für Autoplay eine
