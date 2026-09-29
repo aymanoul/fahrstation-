@@ -428,15 +428,15 @@ section {
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  min-height: 56px;
+  min-height: var(--tap-target);
   max-width: 100%;
-  padding: var(--space-3) var(--space-8);
+  padding: var(--space-2) var(--space-6);
   border: 2px solid var(--accent);
   border-radius: 8px;
   background-color: transparent;
   color: var(--text-light);
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 17px;
   line-height: 1;
   letter-spacing: var(--letter-spacing-badge);
   text-transform: uppercase;
@@ -450,8 +450,8 @@ section {
 
 .ghost-btn__arrow {
   flex: none;
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 19px;
   transition: transform var(--transition-hover);
 }
 
@@ -480,12 +480,39 @@ section {
   box-shadow: var(--focus-ring);
 }
 
-/* Sehr schmale Displays (≤ 359px, z. B. iPhone SE 1): "Jetzt voranmelden"
-   bricht mit dem vollen Innenabstand auf zwei Zeilen um (272px verfügbar,
-   276px benötigt) — kleinerer Seitenabstand hält den Button einzeilig. */
-@media (max-width: 359px) {
+/* Hauptbutton ("Jetzt voranmelden"): dauerhaft in --accent gefüllt, Text
+   --primary — auf allen Geräten gleich, nicht nur beim Hover. Der zweite
+   Button bleibt die Ghost-Variante. Hover: leicht dunkleres Gelb
+   (--accent-hover) + Pfeil-Bewegung. */
+.ghost-btn--primary {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ghost-btn--primary:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+}
+
+.ghost-btn--primary:active {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* Ab Tablet/Desktop größer; mobil bleibt die kompaktere Basis oben
+   (48px = --tap-target, 17px Schrift). */
+@media (min-width: 768px) {
   .ghost-btn {
-    padding-inline: var(--space-6);
+    min-height: 56px;
+    padding: var(--space-3) var(--space-8);
+    font-size: 20px;
+  }
+
+  .ghost-btn__arrow {
+    width: 22px;
+    height: 22px;
   }
 }
 
