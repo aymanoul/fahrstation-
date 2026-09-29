@@ -2155,9 +2155,15 @@ section {
   gap: var(--space-2);
 }
 
+/* Vollständiges Logo (Wortmarke + "FAHRSCHULE") in Originalproportion 3:1 —
+   die frühere feste Höhe von 28px machte aus dem breiten Banner-Bild ein
+   winziges, gequetschtes Band. Breite statt Höhe vorgeben, Höhe folgt aus dem
+   Seitenverhältnis. */
 .site-footer__logo {
-  height: 28px;
-  width: auto;
+  display: block;
+  width: 240px;
+  max-width: 100%;
+  height: auto;
 }
 
 .site-footer__address {
