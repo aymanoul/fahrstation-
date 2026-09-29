@@ -297,55 +297,6 @@
     if (todayRow) todayRow.classList.add('contact-hours__row--today');
   }
 
-<<<<<<< HEAD
-  /* Formular in #kontakt: standardmäßig sichtbar im Markup (funktioniert
-     ohne JavaScript), wird hier erst zu einem aufklappbaren Panel mit
-     Höhen-Animation. Der Submit-Handler verhindert das Absenden, weil noch
-     kein Backend angebunden ist — ein scheinbar erfolgreiches Absenden ins
-     Leere wäre schlimmer als kein Formular. */
-  function initContactForm() {
-    var trigger = document.getElementById('contact-form-trigger');
-    var panel = document.getElementById('contact-form-panel');
-
-    if (trigger && panel) {
-      panel.classList.add('contact-form-panel--js');
-      panel.style.maxHeight = '0px';
-      panel.setAttribute('inert', '');
-      trigger.setAttribute('aria-expanded', 'false');
-
-      trigger.addEventListener('click', function () {
-        var isOpen = trigger.getAttribute('aria-expanded') === 'true';
-
-        if (isOpen) {
-          panel.style.maxHeight = panel.scrollHeight + 'px';
-          window.requestAnimationFrame(function () {
-            panel.style.maxHeight = '0px';
-          });
-          panel.setAttribute('inert', '');
-          trigger.setAttribute('aria-expanded', 'false');
-        } else {
-          panel.removeAttribute('inert');
-          panel.style.maxHeight = panel.scrollHeight + 'px';
-          trigger.setAttribute('aria-expanded', 'true');
-        }
-      });
-
-      panel.addEventListener('transitionend', function (event) {
-        if (event.propertyName !== 'max-height') return;
-        if (trigger.getAttribute('aria-expanded') === 'true') {
-          panel.style.maxHeight = 'none';
-        }
-      });
-    }
-
-    var form = document.getElementById('contact-form');
-    var notice = document.getElementById('contact-form-notice');
-    if (!form) return;
-
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
-      if (notice) notice.hidden = false;
-=======
   /* Aufklappbare Standort-Karte (.location-card). Ohne JavaScript zeigt das
      Markup bereits alles (aufgeklappter Look, Klasse "js" am <html> fehlt);
      hier wird nur Verhalten ergänzt: auf-/zuklappen, 3D-Neigung auf
@@ -426,7 +377,6 @@
 
       updateBadge(card);
       window.setInterval(function () { updateBadge(card); }, 60000);
->>>>>>> 990a9f0 (Aufklappbare Standort-Karte mit Öffnungsstatus)
     });
   }
 
@@ -792,11 +742,7 @@
     initTrustStats();
     initAblaufLine();
     initOpeningStatus();
-<<<<<<< HEAD
-    initContactForm();
-=======
     initLocationCard();
->>>>>>> 990a9f0 (Aufklappbare Standort-Karte mit Öffnungsstatus)
     initKontaktForm();
     initHeroVideo();
   });
