@@ -414,55 +414,49 @@ section {
 }
 
 /* --------------------------------------------------------------------------
-   .ghost-btn — Hero-Button ohne Füllung: der Hero scheint durch, nur ein
-   dünner gelber Rand (--accent) mit leicht gerundeten Ecken. Anton in
-   Großbuchstaben OHNE Schrägstellung (Buttons sind von der Headline-
-   Schrägstellung ausgenommen), Pfeil rechts als Inline-SVG.
-   Hover (Desktop) / Tap: Füllung in Randfarbe, Text --primary, Pfeil rutscht
-   4px nach rechts. Die Übergänge laufen über --transition-hover, das unter
-   prefers-reduced-motion 0s ist — dort wechselt nur die Farbe.
+   .ghost-btn — Hero-Button: leicht gerundet (8px), 2px --accent-Rand, Anton
+   in Großbuchstaben OHNE Schrägstellung (Buttons sind von der Headline-
+   Schrägstellung ausgenommen), Text mittig, kein Pfeil. Grundwerte = mobil
+   (kompakt); ab 768px größer, siehe unten.
+   Ghost-Variante (Standard): transparent, der Hero scheint durch; Hover
+   (Desktop) / Tap füllt in --accent, Text --primary. Hauptbutton
+   (.ghost-btn--primary): dauerhaft gefüllt. Übergänge laufen über
+   --transition-hover, das unter prefers-reduced-motion 0s ist.
    -------------------------------------------------------------------------- */
 .ghost-btn {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
-  min-height: var(--tap-target);
+  min-height: 44px;
   max-width: 100%;
-  padding: var(--space-2) var(--space-6);
+  padding: var(--space-2) var(--space-4);
   border: 2px solid var(--accent);
   border-radius: 8px;
   background-color: transparent;
   color: var(--text-light);
   font-family: var(--font-display);
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1;
   letter-spacing: var(--letter-spacing-badge);
+  /* Gleicht den Nachlauf-Buchstabenabstand nach dem letzten Zeichen aus,
+     damit der Text optisch wirklich mittig sitzt. */
+  text-indent: 0.06em;
+  text-align: center;
   text-transform: uppercase;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
   transition:
     color var(--transition-hover),
     background-color var(--transition-hover),
+    border-color var(--transition-hover),
     box-shadow var(--transition-hover);
-}
-
-.ghost-btn__arrow {
-  flex: none;
-  width: 19px;
-  height: 19px;
-  transition: transform var(--transition-hover);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .ghost-btn:hover {
     background-color: var(--accent);
     color: var(--primary);
-  }
-
-  .ghost-btn:hover .ghost-btn__arrow {
-    transform: translateX(4px);
   }
 }
 
@@ -471,19 +465,14 @@ section {
   color: var(--primary);
 }
 
-.ghost-btn:active .ghost-btn__arrow {
-  transform: translateX(4px);
-}
-
 .ghost-btn:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
 
 /* Hauptbutton ("Jetzt voranmelden"): dauerhaft in --accent gefüllt, Text
-   --primary — auf allen Geräten gleich, nicht nur beim Hover. Der zweite
-   Button bleibt die Ghost-Variante. Hover: leicht dunkleres Gelb
-   (--accent-hover) + Pfeil-Bewegung. */
+   --primary — auf allen Geräten gleich, nicht nur beim Hover. Hover/Tap:
+   leicht dunkleres Gelb (--accent-hover). */
 .ghost-btn--primary {
   background-color: var(--accent);
   color: var(--primary);
@@ -501,25 +490,19 @@ section {
   border-color: var(--accent-hover);
 }
 
-/* Ab Tablet/Desktop größer; mobil bleibt die kompaktere Basis oben
-   (48px = --tap-target, 17px Schrift). */
+/* Ab Tablet/Desktop: größer und nebeneinander statt untereinander. */
 @media (min-width: 768px) {
+  .hero-section__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
   .ghost-btn {
     min-height: 56px;
     padding: var(--space-3) var(--space-8);
     font-size: 20px;
-  }
-
-  .ghost-btn__arrow {
-    width: 22px;
-    height: 22px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ghost-btn:hover .ghost-btn__arrow,
-  .ghost-btn:active .ghost-btn__arrow {
-    transform: none;
   }
 }
 

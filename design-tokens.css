@@ -88,7 +88,7 @@
 
   /* Hero-Headline: bewusst größer als --font-size-h1, damit sie auf
      Desktop die volle Wucht einer Ansage bekommt. */
-  --font-size-hero-h1: clamp(40px, 9vw, 88px);
+  --font-size-hero-h1: clamp(48px, 9vw, 88px);
 
   /* Kennzahlen in #vertrauen — lautestes Element der Sektion. */
   --font-size-stat: clamp(38px, 9vw, 64px);
