@@ -404,14 +404,96 @@ section {
 .hero-section__actions {
   display: flex;
   flex-direction: column;
+  /* flex-start statt stretch: die Buttons folgen ihrer Inhaltsbreite und
+     ziehen sich auch mobil nicht über die ganze Zeile. */
+  align-items: flex-start;
   gap: var(--space-3);
   width: 100%;
   animation: hero-enter 400ms ease-out both;
   animation-delay: 240ms;
 }
 
-.hero-section__actions > a {
-  width: 100%;
+/* --------------------------------------------------------------------------
+   .ghost-btn — Hero-Button ohne Füllung: der Hero scheint durch, nur ein
+   dünner gelber Rand (--accent) mit leicht gerundeten Ecken. Anton in
+   Großbuchstaben OHNE Schrägstellung (Buttons sind von der Headline-
+   Schrägstellung ausgenommen), Pfeil rechts als Inline-SVG.
+   Hover (Desktop) / Tap: Füllung in Randfarbe, Text --primary, Pfeil rutscht
+   4px nach rechts. Die Übergänge laufen über --transition-hover, das unter
+   prefers-reduced-motion 0s ist — dort wechselt nur die Farbe.
+   -------------------------------------------------------------------------- */
+.ghost-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  max-width: 100%;
+  padding: var(--space-3) var(--space-8);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--text-light);
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: var(--letter-spacing-badge);
+  text-transform: uppercase;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--transition-hover),
+    background-color var(--transition-hover),
+    box-shadow var(--transition-hover);
+}
+
+.ghost-btn__arrow {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  transition: transform var(--transition-hover);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ghost-btn:hover {
+    background-color: var(--accent);
+    color: var(--primary);
+  }
+
+  .ghost-btn:hover .ghost-btn__arrow {
+    transform: translateX(4px);
+  }
+}
+
+.ghost-btn:active {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
+.ghost-btn:active .ghost-btn__arrow {
+  transform: translateX(4px);
+}
+
+.ghost-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Sehr schmale Displays (≤ 359px, z. B. iPhone SE 1): "Jetzt voranmelden"
+   bricht mit dem vollen Innenabstand auf zwei Zeilen um (272px verfügbar,
+   276px benötigt) — kleinerer Seitenabstand hält den Button einzeilig. */
+@media (max-width: 359px) {
+  .ghost-btn {
+    padding-inline: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost-btn:hover .ghost-btn__arrow,
+  .ghost-btn:active .ghost-btn__arrow {
+    transform: none;
+  }
 }
 
 .scroll-hint {
@@ -1562,18 +1644,6 @@ section {
 @media (min-width: 768px) {
   .hero-section__title {
     max-width: 62%;
-  }
-
-  /* Seit "Anrufen" wegfiel bleibt nur noch ein Button übrig — der soll auf
-     Desktop dieselbe Spaltenbreite wie der Hero-Titel einnehmen (62%),
-     statt nur seiner Textbreite zu folgen. */
-  .hero-section__actions {
-    width: 100%;
-    max-width: 62%;
-  }
-
-  .hero-section__actions > a {
-    width: 100%;
   }
 
   .trust {
