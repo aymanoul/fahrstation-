@@ -14,6 +14,7 @@
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="../manifest.json">
 
+  <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="../design-tokens.css">
   <link rel="stylesheet" href="../styles.css">
 
@@ -191,12 +192,31 @@
           </div>
 
           <div class="contact-address">
-            <svg class="contact-address__icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 22s7-7.4 7-12.5C19 5.4 15.9 2 12 2S5 5.4 5 9.5C5 14.6 12 22 12 22z"/>
-              <circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
-            </svg>
-            <p class="contact-address__lines">Kölner Straße 292<br>40227 Düsseldorf</p>
-            <a class="contact-address__route" href="https://maps.google.com/?q=K%C3%B6lner+Stra%C3%9Fe+292,+40227+D%C3%BCsseldorf" target="_blank" rel="noopener">Route öffnen &rsaquo;</a>
+            <div class="location-card" data-location-card>
+              <button type="button" class="location-card__toggle">
+                <span class="location-card__frame" aria-hidden="true"></span>
+                <span class="location-card__body" aria-hidden="true">
+                  <svg class="location-card__map" viewBox="0 0 480 320" preserveAspectRatio="xMidYMid slice" focusable="false"><path class="location-card__road" d="M0 112H480" pathLength="1" stroke-width="5" style="--o:25%;--dur:0.8s;--d:0.2s"/><path class="location-card__road" d="M0 208H480" pathLength="1" stroke-width="5" style="--o:25%;--dur:0.8s;--d:0.3s"/><path class="location-card__road" d="M144 0V320" pathLength="1" stroke-width="4" style="--o:20%;--dur:0.6s;--d:0.4s"/><path class="location-card__road" d="M336 0V320" pathLength="1" stroke-width="4" style="--o:20%;--dur:0.6s;--d:0.5s"/><path class="location-card__road" d="M0 64H480" pathLength="1" stroke-width="2" style="--o:10%;--dur:0.5s;--d:0.6s"/><path class="location-card__road" d="M0 160H480" pathLength="1" stroke-width="2" style="--o:10%;--dur:0.5s;--d:0.7s"/><path class="location-card__road" d="M0 256H480" pathLength="1" stroke-width="2" style="--o:10%;--dur:0.5s;--d:0.8s"/><path class="location-card__road" d="M72 0V320" pathLength="1" stroke-width="2" style="--o:10%;--dur:0.5s;--d:0.7s"/><path class="location-card__road" d="M216 0V320" pathLength="1" stroke-width="2" style="--o:10%;--dur:0.5s;--d:0.8s"/><path class="location-card__road" d="M264 0V320" pathLength="1" stroke-width="2" style="--o:10%;--dur:0.5s;--d:0.9s"/><path class="location-card__road" d="M408 0V320" pathLength="1" stroke-width="2" style="--o:10%;--dur:0.5s;--d:1.0s"/><rect class="location-card__block" x="80" y="120" width="56" height="32" style="--d:0.5s"/><rect class="location-card__block" x="152" y="72" width="56" height="32" style="--d:0.6s"/><rect class="location-card__block" x="272" y="168" width="56" height="32" style="--d:0.7s"/><rect class="location-card__block" x="344" y="72" width="56" height="32" style="--d:0.55s"/><rect class="location-card__block" x="80" y="216" width="56" height="32" style="--d:0.65s"/><rect class="location-card__block" x="344" y="216" width="56" height="32" style="--d:0.75s"/></svg>
+                  <svg class="location-card__pin" viewBox="0 0 24 24" focusable="false"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                </span>
+                <span class="location-card__content">
+                  <span class="location-card__top">
+                    <svg class="location-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true" focusable="false"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+                    <span class="location-card__badge" data-loc-badge hidden><i class="location-card__dot" aria-hidden="true"></i><span data-loc-status></span></span>
+                  </span>
+                  <span class="location-card__bottom">
+                    <span class="location-card__name">Kölner Straße 292</span>
+                    <span class="location-card__city">40227 Düsseldorf</span>
+                    <span class="location-card__line" aria-hidden="true"></span>
+                  </span>
+                </span>
+                <span class="location-card__sr">Kartenansicht ein- oder ausklappen</span>
+              </button>
+              <div class="location-card__meta">
+                <a class="location-card__route" href="https://maps.google.com/?q=K%C3%B6lner+Stra%C3%9Fe+292,+40227+D%C3%BCsseldorf" target="_blank" rel="noopener">Route planen <span aria-hidden="true">&rarr;</span></a>
+                <p class="location-card__hint" aria-hidden="true"><span class="location-card__hint-mouse">Klicken für Karte</span><span class="location-card__hint-touch">Tippen für Karte</span></p>
+              </div>
+            </div>
             <a class="contact-address__email" href="mailto:info@fahrstation.de">info@fahrstation.de</a>
           </div>
         </div>

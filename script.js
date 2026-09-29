@@ -207,61 +207,227 @@
     }
   }
 
+  /* Öffnungszeiten — EINE Quelle für den Live-Status in #kontakt und für den
+     Badge der Standort-Karte. getDay() liefert 0 für Sonntag (nicht 7) —
+     OPENING_SCHEDULE enthält deshalb bewusst keinen Eintrag für 0, und die
+     Suche nach dem nächsten Öffnungstag überspringt jeden Tag ohne Eintrag
+     automatisch. */
+  var WEEKDAYS = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+  var OPENING_SCHEDULE = {
+    1: { open: 10 * 60 + 30, close: 18 * 60 },
+    2: { open: 10 * 60 + 30, close: 18 * 60 },
+    3: { open: 10 * 60 + 30, close: 18 * 60 },
+    4: { open: 10 * 60 + 30, close: 18 * 60 },
+    5: { open: 10 * 60 + 30, close: 18 * 60 },
+    6: { open: 11 * 60, close: 15 * 60 }
+  };
+
+  function formatTime(minutes) {
+    var h = Math.floor(minutes / 60);
+    var m = minutes % 60;
+    return h + ':' + (m < 10 ? '0' : '') + m;
+  }
+
+  /* Wochentag (0 = Sonntag) und Minuten seit Mitternacht in Düsseldorf,
+     unabhängig von der Zeitzone des Geräts: ein Besucher in London oder New
+     York soll denselben Status sehen wie jemand vor Ort. Fällt Intl weg
+     (sehr alte Browser), bleibt nur die Geräte-Ortszeit als Notlösung. */
+  function getBerlinNow(now) {
+    try {
+      var parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Europe/Berlin',
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+      }).formatToParts(now);
+      var map = {};
+      parts.forEach(function (p) { map[p.type] = p.value; });
+      var day = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[map.weekday];
+      if (day === undefined) throw new Error('weekday');
+      return { day: day, minutes: (parseInt(map.hour, 10) % 24) * 60 + parseInt(map.minute, 10) };
+    } catch (e) {
+      return { day: now.getDay(), minutes: now.getHours() * 60 + now.getMinutes() };
+    }
+  }
+
+  function getOpeningState(now) {
+    var t = getBerlinNow(now || new Date());
+    var today = OPENING_SCHEDULE[t.day];
+    var open = !!(today && t.minutes >= today.open && t.minutes < today.close);
+    var next = null;
+
+    if (!open) {
+      for (var i = 0; i <= 7; i++) {
+        var d = (t.day + i) % 7;
+        var sched = OPENING_SCHEDULE[d];
+        if (!sched) continue;
+        if (i === 0 && t.minutes >= sched.close) continue;
+        next = { day: d, open: sched.open };
+        break;
+      }
+    }
+
+    return { open: open, day: t.day, minutes: t.minutes, next: next };
+  }
+
   /* Live-Status "Jetzt geöffnet" / "Öffnet [Wochentag] um [Zeit]" in
-     #kontakt, berechnet aus der aktuellen Uhrzeit. getDay() liefert 0 für
-     Sonntag (nicht 7) — SCHEDULE enthält deshalb bewusst keinen Eintrag für
-     0, und die Suche nach dem nächsten Öffnungstag überspringt jeden Tag
-     ohne Eintrag automatisch. */
+     #kontakt. */
   function initOpeningStatus() {
     var statusEl = document.getElementById('opening-status');
     var textEl = document.getElementById('opening-status-text');
     if (!statusEl || !textEl) return;
 
-    var WEEKDAYS = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-    var SCHEDULE = {
-      1: { open: 10 * 60 + 30, close: 18 * 60 },
-      2: { open: 10 * 60 + 30, close: 18 * 60 },
-      3: { open: 10 * 60 + 30, close: 18 * 60 },
-      4: { open: 10 * 60 + 30, close: 18 * 60 },
-      5: { open: 10 * 60 + 30, close: 18 * 60 },
-      6: { open: 11 * 60, close: 15 * 60 }
-    };
+    var state = getOpeningState();
 
-    function formatTime(minutes) {
-      var h = Math.floor(minutes / 60);
-      var m = minutes % 60;
-      return h + ':' + (m < 10 ? '0' : '') + m;
-    }
-
-    var now = new Date();
-    var day = now.getDay();
-    var minutes = now.getHours() * 60 + now.getMinutes();
-    var today = SCHEDULE[day];
-
-    if (today && minutes >= today.open && minutes < today.close) {
+    if (state.open) {
       statusEl.classList.add('contact-hours__status--open');
       textEl.textContent = 'Jetzt geöffnet';
     } else {
-      var next = null;
-      for (var i = 0; i <= 7; i++) {
-        var d = (day + i) % 7;
-        var sched = SCHEDULE[d];
-        if (!sched) continue;
-        if (i === 0 && minutes >= sched.close) continue;
-        next = { day: d, open: sched.open };
-        break;
-      }
       statusEl.classList.add('contact-hours__status--closed');
-      if (next) {
-        textEl.textContent = 'Öffnet ' + WEEKDAYS[next.day] + ' um ' + formatTime(next.open);
+      if (state.next) {
+        textEl.textContent = 'Öffnet ' + WEEKDAYS[state.next.day] + ' um ' + formatTime(state.next.open);
       }
     }
 
     statusEl.hidden = false;
 
-    var todayKey = day === 0 ? 'sun' : day === 6 ? 'sat' : 'mon-fri';
+    var todayKey = state.day === 0 ? 'sun' : state.day === 6 ? 'sat' : 'mon-fri';
     var todayRow = document.querySelector('.contact-hours__row[data-day="' + todayKey + '"]');
     if (todayRow) todayRow.classList.add('contact-hours__row--today');
+  }
+
+<<<<<<< HEAD
+  /* Formular in #kontakt: standardmäßig sichtbar im Markup (funktioniert
+     ohne JavaScript), wird hier erst zu einem aufklappbaren Panel mit
+     Höhen-Animation. Der Submit-Handler verhindert das Absenden, weil noch
+     kein Backend angebunden ist — ein scheinbar erfolgreiches Absenden ins
+     Leere wäre schlimmer als kein Formular. */
+  function initContactForm() {
+    var trigger = document.getElementById('contact-form-trigger');
+    var panel = document.getElementById('contact-form-panel');
+
+    if (trigger && panel) {
+      panel.classList.add('contact-form-panel--js');
+      panel.style.maxHeight = '0px';
+      panel.setAttribute('inert', '');
+      trigger.setAttribute('aria-expanded', 'false');
+
+      trigger.addEventListener('click', function () {
+        var isOpen = trigger.getAttribute('aria-expanded') === 'true';
+
+        if (isOpen) {
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+          window.requestAnimationFrame(function () {
+            panel.style.maxHeight = '0px';
+          });
+          panel.setAttribute('inert', '');
+          trigger.setAttribute('aria-expanded', 'false');
+        } else {
+          panel.removeAttribute('inert');
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      panel.addEventListener('transitionend', function (event) {
+        if (event.propertyName !== 'max-height') return;
+        if (trigger.getAttribute('aria-expanded') === 'true') {
+          panel.style.maxHeight = 'none';
+        }
+      });
+    }
+
+    var form = document.getElementById('contact-form');
+    var notice = document.getElementById('contact-form-notice');
+    if (!form) return;
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (notice) notice.hidden = false;
+=======
+  /* Aufklappbare Standort-Karte (.location-card). Ohne JavaScript zeigt das
+     Markup bereits alles (aufgeklappter Look, Klasse "js" am <html> fehlt);
+     hier wird nur Verhalten ergänzt: auf-/zuklappen, 3D-Neigung auf
+     Geräten mit Maus, Öffnungs-Badge. Der Route-Link ist bewusst kein Kind
+     des Buttons (Link in Button wäre ungültig) und steht immer im Markup. */
+  function initLocationCard() {
+    var cards = document.querySelectorAll('[data-location-card]');
+    if (!cards.length) return;
+
+    var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function updateBadge(card) {
+      var badge = card.querySelector('[data-loc-badge]');
+      var label = card.querySelector('[data-loc-status]');
+      if (!badge || !label) return;
+      var open = getOpeningState().open;
+      badge.classList.toggle('location-card__badge--open', open);
+      badge.classList.toggle('location-card__badge--closed', !open);
+      label.textContent = open ? 'Geöffnet' : 'Geschlossen';
+      badge.hidden = false;
+    }
+
+    Array.prototype.forEach.call(cards, function (card) {
+      var toggle = card.querySelector('.location-card__toggle');
+      var route = card.querySelector('.location-card__route');
+      if (!toggle) return;
+
+      toggle.setAttribute('aria-expanded', 'false');
+
+      function setOpen(open) {
+        card.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+
+      toggle.addEventListener('click', function () {
+        setOpen(!card.classList.contains('is-open'));
+      });
+
+      toggle.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && card.classList.contains('is-open')) setOpen(false);
+      });
+
+      // Ein Klick auf den Link darf die Karte nie zuklappen.
+      if (route) route.addEventListener('click', function (e) { e.stopPropagation(); });
+
+      // 3D-Neigung: nur mit Maus und ohne reduzierte Bewegung. Die Werte
+      // gehen als CSS-Variablen ans Element, das Zurückfedern übernimmt eine
+      // CSS-Transition.
+      var frame = 0;
+      var tiltX = 0;
+      var tiltY = 0;
+
+      function applyTilt() {
+        frame = 0;
+        toggle.style.setProperty('--rx', tiltX.toFixed(2) + 'deg');
+        toggle.style.setProperty('--ry', tiltY.toFixed(2) + 'deg');
+      }
+
+      toggle.addEventListener('pointermove', function (e) {
+        if (e.pointerType !== 'mouse' || !fine.matches || reduce.matches) return;
+        var r = toggle.getBoundingClientRect();
+        var nx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width / 2)));
+        var ny = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height / 2)));
+        tiltY = nx * 8;
+        tiltX = -ny * 8;
+        toggle.classList.add('is-tilting');
+        if (!frame) frame = window.requestAnimationFrame(applyTilt);
+      });
+
+      toggle.addEventListener('pointerleave', function () {
+        tiltX = 0;
+        tiltY = 0;
+        toggle.classList.remove('is-tilting');
+        if (frame) window.cancelAnimationFrame(frame);
+        applyTilt();
+      });
+
+      updateBadge(card);
+      window.setInterval(function () { updateBadge(card); }, 60000);
+>>>>>>> 990a9f0 (Aufklappbare Standort-Karte mit Öffnungsstatus)
+    });
   }
 
   /* Formular auf site/kontakt.html. Prüft die Pflichtfelder selbst, statt die
@@ -626,6 +792,11 @@
     initTrustStats();
     initAblaufLine();
     initOpeningStatus();
+<<<<<<< HEAD
+    initContactForm();
+=======
+    initLocationCard();
+>>>>>>> 990a9f0 (Aufklappbare Standort-Karte mit Öffnungsstatus)
     initKontaktForm();
     initHeroVideo();
   });

@@ -70,6 +70,10 @@
      Suchergebnissen für offene Standorte zeigt. Bewusst nicht am
      Markenschema hergeleitet, nur für diesen einen Zweck bestimmt. */
   --status-open: #34D399;
+  /* Stand jetzt: von keiner Regel mehr verwendet — der Status-Punkt im
+     Kontaktbereich und der Badge der Standort-Karte nutzen beide --accent
+     (geöffnet) bzw. eine gedimmte Variante davon (geschlossen). Das Token
+     bleibt bewusst stehen. */
 
   /* ---------------------------------------------------------------------
      Typografie

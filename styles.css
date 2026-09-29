@@ -1201,11 +1201,12 @@ section {
 }
 
 .contact-hours__status--open .contact-hours__dot {
-  background-color: var(--status-open);
+  background-color: var(--accent);
 }
 
+/* Geschlossen = gedimmter Punkt, wie im Badge der Standort-Karte. */
 .contact-hours__status--closed .contact-hours__dot {
-  background-color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .contact-hours__list {
@@ -1229,60 +1230,519 @@ section {
   color: var(--text-light);
 }
 
-.contact-address__icon {
-  display: block;
-  width: var(--space-6);
-  height: var(--space-6);
-  margin-bottom: var(--space-2);
-  color: var(--accent);
-}
+/* --------------------------------------------------------------------------
+   .location-card — aufklappbare Standort-Karte (Kontaktbereich).
+   Form: Rechteck mit vier gefasten Ecken, Fase = --badge-notch (16px) wie
+   bei .class-card. Rahmen in Zwei-Ebenen-Technik: __frame (--accent) und
+   __body (3px eingerückt, --primary) tragen dieselbe Fasenform, damit der
+   Rahmen an den Schrägen nicht verschwindet (clip-path schneidet border ab).
 
-.contact-address__lines {
-  margin: 0 0 var(--space-2);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-base);
-  color: color-mix(in srgb, var(--text-light) 65%, transparent);
-}
-
-/* position: relative + die beiden ::before darunter vergrößern die Tap-
-   Fläche unsichtbar auf 48px Höhe, ohne die Zeile selbst höher zu machen.
-   Route öffnet nur nach OBEN (in die nicht-antippbare Adresszeile darüber),
-   E-Mail nur nach UNTEN (in freien Raum vor dem Formular-Trigger) — so
-   wächst keine der beiden Flächen in die jeweils andere hinein, und der
-   bestehende 8px-Abstand zwischen beiden Links bleibt erhalten. */
-.contact-address__route {
+   OHNE JavaScript (kein "js" am <html>) gelten die Grundwerte unten — das ist
+   der aufgeklappte Look, alles ist sichtbar, nichts animiert. Erst
+   ".js .location-card:not(.is-open)" macht daraus die kompakte Karte.
+   -------------------------------------------------------------------------- */
+.location-card {
+  --loc-cut: var(--badge-notch);
+  /* Fase der Innenfläche: bei 3px Rand 3 x (2 - sqrt 2) = 1,76px kleiner,
+     damit der gelbe Rand auch an den Schrägen 3px breit bleibt. */
+  --loc-cut-in: calc(var(--loc-cut) - 1.76px);
+  --loc-h: 19rem;
+  --loc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --loc-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
-  display: inline-block;
+  width: 100%;
   margin-bottom: var(--space-2);
-  font-size: var(--font-size-small);
-  color: var(--accent);
-  text-decoration: none;
+  perspective: 1000px;
 }
 
-.contact-address__route::before {
+.js .location-card:not(.is-open) {
+  --loc-h: 9.5rem;
+}
+
+.location-card__toggle {
+  --rx: 0deg;
+  --ry: 0deg;
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--loc-h);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-light);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition:
+    height 500ms var(--loc-ease),
+    transform 600ms var(--loc-spring);
+}
+
+/* Beim Verfolgen des Mauszeigers kurze Transition statt Feder. */
+.location-card__toggle.is-tilting {
+  transition:
+    height 500ms var(--loc-ease),
+    transform 120ms ease-out;
+}
+
+.location-card__frame,
+.location-card__body {
+  position: absolute;
+  clip-path: polygon(
+    var(--loc-cut) 0,
+    calc(100% - var(--loc-cut)) 0,
+    100% var(--loc-cut),
+    100% calc(100% - var(--loc-cut)),
+    calc(100% - var(--loc-cut)) 100%,
+    var(--loc-cut) 100%,
+    0 calc(100% - var(--loc-cut)),
+    0 var(--loc-cut)
+  );
+}
+
+.location-card__frame {
+  inset: 0;
+  background-color: var(--accent);
+}
+
+.location-card__body {
+  inset: 3px;
+  overflow: hidden;
+  background-color: var(--primary);
+  clip-path: polygon(
+    var(--loc-cut-in) 0,
+    calc(100% - var(--loc-cut-in)) 0,
+    100% var(--loc-cut-in),
+    100% calc(100% - var(--loc-cut-in)),
+    calc(100% - var(--loc-cut-in)) 100%,
+    var(--loc-cut-in) 100%,
+    0 calc(100% - var(--loc-cut-in)),
+    0 var(--loc-cut-in)
+  );
+}
+
+/* Dezentes Raster — nur im kompakten Zustand. */
+.location-card__body::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--tap-target);
+  inset: 0;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--text-light) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--text-light) 4%, transparent) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.js .location-card:not(.is-open) .location-card__body::before {
+  opacity: 1;
+}
+
+/* Verlauf von unten, damit der Text über der Karte lesbar bleibt. */
+.location-card__body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--primary) 92%, transparent) 0%,
+    color-mix(in srgb, var(--primary) 60%, transparent) 35%,
+    transparent 70%
+  );
+}
+
+/* --- Stadtplan (Deko, aria-hidden) ---------------------------------------
+   viewBox 480x320 mit "slice": gleichmäßig skaliert, nie verzerrt. Die
+   Straßen laufen über den ganzen viewBox und ragen bei schmalen Karten
+   einfach aus dem Bild; Gebäude und Stecknadel liegen im immer sichtbaren
+   Mittelbereich. */
+.location-card__map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: color-mix(in srgb, var(--text-light) 6%, transparent);
+  transition: opacity 400ms ease 100ms;
+}
+
+.js .location-card:not(.is-open) .location-card__map,
+.js .location-card:not(.is-open) .location-card__pin {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.location-card__road {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-light) var(--o), transparent);
+  stroke-linecap: butt;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 200ms ease;
+}
+
+.js .location-card:not(.is-open) .location-card__road {
+  stroke-dashoffset: 1;
+}
+
+.location-card.is-open .location-card__road {
+  transition: stroke-dashoffset var(--dur) ease-out var(--d);
+}
+
+.location-card__block {
+  fill: color-mix(in srgb, var(--text-light) 10%, transparent);
+  stroke: color-mix(in srgb, var(--text-light) 15%, transparent);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.js .location-card:not(.is-open) .location-card__block {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.location-card.is-open .location-card__block {
+  transition: opacity 400ms ease var(--d), transform 400ms ease var(--d);
+}
+
+.location-card__pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  fill: var(--accent);
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 50%, transparent));
+  transition: transform 200ms ease, opacity 400ms ease 100ms;
+}
+
+.location-card__pin circle {
+  fill: var(--primary);
+}
+
+.js .location-card:not(.is-open) .location-card__pin {
+  transform: scale(0) translateY(-20px);
+}
+
+.location-card.is-open .location-card__pin {
+  transition: transform 550ms var(--loc-spring) 300ms, opacity 200ms ease 300ms;
+}
+
+/* --- Inhalt ------------------------------------------------------------- */
+.location-card__content {
+  position: absolute;
+  inset: 3px;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-4);
+}
+
+.location-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--space-6);
+}
+
+.location-card__icon {
+  flex: none;
+  width: var(--space-6);
+  height: var(--space-6);
+  color: var(--accent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 30%, transparent));
+  opacity: 0;
+  transition: filter 300ms ease, opacity 300ms ease;
+}
+
+.js .location-card:not(.is-open) .location-card__icon {
+  opacity: 1;
+}
+
+.location-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  padding: var(--space-1) var(--space-3);
+  background-color: color-mix(in srgb, var(--text-light) 8%, transparent);
+  color: color-mix(in srgb, var(--text-light) 85%, transparent);
+  font-family: var(--font-display);
+  font-size: var(--font-size-micro);
+  line-height: 1;
+  letter-spacing: var(--letter-spacing-badge);
+  text-transform: uppercase;
+  clip-path: polygon(
+    6px 0,
+    calc(100% - 6px) 0,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    0 calc(100% - 6px),
+    0 6px
+  );
+}
+
+.location-card__badge[hidden] {
+  display: none;
+}
+
+/* Gleicher Punkt wie .contact-hours__dot: gelb = geöffnet, gedimmt = zu. */
+.location-card__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--accent);
+}
+
+.location-card__badge--closed .location-card__dot {
+  background-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.location-card__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.location-card__name,
+.location-card__city {
+  display: block;
+  transition: transform 400ms var(--loc-spring);
+}
+
+.location-card__name {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-light);
+}
+
+.location-card__city {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-tight);
+  color: color-mix(in srgb, var(--text-light) 75%, transparent);
+}
+
+.location-card__line {
+  display: block;
+  height: 2px;
+  margin-top: var(--space-1);
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--accent) 80%, transparent),
+    color-mix(in srgb, var(--accent) 40%, transparent) 50%,
+    transparent
+  );
+  transform-origin: left;
+  transition: transform 400ms ease-out;
+}
+
+.js .location-card:not(.is-open) .location-card__line {
+  transform: scaleX(0.3);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .contact-address__route:hover {
+  .location-card__toggle:hover .location-card__name,
+  .location-card__toggle:hover .location-card__city {
+    transform: translateX(4px);
+  }
+
+  .location-card__toggle:hover .location-card__line {
+    transform: scaleX(1);
+  }
+
+  .location-card__toggle:hover .location-card__icon {
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 60%, transparent));
+  }
+}
+
+/* Fokus: --focus-ring (3px Abstand, 3px Ring in --accent) folgt der Fase.
+   box-shadow/outline würden vom clip-path abgeschnitten, deshalb ein Ring
+   aus einem eigenen, größeren Polygon (evenodd) 3px bis 6px außerhalb.
+   Die Fasenlage ergibt sich aus der senkrechten Versetzung der Schräge:
+   nach außen um d verschiebt sich der Fasenpunkt um 0,586 x d nach innen. */
+.location-card__toggle::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: 3;
+  pointer-events: none;
+  background-color: var(--accent);
+  opacity: 0;
+  clip-path: polygon(
+    evenodd,
+    calc(var(--loc-cut) + 3.52px) 0,
+    calc(100% - var(--loc-cut) - 3.52px) 0,
+    100% calc(var(--loc-cut) + 3.52px),
+    100% calc(100% - var(--loc-cut) - 3.52px),
+    calc(100% - var(--loc-cut) - 3.52px) 100%,
+    calc(var(--loc-cut) + 3.52px) 100%,
+    0 calc(100% - var(--loc-cut) - 3.52px),
+    0 calc(var(--loc-cut) + 3.52px),
+    calc(var(--loc-cut) + 3.52px) 0,
+    calc(var(--loc-cut) + 4.76px) 3px,
+    calc(100% - var(--loc-cut) - 4.76px) 3px,
+    calc(100% - 3px) calc(var(--loc-cut) + 4.76px),
+    calc(100% - 3px) calc(100% - var(--loc-cut) - 4.76px),
+    calc(100% - var(--loc-cut) - 4.76px) calc(100% - 3px),
+    calc(var(--loc-cut) + 4.76px) calc(100% - 3px),
+    3px calc(100% - var(--loc-cut) - 4.76px),
+    3px calc(var(--loc-cut) + 4.76px),
+    calc(var(--loc-cut) + 4.76px) 3px
+  );
+}
+
+.location-card__toggle:focus-visible {
+  outline: none;
+}
+
+.location-card__toggle:focus-visible::after {
+  opacity: 1;
+}
+
+.location-card__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Route-Link und Hinweis unter der Karte. Der Link ist immer erreichbar,
+   auch zugeklappt und ohne JavaScript. */
+.location-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.location-card__route {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  font-family: var(--font-display);
+  font-size: var(--font-size-small);
+  letter-spacing: var(--letter-spacing-badge);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .location-card__route:hover {
     text-decoration: underline;
   }
 }
 
-.contact-address__route:active {
+.location-card__route:active {
   text-decoration: underline;
 }
 
-.contact-address__route:focus-visible {
+.location-card__route:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
+.location-card__hint {
+  display: none;
+  margin: 0;
+  font-size: var(--font-size-micro);
+  color: color-mix(in srgb, var(--text-light) 60%, transparent);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.js .location-card__hint {
+  display: block;
+}
+
+.location-card__hint-touch {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .js .location-card:hover:not(.is-open) .location-card__hint {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Touch: es gibt kein Hover, der Hinweis steht dauerhaft da (nur zugeklappt). */
+@media (hover: none) {
+  .js .location-card:not(.is-open) .location-card__hint {
+    opacity: 1;
+    transform: none;
+  }
+
+  .location-card__hint-mouse {
+    display: none;
+  }
+
+  .location-card__hint-touch {
+    display: inline;
+  }
+}
+
+@media (min-width: 768px) {
+  .location-card {
+    --loc-h: 20rem;
+    max-width: 32rem;
+    transition: max-width 500ms var(--loc-ease);
+  }
+
+  .js .location-card:not(.is-open) {
+    --loc-h: 9.5rem;
+    max-width: 22rem;
+  }
+
+  .location-card__content {
+    padding: var(--space-6);
+  }
+
+  .location-card__name {
+    font-size: 20px;
+  }
+}
+
+/* Reduzierte Bewegung: keine Neigung, keine Linien-Animation, kein
+   Federeffekt — Auf- und Zuklappen passiert sofort. !important, damit die
+   spezifischeren Übergangsregeln des aufgeklappten Zustands nicht greifen. */
+@media (prefers-reduced-motion: reduce) {
+  .location-card,
+  .location-card *,
+  .location-card *::before,
+  .location-card *::after {
+    transition: none !important;
+  }
+
+  .location-card__toggle {
+    transform: none;
+  }
+}
+
+/* Tap-Fläche der E-Mail-Adresse: das ::before vergrößert sie unsichtbar
+   nach UNTEN auf 48px Höhe, ohne die Zeile selbst höher zu machen. */
 .contact-address__email {
   position: relative;
   display: block;
@@ -1315,7 +1775,64 @@ section {
   outline-offset: 2px;
 }
 
-/* --- Block 3: Formular (site/kontakt.html) ----------------------------- */
+/* --- Block 3: Formular, aufklappbar ------------------------------------ */
+.contact-form-toggle {
+  margin-top: var(--space-16);
+  text-align: center;
+}
+
+.contact-form-toggle__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-target);
+  padding: var(--space-2) 0;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-small);
+  color: color-mix(in srgb, var(--text-light) 70%, transparent);
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-form-toggle__trigger:hover {
+    color: var(--text-light);
+  }
+}
+
+.contact-form-toggle__trigger:active {
+  color: var(--text-light);
+}
+
+.contact-form-toggle__trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.contact-form-toggle__chevron {
+  display: inline-block;
+  transition: transform var(--transition-base);
+}
+
+.contact-form-toggle__trigger[aria-expanded="true"] .contact-form-toggle__chevron {
+  transform: rotate(90deg);
+}
+
+/* Die Klasse setzt initContactForm() in script.js erst nach dem Laden —
+   ohne JavaScript bleibt das Formular ein normaler, vollständig sichtbarer
+   Block statt für immer unerreichbar zu sein (gleiches Prinzip wie
+   trust-stats--ready in #vertrauen). */
+.contact-form-panel--js {
+  overflow: hidden;
+  transition: max-height var(--transition-panel);
+}
+
+.contact-form-panel__inner {
+  padding-top: var(--space-8);
+  text-align: left;
+}
+
 .contact-form__field {
   display: flex;
   flex-direction: column;
@@ -1329,6 +1846,7 @@ section {
 }
 
 .contact-form__input,
+.contact-form__select,
 .contact-form__textarea {
   box-sizing: border-box;
   width: 100%;
@@ -1348,6 +1866,7 @@ section {
 }
 
 .contact-form__input:focus-visible,
+.contact-form__select:focus-visible,
 .contact-form__textarea:focus-visible {
   outline: none;
   border-color: var(--accent);
