@@ -322,9 +322,9 @@ section {
      zeigte sichtbar schlechtere Wirkung — der Pfeil daneben bleibt gerade,
      kurze Einzelworte wirken unruhig statt dynamisch.
    - Große Zahlen-/Deko-Displays (.trust-stat__value, .step-number,
-     .class-card__letter, .class-card__ghost, .testimonial__mark): keine
-     Fließtext-Überschriften, sondern Zahlen/Buchstaben-Badges bzw. ein
-     rein dekoratives Wasserzeichen.
+     .class-card__letter, .testimonial__mark): keine Fließtext-Über-
+     schriften, sondern Zahlen/Buchstaben-Badges bzw. ein rein dekoratives
+     Wasserzeichen.
 
    .hero-section__title bekommt den Skew nicht direkt aus dieser Regel,
    weil ihre Eintritts-Animation (hero-enter-title) eine gleichzeitig
@@ -717,189 +717,222 @@ section {
   color: var(--accent);
 }
 
-/* Auf Mobile bewusst KEIN grid-auto-rows: 1fr: in der einspaltigen Ansicht
-   steht jede Karte für sich, gleiche Höhen würden die kürzeren Karten (B/C/D
-   mit nur einer Badge-Zeile) nur auf die Höhe von A aufblasen und unter der
-   Fußzeile ein leeres Loch erzeugen. Nebeneinander ab 768px ist es
-   umgekehrt — dort wird 1fr wieder gesetzt. */
-.classes__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-6);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+/* --------------------------------------------------------------------------
+   Klassen-Karussell (#klassen)
+   --------------------------------------------------------------------------
+   Track = horizontaler Scroll-Container mit scroll-snap. Seitlich bündig bis
+   zum Rand des .classes__inner-Paddings (negativer Rand, gleich großes
+   Padding), damit die nächste Karte mobil rechts aus dem Bild ragt und der
+   Rand nicht abschneidet. Oben/unten Luft im Padding: overflow-x: auto macht
+   overflow-y zwangsläufig ebenfalls zum Scroll-Container, der Glow
+   (drop-shadow bis ca. 22px) würde sonst an der Trackkante abgeschnitten.
+
+   Ohne JavaScript bleibt die native Scrollleiste sichtbar (nur unter html.js
+   ausgeblendet), sonst kämen Maus-Nutzer nicht an Karte 3 und 4.
+   -------------------------------------------------------------------------- */
+.classes__carousel {
+  --carousel-gap: var(--space-4);
+  --carousel-pad: var(--space-4);
+  /* Kartenbreite (siehe flex-basis unten) — die Pfeile brauchen sie, um mittig
+     auf der Bildfläche (16:10) zu sitzen statt mittig auf der ganzen Karte.
+     100cqw = Breite dieses Containers = Content-Breite des Tracks. */
+  container-type: inline-size;
+  --card-w: calc((100cqw - var(--carousel-gap)) / 2.2);
 }
 
-/* display: grid statt flex: ein Grid-Item wird per Voreinstellung in BEIDEN
-   Achsen gestreckt (siehe .class-tile-Vorgänger — flex ließ die vier
-   Kacheln unterschiedlich breit werden).
+.classes__viewport {
+  position: relative;
+}
 
-   Der gelbe Glow hängt hier am Elternelement und NICHT an .class-card:
-   deren clip-path schneidet box-shadow restlos weg. filter: drop-shadow
-   arbeitet dagegen auf der bereits geclippten Silhouette des Kindes und
-   folgt ihr exakt. Zwei gestaffelte Schatten (eng/kräftig + weit/schwach)
-   ergeben die weiche Aura statt einer harten Neon-Kante. */
+.classes__track {
+  position: relative;
+  display: flex;
+  gap: var(--carousel-gap);
+  margin: calc(-1 * var(--space-8)) calc(-1 * var(--carousel-pad));
+  padding: var(--space-8) var(--carousel-pad);
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--carousel-pad);
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.js .classes__track {
+  scrollbar-width: none;
+}
+
+.js .classes__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fokus: --focus-ring liegt außen und würde am Viewport-Rand abgeschnitten.
+   Gleicher Doppelring, nach innen gelegt (Track-Padding bietet den Platz). */
+.classes__track:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 3px var(--primary),
+    inset 0 0 0 6px var(--accent);
+}
+
+/* Handy: 85 % der Trackbreite, die nächste Karte schaut heraus. */
 .classes__item {
+  flex: 0 0 85%;
+  min-width: 0;
+  scroll-snap-align: start;
   display: grid;
+  /* Der gelbe Glow hängt hier am Elternelement und NICHT an .class-card:
+     deren clip-path schneidet box-shadow restlos weg. filter: drop-shadow
+     arbeitet dagegen auf der bereits geclippten Silhouette des Kindes und
+     folgt ihr exakt. Zwei gestaffelte Schatten (eng/kräftig + weit/schwach)
+     ergeben die weiche Aura statt einer harten Neon-Kante. */
   filter:
     drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 26%, transparent))
     drop-shadow(0 0 22px color-mix(in srgb, var(--accent) 13%, transparent));
 }
 
 /* --------------------------------------------------------------------------
-   .class-card — Klassen-Kachel im Kartenlook (Wortmarke, großer Buchstabe,
-   freigestelltes Fahrzeugfoto, Alters-Badges, CTA). Zwei-Ebenen-Technik wie
-   .class-tile: äußere Fläche voll --accent (sichtbarer gelber Rahmen),
-   ::before liegt eingerückt darüber und trägt den dunklen Kern — border +
-   clip-path funktionieren an dieser Sechseck-Silhouette nicht zusammen.
+   .class-card — Klassen-Karte: Foto als volle Fläche oben, darunter heller
+   Infobereich. Form: Rechteck mit vier gefasten Ecken, Fase = --badge-notch
+   (wie .location-card). Zwei-Ebenen-Technik: die äußere Karte ist voll
+   --accent (= gelber Rahmen), __inner liegt --cc-pad eingerückt darüber und
+   trägt dieselbe Fasenform — border + clip-path funktionieren an einer
+   Schräge nicht zusammen. Die Fase der Innenfläche schrumpft um 0,586 x Rand
+   (senkrechte Versetzung einer 45°-Schräge), damit der Rahmen auch an den
+   Ecken gleich breit bleibt.
    -------------------------------------------------------------------------- */
 .class-card {
+  --cc-cut: var(--badge-notch);
+  --cc-pad: 3px;
+  --cc-cut-in: calc(var(--cc-cut) - 0.586 * var(--cc-pad));
   box-sizing: border-box;
-  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
+  padding: var(--cc-pad);
   background-color: var(--accent);
   text-decoration: none;
   clip-path: polygon(
-    0 50%,
-    var(--badge-notch) 0,
-    calc(100% - var(--badge-notch)) 0,
-    100% 50%,
-    calc(100% - var(--badge-notch)) 100%,
-    var(--badge-notch) 100%
+    var(--cc-cut) 0,
+    calc(100% - var(--cc-cut)) 0,
+    100% var(--cc-cut),
+    100% calc(100% - var(--cc-cut)),
+    calc(100% - var(--cc-cut)) 100%,
+    var(--cc-cut) 100%,
+    0 calc(100% - var(--cc-cut)),
+    0 var(--cc-cut)
   );
-  transition: transform var(--transition-hover);
+  transition:
+    transform var(--transition-hover),
+    padding var(--transition-hover);
 }
 
-.class-card::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  background-color: var(--primary);
-  clip-path: polygon(
-    0 50%,
-    var(--badge-notch) 0,
-    calc(100% - var(--badge-notch)) 0,
-    100% 50%,
-    calc(100% - var(--badge-notch)) 100%,
-    var(--badge-notch) 100%
-  );
-  transition: inset var(--transition-hover);
-}
-
-.class-card > * {
-  position: relative;
-}
-
-.class-card__top {
+.class-card__inner {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-/* Originale Wortmarke aus dem Header (per <use> auf #wordmark-badge, siehe
-   Sprite gleich nach <body>) — nicht neu gezeichnet, nicht vereinfacht,
-   exakt dieselben drei Pfade wie im Banner, nur klein skaliert. */
-.class-card__brand {
-  width: 84px;
-  height: auto;
-  flex-shrink: 0;
-}
-
-.class-card__letter {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--space-12);
-  padding: var(--space-2) var(--space-6);
-  background-color: var(--accent);
-  color: var(--primary);
-  font-family: var(--font-display);
-  font-size: clamp(28px, 5vw, 36px);
-  line-height: 1;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--background-light);
   clip-path: polygon(
-    0 50%,
-    var(--badge-notch) 0,
-    calc(100% - var(--badge-notch)) 0,
-    100% 50%,
-    calc(100% - var(--badge-notch)) 100%,
-    var(--badge-notch) 100%
+    var(--cc-cut-in) 0,
+    calc(100% - var(--cc-cut-in)) 0,
+    100% var(--cc-cut-in),
+    100% calc(100% - var(--cc-cut-in)),
+    calc(100% - var(--cc-cut-in)) 100%,
+    var(--cc-cut-in) 100%,
+    0 calc(100% - var(--cc-cut-in)),
+    0 var(--cc-cut-in)
   );
 }
 
-/* Fahrzeug-Bühne — ohne eigene Fläche: das freigestellte Fahrzeug steht
-   direkt auf dem Kartenschwarz, dahinter nur der weiche gelbe Radial-Glow,
-   der nach außen ins Schwarz ausläuft. Der Glow endet bei 72 % und erreicht
-   die Bühnenkante nie, deshalb entsteht trotz overflow: hidden keine
-   sichtbare Abrisskante.
-
-   Mobile ist die Bühne ein flaches Querband: Geister-Buchstabe links,
-   Fahrzeug rechts daneben. Ab 768px zentriert (siehe Breakpoints unten).
-   overflow: hidden begrenzt den Geister-Buchstaben aufs Band, damit er
-   nicht in die Logo-Zeile läuft. */
+/* Bildfläche 16:10. Wand oben etwas heller als der Boden, damit der Boden
+   "dunkler" wirkt, ohne eine neue Farbe zu brauchen — --primary ist bereits
+   das dunkelste Token, der Schatten unter dem Fahrzeug (::before) ist
+   deshalb reines --primary, der Boden liegt eine Spur darüber. Dahinter der
+   weiche gelbe Lichtschein in der Mitte. */
 .class-card__stage {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  height: 130px;
+  flex: none;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
+  background-color: var(--primary);
+  background-image:
+    radial-gradient(
+      ellipse 62% 58% at 50% 50%,
+      color-mix(in srgb, var(--accent) 26%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--text-light) 10%, var(--primary)) 0%,
+      color-mix(in srgb, var(--text-light) 8%, var(--primary)) 62%,
+      color-mix(in srgb, var(--text-light) 3%, var(--primary)) 62%,
+      color-mix(in srgb, var(--text-light) 3%, var(--primary)) 100%
+    );
 }
 
-/* Auf dem schwarzen Kartengrund muss der Buchstabe aus Weiß mit sehr
-   niedriger Deckkraft gemischt werden statt aus Schwarz — schwarz auf
-   schwarz wäre unsichtbar. Das Ergebnis ist trotzdem ein dunkles Grau
-   (~#323130), also klar als Form erkennbar, aber weit unter jeder
-   Textkontrastschwelle. */
-.class-card__ghost {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  font-family: var(--font-display);
-  font-size: clamp(96px, 30vw, 124px);
-  line-height: 1;
-  color: color-mix(in srgb, var(--text-light) 15%, transparent);
-  user-select: none;
-}
-
-.class-card__stage::after {
+.class-card__stage::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background-image: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--accent) 26%, transparent),
-    transparent 72%
-  );
+  right: 12%;
+  bottom: 7%;
+  left: 12%;
+  height: 12%;
+  background-image: radial-gradient(closest-side, var(--primary), transparent);
 }
 
 /* Das Flex-Kind der Bühne ist <picture>, nicht <img> — eine Prozent-Höhe am
-   Bild löst deshalb gegen die inhaltsabhängige <picture>-Höhe auf und bleibt
-   wirkungslos (das Bild lief so über die Bandhöhe hinaus und wurde von
-   overflow: hidden beschnitten). <picture> wird darum absolut auf die Bühne
-   gelegt, das Bild füllt es vollständig, und object-fit: contain übernimmt
-   die Einpassung. Mobile sitzt es rechts und lässt links Platz für den
-   Geister-Buchstaben. */
+   Bild würde gegen die inhaltsabhängige <picture>-Höhe auflösen und
+   wirkungslos bleiben. <picture> liegt deshalb absolut auf der Bühne, das
+   Bild füllt es, object-fit: contain übernimmt die Einpassung. */
 .class-card__stage picture {
   position: absolute;
   z-index: 1;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 76%;
+  inset: 8% 7% 9%;
 }
 
 .class-card__vehicle {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center bottom;
+}
+
+.class-card__info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+}
+
+.class-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Hexagon-Badge: gelbe Fläche, dunkler Anton-Buchstabe. */
+.class-card__letter {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-10);
+  padding: var(--space-1) var(--space-6);
+  background-color: var(--accent);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
 }
 
 .class-card__heading {
@@ -909,32 +942,30 @@ section {
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-display);
   text-transform: uppercase;
-  text-align: center;
-  color: var(--text-light);
+  color: var(--text-dark);
 }
 
 .class-card__ages {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: var(--space-2);
 }
 
-/* Dünner gelber Rahmen an einer abgeschrägten Form: border + clip-path
-   funktionieren nicht zusammen (der Rand folgt dem Schnitt nicht), deshalb
-   die Zwei-Ebenen-Technik wie bei .class-chip — hier aber ohne zusätzliches
-   Label-Element im Markup: beide Ebenen liegen auf z-index -1 und damit
-   zwischen Elementhintergrund und Inline-Text. ::after (dunkle Füllung)
-   zeichnet nach ::before (gelbe Fläche) und lässt davon genau 1px als
-   Rahmen stehen. isolation: isolate hält das negative z-index innerhalb
-   des Badges, sonst fiele es hinter die Kartenfläche. */
+/* Alters-Badge: helle Füllung, gelber Rand, dunkle Schrift, schräge Ecken.
+   border + clip-path funktionieren nicht zusammen (der Rand folgt dem Schnitt
+   nicht), deshalb die Zwei-Ebenen-Technik: beide Ebenen liegen auf
+   z-index -1 zwischen Elementhintergrund und Inline-Text. ::after (helle
+   Füllung) zeichnet nach ::before (gelbe Fläche) und lässt davon genau 2px
+   als Rahmen stehen — auf hellem Grund braucht der gelbe Rand mehr Breite
+   als die früheren 1px auf Schwarz, um zu tragen. isolation: isolate hält das
+   negative z-index innerhalb des Badges. */
 .class-card__age {
   position: relative;
   isolation: isolate;
   display: inline-flex;
   align-items: center;
   padding: var(--space-1) var(--space-3);
-  color: var(--accent);
+  color: var(--text-dark);
   font-family: var(--font-body);
   font-size: var(--font-size-micro);
   font-weight: 700;
@@ -956,29 +987,29 @@ section {
 }
 
 .class-card__age::after {
-  inset: 1px;
-  background-color: var(--primary);
+  inset: 2px;
+  background-color: var(--background-light);
 }
 
 .class-card__divider {
-  height: 2px;
-  background-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  flex: none;
+  height: 1px;
+  margin-inline: var(--space-4);
+  background-color: color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
-/* Kein margin-top: auto mehr — der Restplatz gleich hoher Karten wandert
-   über flex: 1 an der Bühne ins Fahrzeugfoto statt in ein leeres Loch über
-   der Fußzeile (Karten mit nur zwei Badges hatten genau das). */
 .class-card__bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
 .class-card__icon {
   width: 26px;
   height: 26px;
-  color: var(--accent);
+  color: var(--text-dark);
   flex-shrink: 0;
 }
 
@@ -987,17 +1018,14 @@ section {
   font-size: var(--font-size-small);
   letter-spacing: var(--letter-spacing-badge);
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-dark);
   white-space: nowrap;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .class-card:hover {
+    --cc-pad: 5px;
     transform: translateY(-4px);
-  }
-
-  .class-card:hover::before {
-    inset: 5px;
   }
 
   .class-card:hover .class-card__cta {
@@ -1006,22 +1034,153 @@ section {
 }
 
 .class-card:active {
+  --cc-pad: 5px;
   transform: translateY(-2px);
 }
 
-.class-card:active::before {
-  inset: 5px;
-}
-
-/* clip-path schneidet outline weg wie bei .class-tile — der gelbe Rahmen
-   selbst wird als Fokus-Indikator dicker, indem ::before weiter einrückt. */
+/* clip-path schneidet outline weg — der gelbe Rahmen selbst wird als
+   Fokus-Indikator dicker, indem die Innenfläche weiter einrückt. */
 .class-card:focus-visible {
+  --cc-pad: 8px;
   outline: none;
 }
 
-.class-card:focus-visible::before {
-  inset: 8px;
+/* --- Pfeile (per JS eingefügt) -------------------------------------------
+   Signage-Form: Fünfeck mit Spitze in Laufrichtung, Zwei-Ebenen-Rahmen
+   (--accent außen, --primary innen). Nur mit Maus sinnvoll — auf Touch-
+   Geräten wischt man, dort sind sie ausgeblendet. */
+.carousel-arrow {
+  --arrow-notch: 14px;
+  position: absolute;
+  top: 50%;
+  top: calc(var(--card-w) * 0.3125);
+  z-index: 3;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  margin: calc(var(--tap-target) / -2) 0 0;
+  padding: 0;
+  border: 0;
+  background-color: var(--accent);
+  color: var(--accent);
+  cursor: pointer;
+  transition: opacity var(--transition-base), visibility var(--transition-base);
 }
+
+.carousel-arrow--prev {
+  left: calc(-1 * var(--carousel-pad));
+  clip-path: polygon(0 50%, var(--arrow-notch) 0, 100% 0, 100% 100%, var(--arrow-notch) 100%);
+}
+
+.carousel-arrow--next {
+  right: calc(-1 * var(--carousel-pad));
+  clip-path: polygon(0 0, calc(100% - var(--arrow-notch)) 0, 100% 50%, calc(100% - var(--arrow-notch)) 100%, 0 100%);
+}
+
+.carousel-arrow::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background-color: var(--primary);
+  transition: inset var(--transition-hover), background-color var(--transition-hover);
+}
+
+.carousel-arrow--prev::before {
+  clip-path: polygon(0 50%, var(--arrow-notch) 0, 100% 0, 100% 100%, var(--arrow-notch) 100%);
+}
+
+.carousel-arrow--next::before {
+  clip-path: polygon(0 0, calc(100% - var(--arrow-notch)) 0, 100% 50%, calc(100% - var(--arrow-notch)) 100%, 0 100%);
+}
+
+.carousel-arrow svg {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.carousel-arrow.is-hidden {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .carousel-arrow:hover::before {
+    background-color: var(--accent);
+  }
+
+  .carousel-arrow:hover {
+    color: var(--primary);
+  }
+}
+
+.carousel-arrow:focus-visible {
+  outline: none;
+}
+
+.carousel-arrow:focus-visible::before {
+  inset: 5px;
+}
+
+@media (hover: none) {
+  .carousel-arrow {
+    display: none;
+  }
+}
+
+/* --- Punkte (per JS eingefügt): Rauten statt Kreise ---------------------- */
+.classes__dots {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+.classes__dot {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.classes__dot::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  background-color: color-mix(in srgb, var(--text-light) 30%, transparent);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  transition: width var(--transition-base), height var(--transition-base), background-color var(--transition-base);
+}
+
+.classes__dot[aria-current="true"]::before {
+  width: 14px;
+  height: 14px;
+  background-color: var(--accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .classes__dot:hover::before {
+    background-color: var(--accent);
+  }
+}
+
+.classes__dot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -6px;
+}
+
 
 /* --------------------------------------------------------------------------
    Ablauf (#ablauf)
@@ -2099,12 +2258,12 @@ section {
 }
 
 /* ==========================================================================
-   Breakpoint ≥ 600px — Kachel-Raster #klassen wird 2×2, ab hier bis
-   einschließlich Desktop unverändert (kein weiterer Sprung bei 1024px).
+   Breakpoint ≥ 600px — Klassen-Karussell zeigt etwas über zwei Karten, die
+   dritte schaut noch heraus.
    ========================================================================== */
 @media (min-width: 600px) {
-  .classes__grid {
-    grid-template-columns: repeat(2, 1fr);
+  .classes__item {
+    flex-basis: calc((100% - var(--carousel-gap)) / 2.2);
   }
 }
 
@@ -2156,42 +2315,6 @@ section {
     padding-block: var(--space-30);
   }
 
-  /* 2×2 statt einer Spalte — ausdrücklich nur für dieses Tablet-Fenster
-     (768–1023px), nicht für Desktop (siehe ≥1024px-Block: dort eine Zeile
-     mit allen vier Karten). */
-  /* Nebeneinander stehende Karten sollen gleich hoch sein und unten bündig
-     abschließen; den Höhenunterschied (A/B mit zwei Badge-Zeilen gegen C/D
-     mit einer) nimmt die Bühne über flex: 1 auf, er landet also im Foto und
-     nicht in einer Lücke über der Fußzeile. */
-  .classes__grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 1fr;
-  }
-
-  /* Ab hier sind die Spalten hochformatig: Fahrzeug wieder mittig statt im
-     flachen Querband. */
-  .class-card__stage {
-    flex: 1;
-    height: auto;
-    min-height: 170px;
-    justify-content: center;
-  }
-
-  .class-card__ghost {
-    justify-content: center;
-    font-size: clamp(150px, 20vw, 200px);
-  }
-
-  /* Die Fotos füllen die Bühne hier fast vollständig und würden den
-     Geister-Buchstaben sonst ganz verdecken — besonders bei den flächigen
-     weißen Fahrzeugen (C/D). Der schmale seitliche Einzug lässt seine
-     Flanken wieder durchscheinen, wie in der Vorlage. */
-  .class-card__stage picture {
-    left: 7%;
-    right: 7%;
-    width: auto;
-  }
-
   .contact {
     padding-block: var(--space-30);
   }
@@ -2229,18 +2352,17 @@ section {
    Breakpoint ≥ 1024px — Desktop breit
    ========================================================================== */
 @media (min-width: 1024px) {
-  /* Eine Zeile mit allen vier Karten statt des 2×2-Rasters aus dem
-     768px-Fenster — ausdrücklich so vorgegeben (nicht 2×2 auf Desktop). */
-  .classes__grid {
-    grid-template-columns: repeat(4, 1fr);
+  /* Exakt zwei volle Karten, keine angeschnittene dritte: 100 % ist die
+     Content-Breite des Tracks (ohne Padding), zwei Karten plus ein Abstand
+     füllen sie genau; die dritte beginnt damit erst hinter der Trackkante.
+     Größerer Abstand (24px) gegen einen Streifen der dritten Karte. */
+  .classes__carousel {
+    --carousel-gap: var(--space-6);
+    --card-w: calc((100cqw - var(--carousel-gap)) / 2);
   }
 
-  .class-card__stage {
-    min-height: 150px;
-  }
-
-  .class-card__ghost {
-    font-size: clamp(170px, 17vw, 230px);
+  .classes__item {
+    flex-basis: calc((100% - var(--carousel-gap)) / 2);
   }
 
   .ablauf {

@@ -380,6 +380,154 @@
     });
   }
 
+  /* Klassen-Karussell (#klassen). Der Track scrollt und rastet per CSS
+     (scroll-snap); hier kommen nur die Bedienelemente dazu: Pfeile (nur mit
+     Maus sichtbar), Punkte, Pfeiltasten und der Aktiv-Zustand. Die
+     Bedienelemente werden erst hier erzeugt — ohne JavaScript gäbe es sonst
+     tote Buttons; der Track bleibt dann per Wischen/Scrollleiste bedienbar. */
+  function initClassCarousel() {
+    var carousel = document.querySelector('.classes__carousel');
+    if (!carousel) return;
+
+    var viewport = carousel.querySelector('.classes__viewport');
+    var track = carousel.querySelector('.classes__track');
+    var dotsBox = carousel.querySelector('[data-carousel-dots]');
+    if (!viewport || !track) return;
+
+    var items = Array.prototype.slice.call(track.children);
+    if (items.length < 2) return;
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function scrollBehavior() {
+      return reduce.matches ? 'auto' : 'smooth';
+    }
+
+    function makeArrow(direction) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'carousel-arrow carousel-arrow--' + direction;
+      btn.setAttribute('aria-label', direction === 'prev' ? 'Vorherige Klasse anzeigen' : 'Nächste Klasse anzeigen');
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true" focusable="false">' +
+        '<path d="' + (direction === 'prev' ? 'M15 4l-8 8 8 8' : 'M9 4l8 8-8 8') + '"/></svg>';
+      return btn;
+    }
+
+    var prev = makeArrow('prev');
+    var next = makeArrow('next');
+    viewport.appendChild(prev);
+    viewport.appendChild(next);
+
+    // Abstand von Kartenanfang zu Kartenanfang (Kartenbreite + gap).
+    function step() {
+      return items[1].offsetLeft - items[0].offsetLeft;
+    }
+
+    function padStart() {
+      return parseFloat(window.getComputedStyle(track).scrollPaddingLeft) || 0;
+    }
+
+    function maxScroll() {
+      return track.scrollWidth - track.clientWidth;
+    }
+
+    function scrollToCard(index) {
+      var target = Math.max(0, Math.min(maxScroll(), items[index].offsetLeft - padStart()));
+      track.scrollTo({ left: target, behavior: scrollBehavior() });
+    }
+
+    var dots = [];
+    if (dotsBox) {
+      items.forEach(function (item, i) {
+        var letterEl = item.querySelector('.class-card__letter');
+        var letter = letterEl ? letterEl.textContent.trim() : String(i + 1);
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'classes__dot';
+        dot.setAttribute('aria-label', 'Klasse ' + letter + ' anzeigen');
+        dot.addEventListener('click', function () { scrollToCard(i); });
+        dotsBox.appendChild(dot);
+        dots.push(dot);
+      });
+    }
+
+    function setArrow(btn, hidden) {
+      if (hidden && document.activeElement === btn) track.focus({ preventScroll: true });
+      btn.classList.toggle('is-hidden', hidden);
+      btn.tabIndex = hidden ? -1 : 0;
+    }
+
+    var ticking = false;
+
+    function update() {
+      ticking = false;
+      var x = track.scrollLeft;
+      var max = maxScroll();
+      var atEnd = x >= max - 2;
+
+      setArrow(prev, x <= 2);
+      setArrow(next, atEnd);
+
+      // Aktiv = erste sichtbare Karte (nächster Rastpunkt), am Ende die letzte.
+      var active = 0;
+      if (atEnd && max > 2) {
+        active = items.length - 1;
+      } else {
+        var best = Infinity;
+        items.forEach(function (item, i) {
+          var d = Math.abs(item.offsetLeft - padStart() - x);
+          if (d < best) { best = d; active = i; }
+        });
+      }
+
+      dots.forEach(function (dot, i) {
+        if (i === active) dot.setAttribute('aria-current', 'true');
+        else dot.removeAttribute('aria-current');
+      });
+    }
+
+    function schedule() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    prev.addEventListener('click', function () {
+      track.scrollBy({ left: -step(), behavior: scrollBehavior() });
+    });
+
+    next.addEventListener('click', function () {
+      track.scrollBy({ left: step(), behavior: scrollBehavior() });
+    });
+
+    // Pfeiltasten scrollen um eine Karte, Pos1/Ende springen an die Ränder —
+    // auf dem Track selbst und auf den Karten-Links darin.
+    carousel.addEventListener('keydown', function (e) {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      var t = e.target;
+      if (t !== track && !(t.closest && t.closest('.class-card'))) return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        track.scrollBy({ left: step(), behavior: scrollBehavior() });
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        track.scrollBy({ left: -step(), behavior: scrollBehavior() });
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        track.scrollTo({ left: 0, behavior: scrollBehavior() });
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        track.scrollTo({ left: maxScroll(), behavior: scrollBehavior() });
+      }
+    });
+
+    track.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+    update();
+  }
+
   /* Formular auf site/kontakt.html. Prüft die Pflichtfelder selbst, statt die
      Browser-Meldungen zu nutzen: die sind je nach Browser anders formuliert,
      teils englisch, und lassen sich nicht unter dem Feld platzieren. */
@@ -743,6 +891,7 @@
     initAblaufLine();
     initOpeningStatus();
     initLocationCard();
+    initClassCarousel();
     initKontaktForm();
     initHeroVideo();
   });
