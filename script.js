@@ -197,12 +197,34 @@
      Bewegung passiert nichts: statische Schimmer, Überschrift sofort da. */
   function initAurora() {
     var shines = Array.prototype.slice.call(document.querySelectorAll('.shine--gold'));
+    var TAN = Math.tan(10 * Math.PI / 180); // Streifen liegen bei 100deg
+
+    // Angrenzende Sektionen mit .shine--join-t führen das Streifenmuster der
+    // Vorgängersektion nahtlos fort: Phase = bisherige Phase + Höhe * tan(10deg).
+    function alignJoins() {
+      var all = Array.prototype.slice.call(document.querySelectorAll('.shine'));
+      all.forEach(function (el) {
+        if (!el.classList.contains('shine--join-t')) return;
+        var prev = el.previousElementSibling;
+        if (!prev && el.parentElement) prev = el.parentElement.previousElementSibling;
+        if (!prev || !prev.classList.contains('shine')) return;
+        var period = el.classList.contains('shine--silver') ? 760 : 560;
+        var phase = (parseFloat(prev.style.getPropertyValue('--shine-phase')) || 0) + prev.offsetHeight * TAN;
+        el.style.setProperty('--shine-phase', (phase % period).toFixed(1) + 'px');
+      });
+    }
+    alignJoins();
+    window.addEventListener('resize', alignJoins, { passive: true });
+
     if (!shines.length) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     var head = document.querySelector('.ablauf__head');
     var heading = head && head.querySelector('.ablauf__heading');
     var MAX_RUNNING = 2;
+
+    var PERIOD = 60000;
+    var T0 = window.performance.now();
 
     function reveal() {
       if (heading) heading.classList.add('is-revealed');
@@ -222,9 +244,20 @@
         .filter(function (el) { return (ratios.get(el) || 0) > 0; })
         .sort(function (x, y) { return ratios.get(y) - ratios.get(x); })
         .slice(0, MAX_RUNNING);
+      var clock = (window.performance.now() - T0) % PERIOD;
+      var syncing = false;
       shines.forEach(function (el) {
-        el.classList.toggle('is-inview', visible.indexOf(el) !== -1);
+        var on = visible.indexOf(el) !== -1;
+        if (on && !el.classList.contains('is-inview')) syncing = true;
+        el.classList.toggle('is-inview', on);
       });
+      // Alle Gold-Ebenen laufen auf einer gemeinsamen Uhr, damit Streifen an
+      // der Naht zweier angrenzender Sektionen zusammenpassen.
+      if (syncing && document.getAnimations) {
+        document.getAnimations().forEach(function (a) {
+          if (a.animationName === 'shine-drift') a.currentTime = clock;
+        });
+      }
     }
 
     var observer = new IntersectionObserver(
