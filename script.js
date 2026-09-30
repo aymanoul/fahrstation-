@@ -187,42 +187,60 @@
     observer.observe(card);
   }
 
-  /* Aurora-Kopf der Ablauf-Sektion (.ablauf__head): die Lichtbänder wandern
-     nur, solange der Block im Bild ist (.is-inview schaltet den
-     animation-play-state in CSS), die Überschrift blendet einmalig ein
-     (.is-revealed, sobald ca. 30 % des Blocks sichtbar sind). Bei reduzierter
-     Bewegung passiert nichts: statische Bänder, Überschrift sofort da. */
+  /* Gold-Schimmer (.shine--gold): die Lichtbänder wandern nur, solange ihre
+     Sektion im Bild ist (.is-inview schaltet den animation-play-state in
+     CSS) — EIN gemeinsamer IntersectionObserver für alle, und höchstens
+     zwei Schimmer laufen gleichzeitig (die mit dem größten sichtbaren
+     Anteil). Silber (.shine--silver) ist statisch und braucht kein JS.
+     Zusätzlich blendet die Überschrift im Ablauf-Kopf einmalig ein
+     (.is-revealed, sobald ca. 30 % des Kopfes sichtbar sind). Bei reduzierter
+     Bewegung passiert nichts: statische Schimmer, Überschrift sofort da. */
   function initAurora() {
-    var head = document.querySelector('.ablauf__head');
-    if (!head) return;
+    var shines = Array.prototype.slice.call(document.querySelectorAll('.shine--gold'));
+    if (!shines.length) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    var heading = head.querySelector('.ablauf__heading');
+    var head = document.querySelector('.ablauf__head');
+    var heading = head && head.querySelector('.ablauf__heading');
+    var MAX_RUNNING = 2;
 
     function reveal() {
       if (heading) heading.classList.add('is-revealed');
     }
 
     if (!('IntersectionObserver' in window)) {
-      head.classList.add('is-inview');
+      shines.slice(0, MAX_RUNNING).forEach(function (el) { el.classList.add('is-inview'); });
       reveal();
       return;
     }
 
+    var ratios = new Map();
     var revealed = false;
+
+    function update() {
+      var visible = shines
+        .filter(function (el) { return (ratios.get(el) || 0) > 0; })
+        .sort(function (x, y) { return ratios.get(y) - ratios.get(x); })
+        .slice(0, MAX_RUNNING);
+      shines.forEach(function (el) {
+        el.classList.toggle('is-inview', visible.indexOf(el) !== -1);
+      });
+    }
+
     var observer = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
-          head.classList.toggle('is-inview', entry.isIntersecting);
-          if (!revealed && entry.intersectionRatio >= 0.3) {
+          ratios.set(entry.target, entry.isIntersecting ? entry.intersectionRatio || 0.01 : 0);
+          if (!revealed && entry.target === head && entry.intersectionRatio >= 0.3) {
             revealed = true;
             reveal();
           }
         });
+        update();
       },
-      { threshold: [0, 0.3] }
+      { threshold: [0, 0.1, 0.3, 0.6, 1] }
     );
-    observer.observe(head);
+    shines.forEach(function (el) { observer.observe(el); });
   }
 
   /* Positioniert die gestrichelte Verbindungslinie in #ablauf so, dass sie

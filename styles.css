@@ -1474,20 +1474,161 @@ section {
 
 
 /* --------------------------------------------------------------------------
+   Schimmer (.shine) — wiederverwendbarer Baustein
+   --------------------------------------------------------------------------
+   Jede Sektion bekommt ihren eigenen Lichtschein, passend zur Sektionsfarbe,
+   die Kanten zwischen den Sektionen bleiben hart. Zwei Varianten:
+     .shine--gold    dunkle Sektionen: gelbe Lichtbänder (--accent/--accent-hover,
+                     geringe Deckkraft), wandern langsam (60 s) per transform,
+                     nur solange die Sektion sichtbar ist (initAurora, .is-inview)
+     .shine--silver  helle Sektionen: silberner Glanz wie ein Lichtreflex auf
+                     Lack, STATISCH
+   Ecke: .shine--tr / --tl / --bl / --br; sie wechselt von Sektion zu Sektion.
+
+   Aufbau (kein Extra-Markup): ::before = Lichtebene (Gold: breite Ebene, die
+   wandert; Silber: statische Verläufe), ::after = statisches Overlay in der
+   Sektionsfarbe (--shine-bg), das den Schimmer zu ALLEN vier Kanten und zur
+   gegenüberliegenden Ecke hin weich auslaufen lässt — nie an der Kante
+   abgeschnitten. Beide liegen mit z-index -1 unter dem Inhalt
+   (isolation: isolate hält das in der Sektion). Overlay statt mask-image und
+   Bewegung nur per transform: stabil und schnell auf iOS. Kein Blur-Filter,
+   kein mix-blend-mode, kein background-attachment: fixed. */
+.shine {
+  --shine-edge: clamp(32px, 7vw, 96px);
+  --shine-rx: min(120vw, 1300px);
+  --shine-ry: min(150vw, 760px);
+  --shine-at: 100% 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+@supports (overflow: clip) {
+  /* Nur horizontal beschneiden (die wandernde Ebene ist breiter als die
+     Sektion), vertikal bleibt alles wie vorher. */
+  .shine {
+    overflow: visible;
+    overflow-x: clip;
+  }
+}
+
+.shine::before,
+.shine::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.shine::after {
+  inset: 0;
+  background-image:
+    linear-gradient(to bottom, var(--shine-bg) 0, color-mix(in srgb, var(--shine-bg) 55%, transparent) calc(min(var(--shine-edge), 30%) * 0.4), transparent min(var(--shine-edge), 30%)),
+    linear-gradient(to top, var(--shine-bg) 0, color-mix(in srgb, var(--shine-bg) 55%, transparent) calc(min(var(--shine-edge), 30%) * 0.4), transparent min(var(--shine-edge), 30%)),
+    linear-gradient(to right, var(--shine-bg) 0, color-mix(in srgb, var(--shine-bg) 55%, transparent) calc(min(var(--shine-edge), 30%) * 0.4), transparent min(var(--shine-edge), 30%)),
+    linear-gradient(to left, var(--shine-bg) 0, color-mix(in srgb, var(--shine-bg) 55%, transparent) calc(min(var(--shine-edge), 30%) * 0.4), transparent min(var(--shine-edge), 30%)),
+    radial-gradient(ellipse var(--shine-rx) var(--shine-ry) at var(--shine-at), transparent 38%, color-mix(in srgb, var(--shine-bg) 30%, transparent) 70%, var(--shine-bg) 100%),
+    radial-gradient(ellipse calc(var(--shine-rx) * 0.55) calc(var(--shine-ry) * 0.6) at var(--shine-at), var(--shine-glow, transparent), transparent 70%);
+}
+
+.shine--tr { --shine-at: 100% 0; }
+.shine--tl { --shine-at: 0 0; }
+.shine--bl { --shine-at: 0 100%; }
+.shine--br { --shine-at: 100% 100%; }
+
+/* Gold: gelbe Bänder auf dunklem Grund */
+.shine--gold {
+  --shine-bg: var(--primary);
+  --shine-period: 560px;
+  /* Verschiebung um genau eine Periode bei 100deg-Streifen: Periode / cos(10deg). */
+  --shine-shift: calc(var(--shine-period) * 1.0154);
+  /* --shine-strength skaliert die Deckkraft: Grundstärke 1, .shine--strong
+     1,35 (ab 768 px, wo kein Text davorsteht), .shine--soft 0,5 dort, wo
+     Text darüber den Kontrast von 4,5:1 sonst unterschreiten würde. */
+  --shine-strength: 1;
+  --shine-a: color-mix(in srgb, var(--accent) calc(38% * var(--shine-strength)), transparent);
+  --shine-b: color-mix(in srgb, var(--accent-hover) calc(26% * var(--shine-strength)), transparent);
+  --shine-c: color-mix(in srgb, color-mix(in srgb, var(--accent) 30%, var(--text-light)) calc(22% * var(--shine-strength)), transparent);
+  --shine-glow: color-mix(in srgb, var(--accent) calc(28% * var(--shine-strength)), transparent);
+}
+
+/* Kräftiger (ab Tablet-Breite): dort, wo der Text links steht und die Ecke
+   rechts frei bleibt. Auf dem Handy läuft der Text über die volle Breite,
+   dort bleibt es bei der Grundstärke. */
+@media (min-width: 768px) {
+  .shine--gold.shine--strong {
+    --shine-strength: 1.35;
+  }
+}
+
+/* Sanfter: weniger Deckkraft dort, wo Text über dem Schimmer steht. */
+.shine--gold.shine--soft {
+  --shine-strength: 0.5;
+}
+
+.shine--gold::before {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(100% + var(--shine-shift));
+  background-image: repeating-linear-gradient(
+    100deg,
+    transparent 0,
+    var(--shine-a) 75px,
+    transparent 170px,
+    transparent 215px,
+    var(--shine-b) 290px,
+    transparent 365px,
+    transparent 400px,
+    var(--shine-c) 455px,
+    transparent 515px,
+    transparent var(--shine-period)
+  );
+}
+
+/* Silber: statischer Glanz auf hellem Grund, sehr dezent. Nur ein leichter
+   Grauschleier und ein heller Streifen in der Ecke, nie hinter Fließtext. */
+.shine--silver {
+  --shine-bg: var(--background-light);
+  --shine-rx: min(70vw, 640px);
+  --shine-ry: min(90vw, 420px);
+}
+
+.shine--silver::before {
+  inset: 0;
+  background-image:
+    linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--text-light) 80%, transparent) 42%, transparent 54%),
+    radial-gradient(ellipse var(--shine-rx) var(--shine-ry) at var(--shine-at), color-mix(in srgb, var(--text-dark) 4%, transparent), transparent 75%);
+}
+
+/* Bewegung nur gelb und nur bei erlaubter Bewegung, nur im sichtbaren
+   Bereich (initAurora setzt .is-inview, höchstens zwei gleichzeitig). */
+@media (prefers-reduced-motion: no-preference) {
+  .shine--gold::before {
+    animation: shine-drift 60s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .shine--gold.is-inview::before {
+    will-change: transform;
+    animation-play-state: running;
+  }
+}
+
+@keyframes shine-drift {
+  to {
+    transform: translate3d(calc(var(--shine-shift) * -1), 0, 0);
+  }
+}
+
+/* --------------------------------------------------------------------------
    Ablauf (#ablauf)
    --------------------------------------------------------------------------
    Beantwortet "wie läuft das ab, wie lange dauert es?" in vier nummerierten
    Schritten. Nach der dunklen Klassen-Sektion wieder hell — wechselnder
    Rhythmus der Seite. Der Kopf (.ablauf__head) ist ein dunkler Signage-Block
-   mit Aurora-Lichtschein; die Schritte darunter stehen auf hellem Grund.
-
-   Aurora: nur Tokens und color-mix. Die Bänder sind weiche Verlaufsstreifen
-   (keine Weichzeichner-Filter) auf einer breiteren Ebene, die per transform
-   um genau eine Bandperiode wandert — GPU-freundlich, nahtlos, nur solange
-   der Block sichtbar ist (initAurora setzt .is-inview). Der Auslauf nach
-   links unten ist ein Verlauf-Overlay in --primary statt mask-image
-   (Masken auf bewegten Kindern ruckeln im iOS-Safari). Ohne JavaScript
-   stehen die Bänder still, bei reduzierter Bewegung ebenso.
+   mit Gold-Schimmer (.shine, siehe oben); die Schritte darunter stehen auf
+   hellem Grund.
    -------------------------------------------------------------------------- */
 .ablauf {
   background-color: var(--background-light);
@@ -1495,16 +1636,6 @@ section {
 }
 
 .ablauf__head {
-  --ablauf-period: 560px;
-  /* Horizontalverschiebung für genau eine Periode bei 100deg-Streifen:
-     Periode / cos(10deg). */
-  --aurora-shift: calc(var(--ablauf-period) * 1.0154);
-  --aurora-a: color-mix(in srgb, var(--accent) 38%, transparent);
-  --aurora-b: color-mix(in srgb, var(--accent-hover) 26%, transparent);
-  --aurora-c: color-mix(in srgb, color-mix(in srgb, var(--accent) 30%, var(--text-light)) 22%, transparent);
-  --aurora-glow: color-mix(in srgb, var(--accent) 28%, transparent);
-  position: relative;
-  isolation: isolate;
   display: flex;
   align-items: center;
   min-height: 380px;
@@ -1519,44 +1650,6 @@ section {
     var(--badge-notch) 100%,
     0 calc(100% - var(--badge-notch))
   );
-}
-
-.ablauf__aurora {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background-image: radial-gradient(ellipse 60% 90% at 100% 0, var(--aurora-glow), transparent 70%);
-}
-
-.ablauf__aurora::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: calc(100% + var(--aurora-shift));
-  background-image: repeating-linear-gradient(
-    100deg,
-    transparent 0,
-    var(--aurora-a) 75px,
-    transparent 170px,
-    transparent 215px,
-    var(--aurora-b) 290px,
-    transparent 365px,
-    transparent 400px,
-    var(--aurora-c) 455px,
-    transparent 515px,
-    transparent var(--ablauf-period)
-  );
-}
-
-.ablauf__aurora::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(ellipse 90% 130% at 100% 0, transparent 20%, var(--primary) 85%);
 }
 
 .ablauf__head-inner {
@@ -1611,22 +1704,11 @@ section {
   color: color-mix(in srgb, var(--text-light) 85%, transparent);
 }
 
-/* Bewegung nur bei erlaubter Bewegung: Bänder wandern (nur im sichtbaren
-   Block), die Überschrift blendet einmalig ein. Ohne JavaScript (kein
+/* Bewegung nur bei erlaubter Bewegung: die Überschrift blendet einmalig ein. Ohne JavaScript (kein
    html.js) ist die Überschrift sofort da. Die Verschiebung läuft über die
    einzelne Eigenschaft translate, damit der Skew (transform) unangetastet
    bleibt. */
 @media (prefers-reduced-motion: no-preference) {
-  .ablauf__aurora::before {
-    will-change: transform;
-    animation: aurora-drift 60s linear infinite;
-    animation-play-state: paused;
-  }
-
-  .ablauf__head.is-inview .ablauf__aurora::before {
-    animation-play-state: running;
-  }
-
   html.js .ablauf__heading {
     opacity: 0;
     translate: 0 40px;
@@ -1639,11 +1721,6 @@ section {
   }
 }
 
-@keyframes aurora-drift {
-  to {
-    transform: translate3d(calc(var(--aurora-shift) * -1), 0, 0);
-  }
-}
 
 .ablauf-steps {
   position: relative;
