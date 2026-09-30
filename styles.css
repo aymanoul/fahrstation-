@@ -799,17 +799,40 @@ section {
   }
 }
 
-/* Sterne: nur mit JS (initRatingStars) erst gedimmt, dann nacheinander
-   aufleuchten (80ms Versatz). Ohne JavaScript oder bei reduzierter Bewegung
-   bleiben sie von Anfang an voll gelb. */
-.rating--ready .rating__star {
-  fill: color-mix(in srgb, var(--accent) 22%, transparent);
+/* Sterne und Zahlen zählen beim ersten Sichtbarwerden hoch (initRatingCounter).
+   Zwei Sternebenen: unten die leeren Sterne (--accent mit 25 % Deckkraft), darüber
+   die vollen, je per clipPath abgeschnitten — JS setzt die Breite des
+   Ausschnitts (Teilfüllung von links nach rechts). Im Markup steht der Endwert
+   (alle Sterne voll, 5,0, 1200), ohne JavaScript oder bei reduzierter Bewegung
+   bleibt es dabei. */
+.rating__star--empty {
+  fill: color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
-.rating--visible .rating__star {
-  fill: var(--accent);
-  transition: fill 300ms ease-out;
-  transition-delay: calc(var(--i, 0) * 80ms);
+/* Feste Breite der zählenden Zahlen: ein unsichtbarer Endwert (data-final,
+   per ::after in dieselbe Grid-Zelle gelegt) bestimmt die Breite, die
+   sichtbare Ziffernfolge steht rechtsbündig darin. So ändert sich die
+   Kartengröße beim Hochzählen nicht und das "+" bleibt an seinem Platz. */
+.rating__score {
+  font-variant-numeric: tabular-nums;
+}
+
+.rating__num,
+.rating__count-num {
+  display: inline-grid;
+  text-align: end;
+}
+
+.rating__num::after,
+.rating__count-num::after,
+.rating__live {
+  grid-area: 1 / 1;
+}
+
+.rating__num::after,
+.rating__count-num::after {
+  content: attr(data-final);
+  visibility: hidden;
 }
 
 /* --------------------------------------------------------------------------
@@ -3079,10 +3102,6 @@ section {
    Reduzierte Bewegung
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .rating--visible .rating__star {
-    transition: none;
-  }
-
   .site-header,
   .site-header__inner,
   .nav-toggle__bar {

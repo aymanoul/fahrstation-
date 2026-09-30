@@ -113,32 +113,77 @@
     el.textContent = new Date().getFullYear();
   }
 
-  /* Bewertungs-Karte in #vertrauen: die fünf Sterne leuchten beim ersten
-     Sichtbarwerden einmal nacheinander auf (CSS-Transition, 80 ms Versatz über
-     --i am Stern). --ready dimmt sie erst hier — ohne JavaScript, ohne
-     IntersectionObserver oder bei reduzierter Bewegung bleiben sie von Anfang
-     an voll gelb. */
-  function initRatingStars() {
+  /* Bewertungs-Karte in #vertrauen: beim ersten Sichtbarwerden zählen "5,0"
+     (eine Nachkommastelle, Komma) und die Bewertungszahl (0 bis 1200) gleichzeitig
+     hoch, die Sterne füllen sich parallel nach dem Wert der Note (Stern i voll
+     ab Wert i, dazwischen teilweise von links). Ein gemeinsamer Zeitgeber
+     (requestAnimationFrame), 2000 ms, ease-out, einmalig. Im Markup steht
+     immer der Endwert — ohne JavaScript, ohne IntersectionObserver/rAF oder
+     bei reduzierter Bewegung bleibt es dabei. Startwerte (0) setzt erst dieses
+     Skript: nur wenn die Karte außerhalb des Sichtbereichs liegt, sonst läuft
+     die Animation sofort an. Die Zahlen sind aria-hidden (Karte), der
+     Screenreader-Satz zeigt immer den Endwert. */
+  function initRatingCounter() {
     var card = document.querySelector('.rating');
     if (!card) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (!('IntersectionObserver' in window)) return;
+    if (!('IntersectionObserver' in window) || !window.requestAnimationFrame) return;
 
-    card.classList.add('rating--ready');
+    var scoreEl = card.querySelector('.rating__num .rating__live');
+    var countEl = card.querySelector('.rating__count-num .rating__live');
+    var clips = card.querySelectorAll('.rating__clip');
+    if (!scoreEl || !countEl || !clips.length) return;
+
+    var DURATION = 2000;
+    var SCORE = 5;
+    var COUNT = 1200;
+    var STAR_SIZE = 20;
+    var scoreFinal = scoreEl.parentNode.getAttribute('data-final') || scoreEl.textContent;
+    var countFinal = countEl.parentNode.getAttribute('data-final') || countEl.textContent;
+
+    function render(progress) {
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var value = SCORE * eased;
+      scoreEl.textContent = progress >= 1 ? scoreFinal : value.toFixed(1).replace('.', ',');
+      countEl.textContent = progress >= 1 ? countFinal : String(Math.round(COUNT * eased));
+      Array.prototype.forEach.call(clips, function (rect, i) {
+        var fill = Math.max(0, Math.min(1, value - i));
+        rect.setAttribute('width', (STAR_SIZE * fill).toFixed(2));
+      });
+    }
+
+    var started = false;
+
+    function start() {
+      if (started) return;
+      started = true;
+      var t0 = 0;
+      render(0);
+      window.requestAnimationFrame(function step(ts) {
+        if (!t0) t0 = ts;
+        var progress = Math.min((ts - t0) / DURATION, 1);
+        render(progress);
+        if (progress < 1) window.requestAnimationFrame(step);
+      });
+    }
+
+    var rect = card.getBoundingClientRect();
+    var inViewNow = rect.bottom > 0 && rect.top < window.innerHeight;
+    if (inViewNow) {
+      start();
+      return;
+    }
+
+    render(0);
 
     var observer = new IntersectionObserver(
       function (entries, obs) {
         if (!entries[0].isIntersecting) return;
         obs.disconnect();
-        // Ein Frame Pause, damit der gedimmte Zustand gemalt ist, bevor die
-        // Transition startet.
-        window.requestAnimationFrame(function () {
-          card.classList.add('rating--visible');
-        });
+        start();
       },
-      { threshold: 0.5 }
+      { threshold: 0.4 }
     );
-
     observer.observe(card);
   }
 
@@ -1167,7 +1212,7 @@
     initMobileMenu();
     initDropdown();
     initCurrentYear();
-    initRatingStars();
+    initRatingCounter();
     initAblaufLine();
     initOpeningStatus();
     initLocationCard();
