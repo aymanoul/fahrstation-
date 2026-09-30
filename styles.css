@@ -1478,11 +1478,94 @@ section {
    --------------------------------------------------------------------------
    Beantwortet "wie läuft das ab, wie lange dauert es?" in vier nummerierten
    Schritten. Nach der dunklen Klassen-Sektion wieder hell — wechselnder
-   Rhythmus der Seite.
+   Rhythmus der Seite. Der Kopf (.ablauf__head) ist ein dunkler Signage-Block
+   mit Aurora-Lichtschein; die Schritte darunter stehen auf hellem Grund.
+
+   Aurora: nur Tokens und color-mix. Die Bänder sind weiche Verlaufsstreifen
+   (keine Weichzeichner-Filter) auf einer breiteren Ebene, die per transform
+   um genau eine Bandperiode wandert — GPU-freundlich, nahtlos, nur solange
+   der Block sichtbar ist (initAurora setzt .is-inview). Der Auslauf nach
+   links unten ist ein Verlauf-Overlay in --primary statt mask-image
+   (Masken auf bewegten Kindern ruckeln im iOS-Safari). Ohne JavaScript
+   stehen die Bänder still, bei reduzierter Bewegung ebenso.
    -------------------------------------------------------------------------- */
 .ablauf {
   background-color: var(--background-light);
-  padding-block: var(--space-20);
+  padding-block: 0 var(--space-20);
+}
+
+.ablauf__head {
+  --ablauf-period: 560px;
+  /* Horizontalverschiebung für genau eine Periode bei 100deg-Streifen:
+     Periode / cos(10deg). */
+  --aurora-shift: calc(var(--ablauf-period) * 1.0154);
+  --aurora-a: color-mix(in srgb, var(--accent) 38%, transparent);
+  --aurora-b: color-mix(in srgb, var(--accent-hover) 26%, transparent);
+  --aurora-c: color-mix(in srgb, color-mix(in srgb, var(--accent) 30%, var(--text-light)) 22%, transparent);
+  --aurora-glow: color-mix(in srgb, var(--accent) 28%, transparent);
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: 380px;
+  margin-bottom: var(--space-16);
+  padding-block: var(--space-12);
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--badge-notch)),
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%,
+    0 calc(100% - var(--badge-notch))
+  );
+}
+
+.ablauf__aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-image: radial-gradient(ellipse 60% 90% at 100% 0, var(--aurora-glow), transparent 70%);
+}
+
+.ablauf__aurora::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(100% + var(--aurora-shift));
+  background-image: repeating-linear-gradient(
+    100deg,
+    transparent 0,
+    var(--aurora-a) 75px,
+    transparent 170px,
+    transparent 215px,
+    var(--aurora-b) 290px,
+    transparent 365px,
+    transparent 400px,
+    var(--aurora-c) 455px,
+    transparent 515px,
+    transparent var(--ablauf-period)
+  );
+}
+
+.ablauf__aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(ellipse 90% 130% at 100% 0, transparent 20%, var(--primary) 85%);
+}
+
+.ablauf__head-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
 }
 
 .ablauf__inner {
@@ -1492,14 +1575,74 @@ section {
 }
 
 .ablauf__heading {
-  margin: 0 0 var(--space-16);
+  margin: 0;
   font-family: var(--font-display);
   font-size: var(--font-size-section-heading);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-display);
   text-transform: uppercase;
-  text-align: center;
-  color: var(--text-dark);
+  text-align: left;
+  color: var(--text-light);
+}
+
+.ablauf__heading-line,
+.ablauf__heading-accent {
+  display: block;
+  width: fit-content;
+}
+
+.ablauf__heading-accent {
+  color: var(--accent);
+}
+
+.ablauf__bar {
+  display: block;
+  width: 48px;
+  height: 4px;
+  margin-top: var(--space-6);
+  background-color: var(--accent);
+}
+
+.ablauf__lead {
+  max-width: 46ch;
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--text-light) 85%, transparent);
+}
+
+/* Bewegung nur bei erlaubter Bewegung: Bänder wandern (nur im sichtbaren
+   Block), die Überschrift blendet einmalig ein. Ohne JavaScript (kein
+   html.js) ist die Überschrift sofort da. Die Verschiebung läuft über die
+   einzelne Eigenschaft translate, damit der Skew (transform) unangetastet
+   bleibt. */
+@media (prefers-reduced-motion: no-preference) {
+  .ablauf__aurora::before {
+    will-change: transform;
+    animation: aurora-drift 60s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .ablauf__head.is-inview .ablauf__aurora::before {
+    animation-play-state: running;
+  }
+
+  html.js .ablauf__heading {
+    opacity: 0;
+    translate: 0 40px;
+    transition: opacity 800ms ease-out 300ms, translate 800ms ease-out 300ms;
+  }
+
+  html.js .ablauf__heading.is-revealed {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes aurora-drift {
+  to {
+    transform: translate3d(calc(var(--aurora-shift) * -1), 0, 0);
+  }
 }
 
 .ablauf-steps {
@@ -2677,7 +2820,12 @@ section {
   }
 
   .ablauf {
-    padding-block: var(--space-30);
+    padding-block: 0 var(--space-30);
+  }
+
+  .ablauf__head {
+    min-height: 460px;
+    padding-block: var(--space-16);
   }
 
   .ablauf-steps {

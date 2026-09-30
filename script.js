@@ -187,6 +187,44 @@
     observer.observe(card);
   }
 
+  /* Aurora-Kopf der Ablauf-Sektion (.ablauf__head): die Lichtbänder wandern
+     nur, solange der Block im Bild ist (.is-inview schaltet den
+     animation-play-state in CSS), die Überschrift blendet einmalig ein
+     (.is-revealed, sobald ca. 30 % des Blocks sichtbar sind). Bei reduzierter
+     Bewegung passiert nichts: statische Bänder, Überschrift sofort da. */
+  function initAurora() {
+    var head = document.querySelector('.ablauf__head');
+    if (!head) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var heading = head.querySelector('.ablauf__heading');
+
+    function reveal() {
+      if (heading) heading.classList.add('is-revealed');
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      head.classList.add('is-inview');
+      reveal();
+      return;
+    }
+
+    var revealed = false;
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          head.classList.toggle('is-inview', entry.isIntersecting);
+          if (!revealed && entry.intersectionRatio >= 0.3) {
+            revealed = true;
+            reveal();
+          }
+        });
+      },
+      { threshold: [0, 0.3] }
+    );
+    observer.observe(head);
+  }
+
   /* Positioniert die gestrichelte Verbindungslinie in #ablauf so, dass sie
      exakt an der Mitte der ersten und der letzten Nummern-Badge beginnt und
      endet. Auf Mobile (Schritte untereinander, unterschiedlich hoch je nach
@@ -1214,6 +1252,7 @@
     initCurrentYear();
     initRatingCounter();
     initAblaufLine();
+    initAurora();
     initOpeningStatus();
     initLocationCard();
     initClassCarousel();
