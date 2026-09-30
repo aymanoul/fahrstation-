@@ -333,6 +333,7 @@ section {
    vollständige, verbindliche Liste aller Headline-Selektoren bleibt. */
 .hero-section__title,
 .classes__heading,
+.reviews__heading,
 .ablauf__heading,
 .contact__heading,
 .kontakt-heading,
@@ -673,12 +674,224 @@ section {
   }
 }
 
-/* --- Zitate ------------------------------------------------------------ */
-.trust-quotes {
+/* --------------------------------------------------------------------------
+   Bewertungen (#bewertungen) — laufende Spalten
+   --------------------------------------------------------------------------
+   Hell wie #vertrauen darüber (der Abstand nach oben kommt aus dessen
+   padding-bottom, deshalb hier nur unten Padding). Die Karten sind die
+   bestehenden .testimonial-Karten (design-tokens.css), hier nur in <figure>.
+
+   OHNE JavaScript (oder mit prefers-reduced-motion) bleibt .reviews__list ein
+   normales Raster: 1 / 2 / 3 Spalten, natürliche Höhe, keine Bewegung. Erst
+   unter html.js und ohne reduzierte Bewegung baut initReviewColumns() daraus
+   senkrecht laufende Spalten — feste Höhe, Maske, Animation gelten nur dort.
+   -------------------------------------------------------------------------- */
+.reviews {
+  background-color: var(--background-light);
+  padding-bottom: var(--space-20);
+}
+
+.reviews__inner {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.reviews__label {
+  margin: 0 0 var(--space-4);
+}
+
+.reviews__heading {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--font-size-section-heading);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--text-dark);
+}
+
+.reviews__sub {
+  max-width: 48ch;
+  margin: 0 0 var(--space-12);
+  text-align: center;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.reviews__viewport {
+  width: 100%;
+}
+
+.reviews__list,
+.reviews__col {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reviews__list {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--space-6);
-  margin-top: var(--space-18);
+}
+
+.reviews__list > li {
+  display: grid;
+}
+
+/* <figure> bringt Browser-Ränder mit; die Karte selbst kommt unverändert aus
+   .testimonial. height: 100% lässt Karten nebeneinander gleich hoch werden. */
+.reviews figure.testimonial {
+  margin: 0;
+}
+
+/* --- Laufende Spalten (nur mit JS und ohne reduzierte Bewegung) --------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .reviews__viewport {
+    height: 640px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
+  }
+
+  @media (min-width: 1024px) {
+    .js .reviews__viewport {
+      height: 720px;
+    }
+  }
+}
+
+.reviews__columns {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+
+/* Jede Spalte läuft um genau ihre halbe Höhe (= eine Kartenhälfte inkl.
+   Abstand) nach oben und springt dann unsichtbar zurück: die zweite Hälfte
+   ist eine exakte Kopie der ersten. padding-bottom statt nur gap sorgt dafür,
+   dass die Hälften gleich hoch sind. Dauer setzt das Skript aus der Höhe
+   (konstante Lesegeschwindigkeit), --loop-dur ist nur der Platzhalter. */
+.reviews__col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+  padding-bottom: var(--space-6);
+  animation: reviews-scroll var(--loop-dur, 90s) linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
+}
+
+.reviews__col > li {
+  display: grid;
+}
+
+@keyframes reviews-scroll {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+/* Läuft nur, wenn die Sektion sichtbar ist (is-inview per IntersectionObserver),
+   nicht per Knopf angehalten ist und nichts in der Spalte den Fokus hat. */
+.reviews.is-inview:not(.is-paused) .reviews__viewport:not(:focus-within) .reviews__col {
+  animation-play-state: running;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reviews.is-inview:not(.is-paused) .reviews__viewport:hover .reviews__col {
+    animation-play-state: paused;
+  }
+}
+
+/* --- Pause-Knopf (per JS eingefügt) -------------------------------------
+   Sechseck wie .signage-badge, dunkel mit gelbem Symbol. Die Form liegt auf
+   ::before, der Button selbst ist rechteckig — so kann --focus-ring
+   (box-shadow) außen um die Fläche laufen, ohne vom clip-path abgeschnitten
+   zu werden. */
+.reviews__controls {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.reviews__pause {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: var(--tap-target);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reviews__pause::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--primary);
+  clip-path: polygon(
+    0 50%,
+    var(--badge-notch) 0,
+    calc(100% - var(--badge-notch)) 0,
+    100% 50%,
+    calc(100% - var(--badge-notch)) 100%,
+    var(--badge-notch) 100%
+  );
+  transition: background-color var(--transition-hover);
+}
+
+.reviews__pause svg {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  transition: color var(--transition-hover);
+}
+
+.reviews__pause .reviews__icon-play {
+  display: none;
+}
+
+.reviews__pause[aria-pressed="true"] .reviews__icon-pause {
+  display: none;
+}
+
+.reviews__pause[aria-pressed="true"] .reviews__icon-play {
+  display: block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reviews__pause:hover::before {
+    background-color: var(--accent);
+  }
+
+  .reviews__pause:hover {
+    color: var(--primary);
+  }
+}
+
+.reviews__pause:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 /* --------------------------------------------------------------------------
@@ -2307,14 +2520,16 @@ section {
     height: 60%;
   }
 
-  .trust-quotes {
-    flex-direction: row;
-    align-items: stretch;
-    margin-top: var(--space-24);
+  .reviews {
+    padding-bottom: var(--space-30);
   }
 
-  .trust-quotes .testimonial {
-    flex: 1;
+  .reviews__list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reviews figure.testimonial {
+    height: 100%;
   }
 
   .classes {
@@ -2358,6 +2573,10 @@ section {
    Breakpoint ≥ 1024px — Desktop breit
    ========================================================================== */
 @media (min-width: 1024px) {
+  .reviews__list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
   /* Exakt zwei volle Karten, keine angeschnittene dritte: 100 % ist die
      Content-Breite des Tracks (ohne Padding), zwei Karten plus ein Abstand
      füllen sie genau; die dritte beginnt damit erst hinter der Trackkante.

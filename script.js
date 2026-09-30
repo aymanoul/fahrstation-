@@ -528,6 +528,173 @@
     update();
   }
 
+  /* Bewertungen (#bewertungen) als laufende Spalten. Die elf Karten stehen
+     einmal als normale Liste im Markup (funktioniert ohne JavaScript). Hier
+     werden sie je nach Breite auf 1 / 2 / 3 Spalten verteilt, jede Spalte
+     wird für den nahtlosen Loop dupliziert (Duplikate aria-hidden + inert)
+     und per CSS-Animation endlos nach oben geschoben. Bei reduzierter
+     Bewegung bleibt es bei der normalen Liste — keine Duplikate, keine
+     Animation, kein Pause-Knopf. */
+  function initReviewColumns() {
+    var section = document.getElementById('bewertungen');
+    if (!section) return;
+
+    var viewport = section.querySelector('.reviews__viewport');
+    var list = section.querySelector('.reviews__list');
+    if (!viewport || !list) return;
+
+    var originals = Array.prototype.slice.call(list.children);
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var wide = window.matchMedia('(min-width: 768px)');
+    var widest = window.matchMedia('(min-width: 1024px)');
+
+    // Lesegeschwindigkeit in px pro Sekunde, Spalten leicht unterschiedlich
+    // (im Verhältnis grob 30 s : 38 s : 34 s bei gleicher Höhe).
+    var SPEEDS = [35, 28, 31];
+
+    var columns = null;
+    var controls = null;
+    var paused = false;
+    var lastWidth = 0;
+    var resizeTimer = 0;
+
+    function columnCount() {
+      return widest.matches ? 3 : wide.matches ? 2 : 1;
+    }
+
+    function setPaused(value) {
+      paused = value;
+      section.classList.toggle('is-paused', paused);
+      var btn = controls && controls.firstChild;
+      if (btn) {
+        btn.setAttribute('aria-pressed', paused ? 'true' : 'false');
+        btn.setAttribute('aria-label', paused ? 'Bewertungen abspielen' : 'Bewertungen anhalten');
+      }
+    }
+
+    function makePauseControl() {
+      var wrap = document.createElement('div');
+      wrap.className = 'reviews__controls';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'reviews__pause';
+      btn.innerHTML =
+        '<svg class="reviews__icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>' +
+        '<svg class="reviews__icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 4l13 8-13 8z"/></svg>';
+      btn.addEventListener('click', function () { setPaused(!paused); });
+      wrap.appendChild(btn);
+      return wrap;
+    }
+
+    // Zurück zur normalen Liste (reduzierte Bewegung).
+    function restore() {
+      if (columns) {
+        columns.remove();
+        columns = null;
+      }
+      if (controls) {
+        controls.remove();
+        controls = null;
+      }
+      section.classList.remove('is-paused');
+      originals.forEach(function (li) {
+        li.removeAttribute('aria-hidden');
+        list.appendChild(li);
+      });
+      if (!list.parentNode) viewport.appendChild(list);
+    }
+
+    function build() {
+      var count = columnCount();
+      var cols = [];
+      var i;
+
+      if (columns) columns.remove();
+      columns = document.createElement('div');
+      columns.className = 'reviews__columns';
+
+      for (i = 0; i < count; i++) {
+        var ul = document.createElement('ul');
+        ul.className = 'reviews__col';
+        columns.appendChild(ul);
+        cols.push(ul);
+      }
+
+      originals.forEach(function (li, index) {
+        li.removeAttribute('aria-hidden');
+        cols[index % count].appendChild(li);
+      });
+
+      if (list.parentNode) list.parentNode.removeChild(list);
+      viewport.appendChild(columns);
+
+      var viewHeight = viewport.clientHeight;
+
+      cols.forEach(function (ul, n) {
+        var base = Array.prototype.slice.call(ul.children);
+        var setHeight = ul.scrollHeight;
+
+        // Die erste Hälfte muss mindestens so hoch sein wie der sichtbare
+        // Ausschnitt, sonst läuft unten Leerraum ins Bild: bei kurzen Spalten
+        // also mehrere Sätze pro Hälfte. Hälfte 2 ist eine Kopie von Hälfte 1.
+        var sets = Math.max(1, Math.ceil(viewHeight / Math.max(1, setHeight)));
+        var extra = sets * 2 - 1;
+        var k;
+
+        for (k = 0; k < extra; k++) {
+          base.forEach(function (li) {
+            var copy = li.cloneNode(true);
+            copy.setAttribute('aria-hidden', 'true');
+            copy.setAttribute('inert', '');
+            ul.appendChild(copy);
+          });
+        }
+
+        var halfHeight = ul.scrollHeight / 2;
+        ul.style.setProperty('--loop-dur', (halfHeight / SPEEDS[n % SPEEDS.length]).toFixed(1) + 's');
+      });
+
+      if (!controls) {
+        controls = makePauseControl();
+        section.querySelector('.reviews__inner').appendChild(controls);
+      }
+      setPaused(paused);
+    }
+
+    function render() {
+      lastWidth = window.innerWidth;
+      if (reduce.matches) restore();
+      else build();
+    }
+
+    render();
+
+    function onResize() {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(function () {
+        if (window.innerWidth !== lastWidth) render();
+      }, 200);
+    }
+
+    window.addEventListener('resize', onResize, { passive: true });
+    [reduce, wide, widest].forEach(function (mq) {
+      if (mq.addEventListener) mq.addEventListener('change', render);
+      else if (mq.addListener) mq.addListener(render);
+    });
+
+    // Animation nur laufen lassen, solange die Sektion zu sehen ist.
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          section.classList.toggle('is-inview', entry.isIntersecting);
+        });
+      });
+      observer.observe(viewport);
+    } else {
+      section.classList.add('is-inview');
+    }
+  }
+
   /* Formular auf site/kontakt.html. Prüft die Pflichtfelder selbst, statt die
      Browser-Meldungen zu nutzen: die sind je nach Browser anders formuliert,
      teils englisch, und lassen sich nicht unter dem Feld platzieren. */
@@ -892,6 +1059,7 @@
     initOpeningStatus();
     initLocationCard();
     initClassCarousel();
+    initReviewColumns();
     initKontaktForm();
     initHeroVideo();
   });
