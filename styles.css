@@ -1640,53 +1640,51 @@ section {
 }
 
 /* --------------------------------------------------------------------------
-   Gefaste Sektionsecken (.notch-t / .notch-b / .notch-tb)
+   Abgerundete Sektionsecken (.round-t / .round-b)
    --------------------------------------------------------------------------
-   Dunkle Sektionen bekommen dort gefaste Ecken (Fase = --badge-notch, wie
-   bei den Signage-Kacheln), wo sie an eine helle Fläche grenzen: oben
-   (.notch-t), unten (.notch-b) oder beides (.notch-tb). Dunkel an Dunkel
-   bleibt gerade und läuft über den Schimmer ineinander. Hinter der Fase
-   scheint die Fläche dahinter durch: auf den Unterseiten das weiße body,
-   auf der Startseite .home-main (Hellgrau, oben 1 Fase Weiß für die weiße
-   Kopfleiste). */
-.notch-t {
-  clip-path: polygon(
-    var(--badge-notch) 0,
-    calc(100% - var(--badge-notch)) 0,
-    100% var(--badge-notch),
-    100% 100%,
-    0 100%,
-    0 var(--badge-notch)
-  );
+   Dunkle Sektionen bekommen dort abgerundete Ecken, wo sie an eine helle
+   Fläche grenzen (oben = .round-t, unten = .round-b); ganz oben unter der Kopfleiste
+   bleibt der Hero bzw. Seitenkopf glatt. Radius bewusst klein (kein
+   Halbkreis). Den Zwickel hinter der Rundung füllt ein Box-Shadow in
+   der Farbe der Nachbarfläche (--wedge-above / --wedge-below), darum liegt
+   die Sektion mit z-index 1 über ihren Nachbarn. Kein Layout-Versatz. */
+:root {
+  --section-radius: 24px;
 }
 
-.notch-b {
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    100% calc(100% - var(--badge-notch)),
-    calc(100% - var(--badge-notch)) 100%,
-    var(--badge-notch) 100%,
-    0 calc(100% - var(--badge-notch))
-  );
+@media (min-width: 768px) {
+  :root {
+    --section-radius: 40px;
+  }
 }
 
-.notch-tb {
-  clip-path: polygon(
-    var(--badge-notch) 0,
-    calc(100% - var(--badge-notch)) 0,
-    100% var(--badge-notch),
-    100% calc(100% - var(--badge-notch)),
-    calc(100% - var(--badge-notch)) 100%,
-    var(--badge-notch) 100%,
-    0 calc(100% - var(--badge-notch)),
-    0 var(--badge-notch)
-  );
+.round-t,
+.round-b {
+  /* overflow: clip beschneidet auch die wandernden Lichtebenen an der
+     Rundung (ohne das füllen sie die Ecken wieder eckig). */
+  overflow: clip;
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 calc(var(--section-radius) * -1) 0 0 var(--wedge-t, transparent),
+    0 var(--section-radius) 0 0 var(--wedge-b, transparent);
 }
 
-.home-main {
-  background: linear-gradient(to bottom, var(--text-light) var(--badge-notch), var(--background-light) var(--badge-notch));
+.round-t {
+  --wedge-t: var(--wedge-above, var(--text-light));
+  border-top-left-radius: var(--section-radius);
+  border-top-right-radius: var(--section-radius);
 }
+
+.round-b {
+  --wedge-b: var(--wedge-below, var(--text-light));
+  border-bottom-left-radius: var(--section-radius);
+  border-bottom-right-radius: var(--section-radius);
+}
+
+/* Startseite: die hellen Sektionen sind --background-light statt Weiß. */
+#hero { --wedge-below: var(--background-light); }
+#klassen, #kontakt, .ablauf__head { --wedge-above: var(--background-light); --wedge-below: var(--background-light); }
 
 /* --------------------------------------------------------------------------
    Ablauf (#ablauf)
