@@ -276,9 +276,9 @@
     shines.forEach(function (el) { observer.observe(el); });
   }
 
-  /* Positioniert die gestrichelte Verbindungslinie in #ablauf so, dass sie
-     exakt an der Mitte der ersten und der letzten Nummern-Badge beginnt und
-     endet. Auf Mobile (Schritte untereinander, unterschiedlich hoch je nach
+  /* Positioniert die Straße (Verbindung der Nummern-Badges) in #ablauf so,
+     dass sie exakt an der Mitte der ersten und der letzten Nummern-Badge
+     beginnt und endet. Auf Mobile (Schritte untereinander, unterschiedlich hoch je nach
      Zeilenumbruch der Beschreibung) lässt sich das nicht aus CSS allein
      berechnen — anders als bei den gleich breiten Desktop-Spalten, die
      styles.css rein über calc() aus Breite und Gap herleitet. */
@@ -319,6 +319,22 @@
 
     if (window.document.fonts && window.document.fonts.ready) {
       window.document.fonts.ready.then(update);
+    }
+
+    // Die Straße baut sich beim ersten Sichtbarwerden einmal auf (CSS-
+    // Transition auf .is-road-drawn). Ohne IntersectionObserver sofort.
+    if ('IntersectionObserver' in window) {
+      var roadObserver = new IntersectionObserver(
+        function (entries, obs) {
+          if (!entries[0].isIntersecting) return;
+          obs.disconnect();
+          list.classList.add('is-road-drawn');
+        },
+        { threshold: 0.25 }
+      );
+      roadObserver.observe(list);
+    } else {
+      list.classList.add('is-road-drawn');
     }
   }
 
