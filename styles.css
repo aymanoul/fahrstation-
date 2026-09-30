@@ -700,10 +700,6 @@ section {
   padding-inline: var(--space-4);
 }
 
-.reviews__label {
-  margin: 0 0 var(--space-4);
-}
-
 .reviews__heading {
   margin: 0 0 var(--space-4);
   font-family: var(--font-display);
@@ -813,84 +809,6 @@ section {
   filter:
     drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 55%, transparent))
     drop-shadow(0 0 26px color-mix(in srgb, var(--accent) 38%, transparent));
-}
-
-/* --- Pause-Knopf (per JS eingefügt) -------------------------------------
-   Sechseck wie .signage-badge, dunkel mit gelbem Symbol. Die Form liegt auf
-   ::before, der Button selbst ist rechteckig — so kann --focus-ring
-   (box-shadow) außen um die Fläche laufen, ohne vom clip-path abgeschnitten
-   zu werden. */
-.reviews__controls {
-  display: flex;
-  justify-content: center;
-  margin-top: var(--space-4);
-}
-
-.reviews__pause {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 168px;
-  height: var(--tap-target);
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--accent);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.reviews__pause::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: var(--primary);
-  clip-path: polygon(
-    0 50%,
-    var(--badge-notch) 0,
-    calc(100% - var(--badge-notch)) 0,
-    100% 50%,
-    calc(100% - var(--badge-notch)) 100%,
-    var(--badge-notch) 100%
-  );
-  transition: background-color var(--transition-hover);
-}
-
-.reviews__pause svg {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  fill: currentColor;
-  transition: color var(--transition-hover);
-}
-
-.reviews__pause .reviews__icon-play {
-  display: none;
-}
-
-.reviews__pause[aria-pressed="true"] .reviews__icon-pause {
-  display: none;
-}
-
-.reviews__pause[aria-pressed="true"] .reviews__icon-play {
-  display: block;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .reviews__pause:hover::before {
-    background-color: var(--accent);
-  }
-
-  .reviews__pause:hover {
-    color: var(--primary);
-  }
-}
-
-.reviews__pause:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
 }
 
 /* --------------------------------------------------------------------------

@@ -537,10 +537,10 @@
      Bewegung per JS-gesteuertem transform statt CSS-Animation, damit die Hand
      eingreifen kann: Wischen (Touch) und Mausrad schieben die Spalte nach oben
      oder unten, nach dem Loslassen läuft sie mit Schwung aus und danach von
-     selbst weiter. Angehalten wird ausschließlich absichtlich — Pause-Knopf
-     oder Antippen einer Spalte mit dem Finger (Tippen ohne Wischen). Kein
-     Hover-Pause. Bei reduzierter Bewegung bleibt es bei der normalen Liste:
-     keine Duplikate, keine Bewegung, kein Knopf. */
+     selbst weiter. Angehalten wird ausschließlich absichtlich — durch Antippen
+     bzw. Anklicken einer Spalte (ohne Wischen/Ziehen), nochmal tippen setzt
+     fort. Kein Hover-Pause, kein eigener Knopf. Bei reduzierter Bewegung
+     bleibt es bei der normalen Liste: keine Duplikate, keine Bewegung. */
   function initReviewColumns() {
     var section = document.getElementById('bewertungen');
     if (!section) return;
@@ -560,7 +560,6 @@
     var RESUME_DELAY = 1500; // ms Ruhe nach Wischen/Mausrad, dann läuft es weiter
 
     var columns = null;
-    var controls = null;
     var states = [];
     var paused = false;
     var inView = false;
@@ -630,27 +629,7 @@
 
     function setPaused(value) {
       paused = value;
-      section.classList.toggle('is-paused', paused);
-      var btn = controls && controls.firstChild;
-      if (btn) {
-        btn.setAttribute('aria-pressed', paused ? 'true' : 'false');
-        btn.setAttribute('aria-label', paused ? 'Bewertungen abspielen' : 'Bewertungen anhalten');
-      }
       if (!paused) ensureLoop();
-    }
-
-    function makePauseControl() {
-      var wrapEl = document.createElement('div');
-      wrapEl.className = 'reviews__controls';
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'reviews__pause';
-      btn.innerHTML =
-        '<svg class="reviews__icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>' +
-        '<svg class="reviews__icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 4l13 8-13 8z"/></svg>';
-      btn.addEventListener('click', function () { setPaused(!paused); });
-      wrapEl.appendChild(btn);
-      return wrapEl;
     }
 
     function stateAt(clientX) {
@@ -707,20 +686,25 @@
         if (dtm > 0) st.vs = st.vs * 0.6 + (dy / dtm) * 0.4;
       });
 
-      function release(e) {
+      function release() {
         if (!st.dragging) return;
         st.dragging = false;
-        if (e.type === 'pointerup' && !st.moved) {
-          setPaused(!paused);
-        } else {
-          st.v = Math.max(-3000, Math.min(3000, st.vs));
-        }
+        if (st.moved) st.v = Math.max(-3000, Math.min(3000, st.vs));
         resumeAt = window.performance.now() + RESUME_DELAY;
         ensureLoop();
       }
 
       el.addEventListener('pointerup', release);
       el.addEventListener('pointercancel', release);
+
+      // Antippen (Finger) bzw. Klick (Maus) ohne Wischen hält an, nochmal
+      // setzt fort. Nach einem Wisch (st.moved) und bei markiertem Text nicht.
+      el.addEventListener('click', function () {
+        if (st.moved) { st.moved = false; return; }
+        if (window.getSelection && String(window.getSelection())) return;
+        if (paused) resumeAt = 0; // Fortsetzen sofort, ohne Wartezeit
+        setPaused(!paused);
+      });
     }
 
     // Zurück zur normalen Liste (reduzierte Bewegung).
@@ -731,11 +715,6 @@
         columns.remove();
         columns = null;
       }
-      if (controls) {
-        controls.remove();
-        controls = null;
-      }
-      section.classList.remove('is-paused');
       originals.forEach(function (li) {
         li.removeAttribute('aria-hidden');
         list.appendChild(li);
@@ -808,10 +787,6 @@
         bindDrag(st);
       });
 
-      if (!controls) {
-        controls = makePauseControl();
-        section.querySelector('.reviews__inner').appendChild(controls);
-      }
       setPaused(paused);
       ensureLoop();
     }
