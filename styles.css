@@ -2754,11 +2754,26 @@ section {
    Footer
    -------------------------------------------------------------------------- */
 .site-footer {
+  --footer-pad: var(--space-4);
+  /* Schriftgröße des Umriss-Schriftzugs: die sichtbaren Buchstaben füllen die
+     Innenbreite (Container wie .site-footer__inner) genau aus. 4,70 = Breite
+     von "FAHRSTATION" in Anton in em (ohne Buchstabenabstand, ohne die
+     seitlichen Vorräume der Randbuchstaben); --mark-h = Höhe der Großbuchstaben
+     (0,88 em). cqw = Breite dieses Footers (container-type). */
+  --mark-fs: calc((min(100cqw, var(--max-width)) - 2 * var(--footer-pad)) / 4.70);
+  --mark-h: calc(var(--mark-fs) * 0.88);
+  --footer-pb: 0px;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  container-type: inline-size;
   background-color: var(--primary);
   color: var(--text-light);
 }
 
 .site-footer__inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -2878,6 +2893,90 @@ section {
   font-size: var(--font-size-small);
   color: var(--text-light);
   opacity: 0.6;
+}
+
+/* --------------------------------------------------------------------------
+   Footer-Abschluss: Umriss-Schriftzug "FAHRSTATION" über die volle Innenbreite
+   und ein statischer gelber Schein, der von der Unterkante nach oben ausläuft.
+   Der Schriftzug ist reine Dekoration (aria-hidden, nicht auswählbar). Er
+   überlappt den unteren Rand von __inner so, dass Copyright/Icons über dem
+   oberen Drittel der Buchstaben liegen; der Umriss ist dort gedämpft, damit
+   der Text davor den Kontrast von 4,5:1 hält. Eigene Ebene, keine Kopplung
+   an die .shine-Logik.
+   -------------------------------------------------------------------------- */
+.site-footer__mark {
+  position: relative;
+  box-sizing: border-box;
+  max-width: var(--max-width);
+  height: var(--mark-h);
+  margin-inline: auto;
+  margin-top: calc(var(--space-8) * -1 - var(--mark-h) / 3);
+  padding-inline: var(--footer-pad);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.site-footer__mark-text {
+  display: block;
+  /* Anton: Oberkante der Großbuchstaben liegt bei line-height 1 bei 0,055 em,
+     die Grundlinie bei 0,925 em — der Versatz (top, nicht margin-top: ein
+     negativer margin-top würde mit dem Elternelement kollabieren) setzt sie
+     bündig an die Oberkante der Box; der seitliche Vorraum der Randbuchstaben
+     (0,03 em) wird ausgeglichen. */
+  position: relative;
+  top: calc(var(--mark-fs) * -0.055);
+  left: calc(var(--mark-fs) * -0.03);
+  font-family: var(--font-display);
+  font-size: var(--mark-fs);
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  /* Oben (dort liegen Copyright und Icons) stark gedämpft, nach unten voll. */
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.14) 0, rgb(0 0 0 / 0.14) 30%, rgb(0 0 0 / 0.5) 45%, #000 62%);
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.14) 0, rgb(0 0 0 / 0.14) 30%, rgb(0 0 0 / 0.5) 45%, #000 62%);
+}
+
+@supports not (-webkit-text-stroke: 1px red) {
+  .site-footer__mark-text {
+    color: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+}
+
+/* Gelber Schein: von der Unterkante des Schriftzugs nach oben auslaufend, etwa
+   über 1,5 Schriftzughöhen, geglättetes Profil (mehrere Zwischenstopps) gegen
+   Banding. Läuft bis 0 % Deckkraft vor dem oberen Ende aus — keine Kante. */
+.site-footer__mark::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  bottom: calc(var(--footer-pb) * -1);
+  left: 50%;
+  width: 100vw;
+  height: calc(var(--mark-h) * 1.5 + var(--footer-pb));
+  transform: translateX(-50%);
+  background-image: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--accent) 13%, transparent) 0,
+    color-mix(in srgb, var(--accent) 12.2%, transparent) 10%,
+    color-mix(in srgb, var(--accent) 10.4%, transparent) 20%,
+    color-mix(in srgb, var(--accent) 8%, transparent) 30%,
+    color-mix(in srgb, var(--accent) 5.6%, transparent) 40%,
+    color-mix(in srgb, var(--accent) 3.4%, transparent) 50%,
+    color-mix(in srgb, var(--accent) 1.8%, transparent) 62%,
+    color-mix(in srgb, var(--accent) 0.7%, transparent) 76%,
+    color-mix(in srgb, var(--accent) 0.2%, transparent) 88%,
+    transparent 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .site-footer {
+    --footer-pad: var(--space-6);
+  }
 }
 
 /* ==========================================================================
@@ -3450,6 +3549,13 @@ section {
   body.has-mobile-cta-bar .page-cta,
   body.has-mobile-cta-bar .site-footer {
     padding-bottom: calc(var(--space-12) + var(--space-2) + env(safe-area-inset-bottom));
+  }
+
+  /* Der gelbe Schein des Footers reicht bis zur Footer-Unterkante (auch durch
+     diesen Polsterstreifen), sonst endet er an der Unterkante des Schriftzugs
+     mit einer Stufe. */
+  body.has-mobile-cta-bar .site-footer {
+    --footer-pb: calc(var(--space-12) + var(--space-2) + env(safe-area-inset-bottom));
   }
 }
 
