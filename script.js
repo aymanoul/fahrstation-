@@ -113,49 +113,79 @@
     el.textContent = new Date().getFullYear();
   }
 
-  function initTrustStats() {
-    var group = document.getElementById('trust-stats');
-    if (!group) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  /* Kennzahl-Kacheln in #vertrauen. Im HTML steht immer der echte Endwert —
+     ohne JavaScript oder bei reduzierter Bewegung bleibt es dabei. Sonst
+     zählen die Zahlen beim ersten Sichtbarwerden einmal von 0 hoch (ease-out,
+     1,2 s) und die Kacheln blenden mit 80 ms Versatz ein (CSS, --i am <li>).
+     Erst beim Start wird auf 0 gesetzt: bis dahin sind die Kacheln per CSS
+     ausgeblendet, ein Aufblitzen des Endwerts gibt es nicht.
 
-    var numbers = group.querySelectorAll('.trust-stat__number');
-    var duration = 900;
+     Die Sprachen-Zahl kommt aus der Liste: Elemente mit
+     data-count-from-list="<id>" bekommen die Anzahl der <li> dieser Liste als
+     Wert (sichtbare Zahl und Satz für Screenreader). */
+  function initStatCounters() {
+    var group = document.getElementById('stats');
+    if (!group) return;
+
+    Array.prototype.forEach.call(group.querySelectorAll('[data-count-from-list]'), function (el) {
+      var list = document.getElementById(el.getAttribute('data-count-from-list'));
+      if (!list) return;
+      var count = list.children.length;
+      el.textContent = String(count);
+      if (el.hasAttribute('data-count-to')) el.setAttribute('data-count-to', String(count));
+    });
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    var numbers = Array.prototype.slice.call(group.querySelectorAll('.stat__num'));
+    var duration = 1200;
+    var stagger = 80;
+
+    function format(value, decimals) {
+      return decimals ? value.toFixed(decimals).replace('.', ',') : String(Math.round(value));
+    }
 
     function animateNumber(el, delay) {
       var target = parseFloat(el.getAttribute('data-count-to'));
       var decimals = parseInt(el.getAttribute('data-decimals'), 10) || 0;
+      if (isNaN(target)) return;
 
-      setTimeout(function () {
+      // Breite des Endwerts festhalten, damit beim Zählen nichts springt.
+      el.textContent = format(target, decimals);
+      el.style.minWidth = el.getBoundingClientRect().width + 'px';
+      el.textContent = format(0, decimals);
+
+      window.setTimeout(function () {
         var start = null;
 
         function step(timestamp) {
           if (start === null) start = timestamp;
           var progress = Math.min((timestamp - start) / duration, 1);
           var eased = 1 - Math.pow(1 - progress, 3);
-          var value = target * eased;
-          el.textContent = decimals
-            ? value.toFixed(decimals).replace('.', ',')
-            : String(Math.round(value));
-          if (progress < 1) {
-            window.requestAnimationFrame(step);
-          }
+          el.textContent = format(target * eased, decimals);
+          if (progress < 1) window.requestAnimationFrame(step);
+          else el.textContent = format(target, decimals);
         }
 
         window.requestAnimationFrame(step);
       }, delay);
     }
 
-    group.classList.add('trust-stats--ready');
+    group.classList.add('stats--ready');
 
     var observer = new IntersectionObserver(
       function (entries, obs) {
         if (!entries[0].isIntersecting) return;
         obs.disconnect();
-        group.classList.add('trust-stats--visible');
-        animateNumber(numbers[0], 0);
-        animateNumber(numbers[1], 120);
+        group.classList.add('stats--visible');
+        numbers.forEach(function (el) {
+          var tile = el.closest('.stat');
+          var index = tile ? parseInt(tile.style.getPropertyValue('--i'), 10) || 0 : 0;
+          animateNumber(el, index * stagger);
+        });
       },
-      { threshold: 0.4 }
+      { threshold: 0.3 }
     );
 
     observer.observe(group);
@@ -1186,7 +1216,7 @@
     initMobileMenu();
     initDropdown();
     initCurrentYear();
-    initTrustStats();
+    initStatCounters();
     initAblaufLine();
     initOpeningStatus();
     initLocationCard();

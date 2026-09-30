@@ -570,7 +570,7 @@ section {
    -------------------------------------------------------------------------- */
 .trust {
   background-color: var(--background-light);
-  padding-block: var(--space-20);
+  padding-block: var(--space-12);
 }
 
 .trust__inner {
@@ -643,31 +643,196 @@ section {
   display: inline-block;
 }
 
-/* Vor der Freigabe durch IntersectionObserver unsichtbar — siehe
-   initTrustStats() in script.js. Nur JS setzt --ready, damit ohne
-   JavaScript (oder bei reduzierter Bewegung) die Flaggen von Anfang an
-   sichtbar bleiben, statt für immer ausgeblendet zu sein. */
-.trust-stats--ready .trust-stat__flag {
+/* --- Kennzahl-Kacheln (#vertrauen) -------------------------------------
+   Signage-Kachel: Rechteck mit vier gefasten Ecken (Fase = --badge-notch,
+   wie .location-card), Zwei-Ebenen-Rahmen — die Kachel selbst ist voll
+   --accent (= Rahmen), ::before liegt 3px eingerückt darüber in --primary
+   mit derselben Fasenform, weil border und clip-path an einer Schräge nicht
+   zusammengehen. Die Innenfase ist 0,586 x Rand kleiner, damit der Rahmen
+   an den Ecken gleich breit bleibt.
+
+   Die älteren .trust-stats/.trust-stat-Regeln weiter oben gehören
+   theorie.html (Zahlenleiste) und bleiben unverändert; diese Kacheln haben
+   einen eigenen Namensraum (.stats/.stat). */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stat {
+  --stat-cut: var(--badge-notch);
+  --stat-cut-in: calc(var(--stat-cut) - 0.586 * 3px);
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(3px + var(--space-4));
+  background-color: var(--accent);
+  clip-path: polygon(
+    var(--stat-cut) 0,
+    calc(100% - var(--stat-cut)) 0,
+    100% var(--stat-cut),
+    100% calc(100% - var(--stat-cut)),
+    calc(100% - var(--stat-cut)) 100%,
+    var(--stat-cut) 100%,
+    0 calc(100% - var(--stat-cut)),
+    0 var(--stat-cut)
+  );
+}
+
+.stat::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: var(--primary);
+  clip-path: polygon(
+    var(--stat-cut-in) 0,
+    calc(100% - var(--stat-cut-in)) 0,
+    100% var(--stat-cut-in),
+    100% calc(100% - var(--stat-cut-in)),
+    calc(100% - var(--stat-cut-in)) 100%,
+    var(--stat-cut-in) 100%,
+    0 calc(100% - var(--stat-cut-in)),
+    0 var(--stat-cut-in)
+  );
+}
+
+.stat > * {
+  position: relative;
+}
+
+.stat__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Satz für Screenreader; die sichtbare Zahl zählt und ist aria-hidden. */
+.stat__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.stat__value {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-size-stat);
+  line-height: 1;
+  color: var(--accent);
+}
+
+/* Die zählende Zahl bekommt vom Skript beim Start eine feste Mindestbreite
+   (Breite des Endwerts) und steht linksbündig darin — so springt weder die
+   Kachel noch das Wort daneben, während die Ziffern wechseln. */
+.stat__num {
+  display: inline-block;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__unit {
+  font-size: 0.45em;
+  letter-spacing: var(--letter-spacing-loose);
+  text-transform: uppercase;
+}
+
+.stat__stars {
+  display: block;
+  width: 116px;
+  height: 20px;
+  margin-top: var(--space-2);
+  fill: var(--accent);
+}
+
+/* Label: --text-light bei 75 % auf --primary ≈ 9:1 (AA verlangt 4,5:1). */
+.stat__label {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-small);
+  letter-spacing: var(--letter-spacing-loose);
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-light) 75%, transparent);
+}
+
+.stat__langs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Sprach-Badge im ursprünglichen Stil der Alters-Badges (dunkle Füllung,
+   gelber Rand, gelbe Schrift, schräge Ecken), wie sie auf Schwarz aussahen —
+   die aktuellen .class-card__age sind für helle Flächen umgestellt. Zwei
+   Ebenen auf z-index -1, isolation hält sie im Badge. */
+.stat__lang {
+  position: relative;
+  isolation: isolate;
+  padding: var(--space-1) var(--space-3);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-loose);
+  text-transform: uppercase;
+}
+
+.stat__lang::before,
+.stat__lang::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+
+.stat__lang::before {
+  inset: 0;
+  background-color: var(--accent);
+}
+
+.stat__lang::after {
+  inset: 1px;
+  background-color: var(--primary);
+}
+
+/* Einblenden nacheinander (80ms Versatz über --i am <li>). --ready/--visible
+   setzt nur initStatCounters() — ohne JavaScript oder bei reduzierter
+   Bewegung bleiben die Kacheln von Anfang an sichtbar. */
+.stats--ready .stat {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(12px);
 }
 
-.trust-stats--visible .trust-stat__flag {
-  animation: flag-in 300ms ease-out both;
+.stats--visible .stat {
+  animation: stat-in 400ms ease-out both;
+  animation-delay: calc(var(--i, 0) * 80ms);
 }
 
-.trust-stat__flag:nth-child(1) { animation-delay: 0ms; }
-.trust-stat__flag:nth-child(2) { animation-delay: 60ms; }
-.trust-stat__flag:nth-child(3) { animation-delay: 120ms; }
-.trust-stat__flag:nth-child(4) { animation-delay: 180ms; }
-.trust-stat__flag:nth-child(5) { animation-delay: 240ms; }
-.trust-stat__flag:nth-child(6) { animation-delay: 300ms; }
-
-@keyframes flag-in {
+@keyframes stat-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2412,7 +2577,16 @@ section {
   }
 
   .trust {
-    padding-block: var(--space-30);
+    padding-block: var(--space-16);
+  }
+
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+
+  .stat {
+    padding: calc(3px + var(--space-6));
   }
 
   .trust-stats {
@@ -2933,6 +3107,10 @@ section {
    Reduzierte Bewegung
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+  .stats--visible .stat {
+    animation: none;
+  }
+
   .site-header,
   .site-header__inner,
   .nav-toggle__bar {
@@ -2947,16 +3125,6 @@ section {
 
   .hero-section__title,
   .hero-section__actions {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  /* Zusätzliche Absicherung: initTrustStats() in script.js bricht unter
-     reduzierter Bewegung bereits vorher ab und setzt --visible nie, diese
-     Regel greift also im Normalfall gar nicht erst — falls doch (z. B. ein
-     künftiger Aufruf ohne den Guard), bleibt die Animation trotzdem aus. */
-  .trust-stats--visible .trust-stat__flag {
     animation: none;
     opacity: 1;
     transform: none;

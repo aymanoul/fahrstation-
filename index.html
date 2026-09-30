@@ -147,22 +147,43 @@
 
     <section id="vertrauen" class="trust">
       <div class="trust__inner">
-        <div class="trust-stats" id="trust-stats">
-          <div class="trust-stat">
-            <p class="trust-stat__value"><span class="trust-stat__number" data-count-to="5.0" data-decimals="1">5,0</span> ★</p>
-            <p class="trust-stat__label">bei 1200+ Bewertungen</p>
-          </div>
-          <div class="trust-stat">
-            <p class="trust-stat__value"><span class="trust-stat__number" data-count-to="12" data-decimals="0">12</span> Jahre</p>
-            <p class="trust-stat__label">in Düsseldorf</p>
-          </div>
-          <div class="trust-stat">
-            <p class="trust-stat__value trust-stat__flags" role="img" aria-label="Fahrunterricht auf Deutsch, Englisch, Arabisch, Türkisch, Kroatisch und Marokkanisch">
-              <span class="trust-stat__flag">🇩🇪</span><span class="trust-stat__flag">🇬🇧</span><span class="trust-stat__flag">🇵🇸</span><span class="trust-stat__flag">🇹🇷</span><span class="trust-stat__flag">🇭🇷</span><span class="trust-stat__flag">🇲🇦</span>
-            </p>
-            <p class="trust-stat__label">im Fahrunterricht</p>
-          </div>
-        </div>
+        <ul class="stats" id="stats">
+          <li class="stat" style="--i: 0">
+            <p class="stat__sr">5,0 Sterne bei 1200+ Bewertungen</p>
+            <div class="stat__body" aria-hidden="true">
+              <p class="stat__value"><span class="stat__num" data-count-to="5.0" data-decimals="1">5,0</span></p>
+              <svg class="stat__stars" viewBox="0 0 116 20" aria-hidden="true" focusable="false"><polygon points="10,1 12.9,7 19.5,7.6 14.5,12 16,18.5 10,15.2 4,18.5 5.5,12 0.5,7.6 7.1,7"/><polygon points="34,1 36.9,7 43.5,7.6 38.5,12 40,18.5 34,15.2 28,18.5 29.5,12 24.5,7.6 31.1,7"/><polygon points="58,1 60.9,7 67.5,7.6 62.5,12 64,18.5 58,15.2 52,18.5 53.5,12 48.5,7.6 55.1,7"/><polygon points="82,1 84.9,7 91.5,7.6 86.5,12 88,18.5 82,15.2 76,18.5 77.5,12 72.5,7.6 79.1,7"/><polygon points="106,1 108.9,7 115.5,7.6 110.5,12 112,18.5 106,15.2 100,18.5 101.5,12 96.5,7.6 103.1,7"/></svg>
+              <p class="stat__label">bei <span class="stat__num" data-count-to="1200" data-decimals="0">1200</span>+ Bewertungen</p>
+            </div>
+          </li>
+          <li class="stat" style="--i: 1">
+            <p class="stat__sr">12 Jahre in Düsseldorf</p>
+            <div class="stat__body" aria-hidden="true">
+              <p class="stat__value"><span class="stat__num" data-count-to="12" data-decimals="0">12</span><span class="stat__unit">Jahre</span></p>
+              <p class="stat__label">in Düsseldorf</p>
+            </div>
+          </li>
+          <li class="stat" style="--i: 2">
+            <!-- Sprachen: Zahl und Liste stehen hier beisammen. Die Zahl (sichtbar
+                 und im Satz für Screenreader) wird vom Skript aus der Anzahl der
+                 <li> in #stat-langs gesetzt — Sprache ergänzen oder streichen
+                 reicht also; die "6" im Markup ist nur der Wert ohne JavaScript
+                 und sollte mit der Liste übereinstimmen. -->
+            <p class="stat__sr"><span data-count-from-list="stat-langs">6</span> Sprachen im Fahrunterricht</p>
+            <div class="stat__body" aria-hidden="true">
+              <p class="stat__value"><span class="stat__num" data-count-from-list="stat-langs" data-count-to="6" data-decimals="0">6</span><span class="stat__unit">Sprachen</span></p>
+              <p class="stat__label">im Fahrunterricht</p>
+            </div>
+            <ul class="stat__langs" id="stat-langs">
+              <li class="stat__lang">Deutsch</li>
+              <li class="stat__lang">Englisch</li>
+              <li class="stat__lang">Arabisch</li>
+              <li class="stat__lang">Türkisch</li>
+              <li class="stat__lang">Kroatisch</li>
+              <li class="stat__lang">Marokkanisch</li>
+            </ul>
+          </li>
+        </ul>
       </div>
     </section>
     <section id="bewertungen" class="reviews">
