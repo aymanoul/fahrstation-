@@ -754,6 +754,13 @@ section {
 /* --- Laufende Spalten (nur mit JS und ohne reduzierte Bewegung) --------- */
 @media (prefers-reduced-motion: no-preference) {
   .js .reviews__viewport {
+    /* 16px Luft links/rechts für den gelben Schein; der negative Rand holt
+       sie aus dem Padding von .reviews__inner zurück (Karten bleiben gleich
+       breit). */
+    box-sizing: border-box;
+    width: calc(100% + 2 * var(--space-4));
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
     height: 640px;
     overflow: hidden;
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
@@ -773,11 +780,12 @@ section {
   gap: var(--space-6);
 }
 
-/* Jede Spalte läuft um genau ihre halbe Höhe (= eine Kartenhälfte inkl.
-   Abstand) nach oben und springt dann unsichtbar zurück: die zweite Hälfte
-   ist eine exakte Kopie der ersten. padding-bottom statt nur gap sorgt dafür,
-   dass die Hälften gleich hoch sind. Dauer setzt das Skript aus der Höhe
-   (konstante Lesegeschwindigkeit), --loop-dur ist nur der Platzhalter. */
+/* Jede Spalte wird vom Skript (initReviewColumns) per transform nach oben
+   geschoben und springt nach genau ihrer halben Höhe unsichtbar zurück: die
+   zweite Hälfte ist eine exakte Kopie der ersten. padding-bottom statt nur
+   gap sorgt dafür, dass die Hälften gleich hoch sind. touch-action: none
+   überlässt das senkrechte Wischen dem Skript (die Spalte folgt dem Finger)
+   statt die Seite zu scrollen. */
 .reviews__col {
   display: flex;
   flex: 1;
@@ -785,8 +793,9 @@ section {
   gap: var(--space-6);
   min-width: 0;
   padding-bottom: var(--space-6);
-  animation: reviews-scroll var(--loop-dur, 90s) linear infinite;
-  animation-play-state: paused;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
   will-change: transform;
 }
 
@@ -794,26 +803,16 @@ section {
   display: grid;
 }
 
-@keyframes reviews-scroll {
-  from {
-    transform: translateY(0);
-  }
-
-  to {
-    transform: translateY(-50%);
-  }
-}
-
-/* Läuft nur, wenn die Sektion sichtbar ist (is-inview per IntersectionObserver),
-   nicht per Knopf angehalten ist und nichts in der Spalte den Fokus hat. */
-.reviews.is-inview:not(.is-paused) .reviews__viewport:not(:focus-within) .reviews__col {
-  animation-play-state: running;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .reviews.is-inview:not(.is-paused) .reviews__viewport:hover .reviews__col {
-    animation-play-state: paused;
-  }
+/* Gelber Schein hinter jeder Karte, wie bei den Klassen-Karten: der Schatten
+   hängt am <li>, NICHT an der Karte — deren clip-path schneidet box-shadow
+   restlos weg, drop-shadow arbeitet dagegen auf der bereits geclippten
+   Silhouette. Auf hellem Grund braucht er mehr Deckkraft als auf Schwarz,
+   sonst bleibt vom Gelb nur ein Hauch. */
+.reviews__list > li,
+.reviews__col > li {
+  filter:
+    drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 55%, transparent))
+    drop-shadow(0 0 26px color-mix(in srgb, var(--accent) 38%, transparent));
 }
 
 /* --- Pause-Knopf (per JS eingefügt) -------------------------------------
@@ -832,7 +831,7 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 72px;
+  width: 168px;
   height: var(--tap-target);
   margin: 0;
   padding: 0;
@@ -861,8 +860,8 @@ section {
 
 .reviews__pause svg {
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   fill: currentColor;
   transition: color var(--transition-hover);
 }

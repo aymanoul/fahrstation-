@@ -532,9 +532,15 @@
      einmal als normale Liste im Markup (funktioniert ohne JavaScript). Hier
      werden sie je nach Breite auf 1 / 2 / 3 Spalten verteilt, jede Spalte
      wird für den nahtlosen Loop dupliziert (Duplikate aria-hidden + inert)
-     und per CSS-Animation endlos nach oben geschoben. Bei reduzierter
-     Bewegung bleibt es bei der normalen Liste — keine Duplikate, keine
-     Animation, kein Pause-Knopf. */
+     und von einer requestAnimationFrame-Schleife endlos nach oben geschoben.
+
+     Bewegung per JS-gesteuertem transform statt CSS-Animation, damit die Hand
+     eingreifen kann: Wischen (Touch) und Mausrad schieben die Spalte nach oben
+     oder unten, nach dem Loslassen läuft sie mit Schwung aus und danach von
+     selbst weiter. Angehalten wird ausschließlich absichtlich — Pause-Knopf
+     oder Antippen einer Spalte mit dem Finger (Tippen ohne Wischen). Kein
+     Hover-Pause. Bei reduzierter Bewegung bleibt es bei der normalen Liste:
+     keine Duplikate, keine Bewegung, kein Knopf. */
   function initReviewColumns() {
     var section = document.getElementById('bewertungen');
     if (!section) return;
@@ -551,15 +557,75 @@
     // Lesegeschwindigkeit in px pro Sekunde, Spalten leicht unterschiedlich
     // (im Verhältnis grob 30 s : 38 s : 34 s bei gleicher Höhe).
     var SPEEDS = [35, 28, 31];
+    var RESUME_DELAY = 1500; // ms Ruhe nach Wischen/Mausrad, dann läuft es weiter
 
     var columns = null;
     var controls = null;
+    var states = [];
     var paused = false;
+    var inView = false;
+    var resumeAt = 0;
+    var raf = 0;
+    var lastTs = 0;
     var lastWidth = 0;
     var resizeTimer = 0;
 
     function columnCount() {
       return widest.matches ? 3 : wide.matches ? 2 : 1;
+    }
+
+    function wrap(pos, half) {
+      return ((pos % half) + half) % half;
+    }
+
+    function apply(st) {
+      st.el.style.transform = 'translate3d(0,' + (-st.pos).toFixed(2) + 'px,0)';
+    }
+
+    function tick(ts) {
+      var dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.1) : 0;
+      lastTs = ts;
+      var auto = inView && !paused && ts >= resumeAt;
+      var busy = false;
+
+      states.forEach(function (st) {
+        if (st.dragging) { busy = true; return; }
+        var move = 0;
+
+        // Auslaufen nach dem Wischen
+        if (Math.abs(st.v) > 10) {
+          move += st.v * dt;
+          st.v *= Math.exp(-dt / 0.45);
+          busy = true;
+        } else {
+          st.v = 0;
+        }
+
+        if (auto && st.v === 0) move += st.speed * dt;
+
+        if (move) {
+          st.pos = wrap(st.pos + move, st.half);
+          apply(st);
+        }
+      });
+
+      // Schleife nur weiterlaufen lassen, solange etwas zu tun ist.
+      if ((inView && !paused) || busy || ts < resumeAt) {
+        raf = window.requestAnimationFrame(tick);
+      } else {
+        raf = 0;
+        lastTs = 0;
+      }
+    }
+
+    function ensureLoop() {
+      if (!raf && states.length) raf = window.requestAnimationFrame(tick);
+    }
+
+    function stopLoop() {
+      if (raf) window.cancelAnimationFrame(raf);
+      raf = 0;
+      lastTs = 0;
     }
 
     function setPaused(value) {
@@ -570,11 +636,12 @@
         btn.setAttribute('aria-pressed', paused ? 'true' : 'false');
         btn.setAttribute('aria-label', paused ? 'Bewertungen abspielen' : 'Bewertungen anhalten');
       }
+      if (!paused) ensureLoop();
     }
 
     function makePauseControl() {
-      var wrap = document.createElement('div');
-      wrap.className = 'reviews__controls';
+      var wrapEl = document.createElement('div');
+      wrapEl.className = 'reviews__controls';
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'reviews__pause';
@@ -582,12 +649,84 @@
         '<svg class="reviews__icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>' +
         '<svg class="reviews__icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 4l13 8-13 8z"/></svg>';
       btn.addEventListener('click', function () { setPaused(!paused); });
-      wrap.appendChild(btn);
-      return wrap;
+      wrapEl.appendChild(btn);
+      return wrapEl;
+    }
+
+    function stateAt(clientX) {
+      var found = null;
+      states.forEach(function (st) {
+        var r = st.el.getBoundingClientRect();
+        if (clientX >= r.left && clientX <= r.right) found = st;
+      });
+      return found;
+    }
+
+    // Mausrad über den Spalten schiebt sie (statt die Seite zu scrollen).
+    viewport.addEventListener('wheel', function (e) {
+      if (!states.length) return;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      var dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * viewport.clientHeight : e.deltaY;
+      var target = stateAt(e.clientX);
+      (target ? [target] : states).forEach(function (st) {
+        st.v = 0;
+        st.pos = wrap(st.pos + dy, st.half);
+        apply(st);
+      });
+      resumeAt = window.performance.now() + RESUME_DELAY;
+      ensureLoop();
+    }, { passive: false });
+
+    // Wischen mit dem Finger (touch-action: none in CSS), Tippen = Pause.
+    function bindDrag(st) {
+      var el = st.el;
+
+      el.addEventListener('pointerdown', function (e) {
+        if (e.pointerType === 'mouse') return;
+        st.dragging = true;
+        st.moved = false;
+        st.startY = st.lastY = e.clientY;
+        st.lastT = e.timeStamp;
+        st.v = 0;
+        st.vs = 0;
+        if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+        ensureLoop();
+      });
+
+      el.addEventListener('pointermove', function (e) {
+        if (!st.dragging) return;
+        var dy = st.lastY - e.clientY;
+        var dtm = (e.timeStamp - st.lastT) / 1000;
+        st.lastY = e.clientY;
+        st.lastT = e.timeStamp;
+        if (Math.abs(e.clientY - st.startY) > 6) st.moved = true;
+        if (!st.moved) return;
+        st.pos = wrap(st.pos + dy, st.half);
+        apply(st);
+        if (dtm > 0) st.vs = st.vs * 0.6 + (dy / dtm) * 0.4;
+      });
+
+      function release(e) {
+        if (!st.dragging) return;
+        st.dragging = false;
+        if (e.type === 'pointerup' && !st.moved) {
+          setPaused(!paused);
+        } else {
+          st.v = Math.max(-3000, Math.min(3000, st.vs));
+        }
+        resumeAt = window.performance.now() + RESUME_DELAY;
+        ensureLoop();
+      }
+
+      el.addEventListener('pointerup', release);
+      el.addEventListener('pointercancel', release);
     }
 
     // Zurück zur normalen Liste (reduzierte Bewegung).
     function restore() {
+      stopLoop();
+      states = [];
       if (columns) {
         columns.remove();
         columns = null;
@@ -609,6 +748,8 @@
       var cols = [];
       var i;
 
+      stopLoop();
+      states = [];
       if (columns) columns.remove();
       columns = document.createElement('div');
       columns.className = 'reviews__columns';
@@ -650,8 +791,21 @@
           });
         }
 
-        var halfHeight = ul.scrollHeight / 2;
-        ul.style.setProperty('--loop-dur', (halfHeight / SPEEDS[n % SPEEDS.length]).toFixed(1) + 's');
+        var st = {
+          el: ul,
+          half: ul.scrollHeight / 2,
+          speed: SPEEDS[n % SPEEDS.length],
+          pos: 0,
+          v: 0,
+          vs: 0,
+          dragging: false,
+          moved: false,
+          startY: 0,
+          lastY: 0,
+          lastT: 0
+        };
+        states.push(st);
+        bindDrag(st);
       });
 
       if (!controls) {
@@ -659,6 +813,7 @@
         section.querySelector('.reviews__inner').appendChild(controls);
       }
       setPaused(paused);
+      ensureLoop();
     }
 
     function render() {
@@ -682,16 +837,18 @@
       else if (mq.addListener) mq.addListener(render);
     });
 
-    // Animation nur laufen lassen, solange die Sektion zu sehen ist.
+    // Bewegung nur, solange die Sektion zu sehen ist.
     if ('IntersectionObserver' in window) {
       var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
-          section.classList.toggle('is-inview', entry.isIntersecting);
+          inView = entry.isIntersecting;
+          if (inView) ensureLoop();
         });
       });
       observer.observe(viewport);
     } else {
-      section.classList.add('is-inview');
+      inView = true;
+      ensureLoop();
     }
   }
 
