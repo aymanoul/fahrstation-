@@ -317,7 +317,7 @@ section {
    waren nicht Teil des Auftrags und blieben nach Prüfung ausgeschlossen:
    - Buttons/Navigation (.btn-primary, .btn-signage, .contact-action__label,
      .mobile-menu__link, .mobile-cta-bar__item, .class-card__cta,
-     .hero-ticker__item, .class-card__heading): UI-Chrome, kein
+     .class-card__heading): UI-Chrome, kein
      Überschriften-Text. Vergleichsrender bei 20px (.mobile-menu__link)
      zeigte sichtbar schlechtere Wirkung — der Pfeil daneben bleibt gerade,
      kurze Einzelworte wirken unruhig statt dynamisch.
@@ -565,8 +565,8 @@ section {
    Vertrauen (#vertrauen)
    --------------------------------------------------------------------------
    Beantwortet "Kann ich denen vertrauen?" ausschließlich mit Zahlen — bewusst
-   ohne Sektionsüberschrift, die Kennzahlen sind die Überschrift. Das gelbe
-   Ticker-Band davor grenzt direkt an, ohne zusätzlichen Rand.
+   ohne Sektionsüberschrift, die Kennzahlen sind die Überschrift. Der Hero
+   davor grenzt direkt an, ohne zusätzlichen Rand.
    -------------------------------------------------------------------------- */
 .trust {
   background-color: var(--background-light);

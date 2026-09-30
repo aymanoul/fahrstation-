@@ -88,7 +88,7 @@
   --font-size-h3: 20px;
   --font-size-body: 16px;
   --font-size-small: 14px;
-  --font-size-micro: 13px;         /* Chips, Ticker */
+  --font-size-micro: 13px;         /* Chips */
 
   /* Hero-Headline: bewusst größer als --font-size-h1, damit sie auf
      Desktop die volle Wucht einer Ansage bekommt. */
@@ -200,7 +200,6 @@
   --transition-base: 0.2s ease;
   --transition-hover: 0.2s ease-out; /* Hover-Lift auf klickbaren Kacheln */
   --transition-panel: 0.3s ease;      /* Aufklapp-Animation des Kontaktformulars */
-  --marquee-duration: 30s;
 }
 
 /* Wer Bewegung reduziert haben möchte, bekommt sie über den Token global
@@ -1068,74 +1067,4 @@
 
 .contact-action--whatsapp:focus-visible::before {
   inset: 5px;
-}
-
-/* --------------------------------------------------------------------------
-   .hero-ticker — durchlaufendes Proof-Band. Der Inhalt muss im Markup
-   zweimal hintereinander stehen (.hero-ticker__item ×2), damit die
-   Schleife bei -50% Verschiebung nahtlos ist.
-   -------------------------------------------------------------------------- */
-.hero-ticker {
-  overflow: hidden;
-  background-color: var(--accent);
-  color: var(--primary);
-  white-space: nowrap;
-}
-
-.hero-ticker__track {
-  display: inline-flex;
-  animation: marquee var(--marquee-duration) linear infinite;
-}
-
-.hero-ticker__item {
-  display: inline-block;
-  /* Horizontal auf --space-2 reduziert (vorher --space-4): zusammen mit dem
-     padding-left der jeweils folgenden Kopie ergab das eine 32px-Lücke
-     zwischen einem Durchlauf und dem nächsten — spürbar länger als die
-     Wortabstände innerhalb eines Durchlaufs, dadurch wirkte der Übergang wie
-     eine Pause statt wie ein durchlaufendes Band. */
-  padding: var(--space-2);
-  font-family: var(--font-display);
-  font-size: var(--font-size-micro);
-  letter-spacing: var(--letter-spacing-badge);
-  text-transform: uppercase;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* Muss nach den Komponenten-Regeln stehen: bei gleicher Spezifität
-   gewinnt die spätere Regel im Quelltext, unabhängig von der
-   Media-Query. Ein früherer Versuch, das hier oben bei :root
-   mitzuregeln, wurde von der späteren .hero-ticker__track-Basisregel
-   überschrieben und lief trotz reduzierter Bewegung weiter.
-
-   Die Animation zu stoppen reicht allein nicht: .hero-ticker__track hat
-   zwei identische .hero-ticker__item-Kopien für die nahtlose Schleife, und
-   im Ruhezustand (kein transform) zeigt overflow:hidden nur den Anfang der
-   ERSTEN Kopie — bei den meisten Viewport-Breiten mitten im Satz
-   abgeschnitten. Deshalb: zweite Kopie ausblenden und die verbleibende auf
-   mehrere Zeilen umbrechen lassen, statt sie einzeilig abzuschneiden. */
-@media (prefers-reduced-motion: reduce) {
-  .hero-ticker__track {
-    animation: none;
-    display: block;
-    width: 100%;
-  }
-
-  .hero-ticker__item {
-    display: block;
-    width: 100%;
-    white-space: normal;
-  }
-
-  .hero-ticker__item:nth-child(2) {
-    display: none;
-  }
 }
