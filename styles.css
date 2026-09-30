@@ -643,79 +643,23 @@ section {
   display: inline-block;
 }
 
-/* --- Kennzahl-Kacheln (#vertrauen) -------------------------------------
-   Signage-Kachel: Rechteck mit vier gefasten Ecken (Fase = --badge-notch,
-   wie .location-card), Zwei-Ebenen-Rahmen — die Kachel selbst ist voll
-   --accent (= Rahmen), ::before liegt 3px eingerückt darüber in --primary
-   mit derselben Fasenform, weil border und clip-path an einer Schräge nicht
-   zusammengehen. Die Innenfase ist 0,586 x Rand kleiner, damit der Rahmen
-   an den Ecken gleich breit bleibt.
+/* --- Bewertungs-Karte (#vertrauen) -------------------------------------
+   Schlichte helle Karte: Sterne, Note, Unterzeile, Flaggen. Die Karte selbst
+   ist das Element mit clip-path (vier gefaste Ecken, Fase = --badge-notch) —
+   ein drop-shadow am selben Element würde mitgeclippt, deshalb hängt der
+   dezente Schatten am äußeren .rating. Zwei-Ebenen-Rand: die Karte ist ein
+   helles Grau (= 1px Rand), ::before liegt 1px eingerückt darüber in Weiß
+   mit derselben Fasenform (Innenfase = Außenfase minus 0,586 x Rand).
 
-   Die älteren .trust-stats/.trust-stat-Regeln weiter oben gehören
-   theorie.html (Zahlenleiste) und bleiben unverändert; diese Kacheln haben
-   einen eigenen Namensraum (.stats/.stat). */
-.stats {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+   Die älteren .trust-stat*-Regeln gehören theorie.html/ueber-uns.html und
+   bleiben unverändert. */
+.rating {
+  max-width: 520px;
+  margin-inline: auto;
+  filter: drop-shadow(0 2px 12px color-mix(in srgb, var(--primary) 10%, transparent));
 }
 
-.stat {
-  --stat-cut: var(--badge-notch);
-  --stat-cut-in: calc(var(--stat-cut) - 0.586 * 3px);
-  position: relative;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: calc(3px + var(--space-4));
-  background-color: var(--accent);
-  clip-path: polygon(
-    var(--stat-cut) 0,
-    calc(100% - var(--stat-cut)) 0,
-    100% var(--stat-cut),
-    100% calc(100% - var(--stat-cut)),
-    calc(100% - var(--stat-cut)) 100%,
-    var(--stat-cut) 100%,
-    0 calc(100% - var(--stat-cut)),
-    0 var(--stat-cut)
-  );
-}
-
-.stat::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  background-color: var(--primary);
-  clip-path: polygon(
-    var(--stat-cut-in) 0,
-    calc(100% - var(--stat-cut-in)) 0,
-    100% var(--stat-cut-in),
-    100% calc(100% - var(--stat-cut-in)),
-    calc(100% - var(--stat-cut-in)) 100%,
-    var(--stat-cut-in) 100%,
-    0 calc(100% - var(--stat-cut-in)),
-    0 var(--stat-cut-in)
-  );
-}
-
-.stat > * {
-  position: relative;
-}
-
-.stat__body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-/* Satz für Screenreader; die sichtbare Zahl zählt und ist aria-hidden. */
-.stat__sr {
+.rating__sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -726,117 +670,127 @@ section {
   white-space: nowrap;
 }
 
-.stat__value {
+.rating__body {
+  --rating-cut: var(--badge-notch);
+  --rating-cut-in: calc(var(--rating-cut) - 0.586 * 1px);
+  position: relative;
+  box-sizing: border-box;
   display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--font-size-stat);
-  line-height: 1;
-  color: var(--accent);
+  flex-direction: column;
+  align-items: center;
+  padding: calc(1px + var(--space-8)) calc(1px + var(--space-6));
+  background-color: color-mix(in srgb, var(--text-dark) 12%, var(--background-light));
+  text-align: center;
+  clip-path: polygon(
+    var(--rating-cut) 0,
+    calc(100% - var(--rating-cut)) 0,
+    100% var(--rating-cut),
+    100% calc(100% - var(--rating-cut)),
+    calc(100% - var(--rating-cut)) 100%,
+    var(--rating-cut) 100%,
+    0 calc(100% - var(--rating-cut)),
+    0 var(--rating-cut)
+  );
 }
 
-/* Die zählende Zahl bekommt vom Skript beim Start eine feste Mindestbreite
-   (Breite des Endwerts) und steht linksbündig darin — so springt weder die
-   Kachel noch das Wort daneben, während die Ziffern wechseln. */
-.stat__num {
-  display: inline-block;
-  text-align: left;
-  font-variant-numeric: tabular-nums;
+.rating__body::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background-color: var(--text-light);
+  clip-path: polygon(
+    var(--rating-cut-in) 0,
+    calc(100% - var(--rating-cut-in)) 0,
+    100% var(--rating-cut-in),
+    100% calc(100% - var(--rating-cut-in)),
+    calc(100% - var(--rating-cut-in)) 100%,
+    var(--rating-cut-in) 100%,
+    0 calc(100% - var(--rating-cut-in)),
+    0 var(--rating-cut-in)
+  );
 }
 
-.stat__unit {
-  font-size: 0.45em;
-  letter-spacing: var(--letter-spacing-loose);
-  text-transform: uppercase;
+.rating__body > * {
+  position: relative;
 }
 
-.stat__stars {
+.rating__stars {
   display: block;
-  width: 116px;
-  height: 20px;
-  margin-top: var(--space-2);
+  width: 174px;
+  height: 30px;
+}
+
+.rating__star {
   fill: var(--accent);
 }
 
-/* Label: --text-light bei 75 % auf --primary ≈ 9:1 (AA verlangt 4,5:1). */
-.stat__label {
-  margin: var(--space-2) 0 0;
-  font-size: var(--font-size-small);
-  letter-spacing: var(--letter-spacing-loose);
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--text-light) 75%, transparent);
+.rating__score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  column-gap: var(--space-3);
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-display);
+  line-height: 1;
+  color: var(--text-dark);
 }
 
-.stat__langs {
+.rating__num {
+  font-size: 56px;
+}
+
+.rating__count {
+  font-size: calc(56px * 0.45);
+  letter-spacing: var(--letter-spacing-display);
+}
+
+.rating__sub {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.rating__langs {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-micro);
+  letter-spacing: var(--letter-spacing-loose);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Flaggen-Emojis wie zuvor auf der Startseite, gleiche Reihenfolge; in der
+   Breite darf die Reihe zentriert auf zwei Zeilen umbrechen. */
+.rating__flags {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-2);
-  margin: var(--space-3) 0 0;
-  padding: 0;
-  list-style: none;
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-2) 0 0;
+  font-size: 30px;
+  line-height: 1;
 }
 
-/* Sprach-Badge im ursprünglichen Stil der Alters-Badges (dunkle Füllung,
-   gelber Rand, gelbe Schrift, schräge Ecken), wie sie auf Schwarz aussahen —
-   die aktuellen .class-card__age sind für helle Flächen umgestellt. Zwei
-   Ebenen auf z-index -1, isolation hält sie im Badge. */
-.stat__lang {
-  position: relative;
-  isolation: isolate;
-  padding: var(--space-1) var(--space-3);
-  color: var(--accent);
-  font-family: var(--font-body);
-  font-size: var(--font-size-micro);
-  font-weight: 700;
-  letter-spacing: var(--letter-spacing-loose);
-  text-transform: uppercase;
-}
-
-.stat__lang::before,
-.stat__lang::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
-}
-
-.stat__lang::before {
-  inset: 0;
-  background-color: var(--accent);
-}
-
-.stat__lang::after {
-  inset: 1px;
-  background-color: var(--primary);
-}
-
-/* Einblenden nacheinander (80ms Versatz über --i am <li>). --ready/--visible
-   setzt nur initStatCounters() — ohne JavaScript oder bei reduzierter
-   Bewegung bleiben die Kacheln von Anfang an sichtbar. */
-.stats--ready .stat {
-  opacity: 0;
-  transform: translateY(12px);
-}
-
-.stats--visible .stat {
-  animation: stat-in 400ms ease-out both;
-  animation-delay: calc(var(--i, 0) * 80ms);
-}
-
-@keyframes stat-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
+/* Auf ganz schmalen Displays (≤ 359px) in zwei gleich lange Zeilen (3 + 3)
+   umbrechen statt 5 + 1. */
+@media (max-width: 359px) {
+  .rating__flags {
+    max-width: 5.4em;
   }
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Sterne: nur mit JS (initRatingStars) erst gedimmt, dann nacheinander
+   aufleuchten (80ms Versatz). Ohne JavaScript oder bei reduzierter Bewegung
+   bleiben sie von Anfang an voll gelb. */
+.rating--ready .rating__star {
+  fill: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.rating--visible .rating__star {
+  fill: var(--accent);
+  transition: fill 300ms ease-out;
+  transition-delay: calc(var(--i, 0) * 80ms);
 }
 
 /* --------------------------------------------------------------------------
@@ -2580,13 +2534,12 @@ section {
     padding-block: var(--space-16);
   }
 
-  .stats {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-6);
+  .rating__num {
+    font-size: 64px;
   }
 
-  .stat {
-    padding: calc(3px + var(--space-6));
+  .rating__count {
+    font-size: calc(64px * 0.45);
   }
 
   .trust-stats {
@@ -3107,8 +3060,8 @@ section {
    Reduzierte Bewegung
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .stats--visible .stat {
-    animation: none;
+  .rating--visible .rating__star {
+    transition: none;
   }
 
   .site-header,
