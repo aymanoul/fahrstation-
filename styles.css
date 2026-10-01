@@ -3582,3 +3582,385 @@ section {
     transform: none;
   }
 }
+
+/* ==========================================================================
+   Gold-Metall-Buttons
+   --------------------------------------------------------------------------
+   Alle Buttons (keine Textlinks) in drei Stufen:
+     p1  Primär    — Gold-Metall, dunkle Schrift
+     p2  Sekundär  — "Schwarz-Chrom": dunkle Fläche, goldener Rahmen, helle/
+                     goldene Schrift
+     p3  Icon      — Karussell-Pfeile: goldener Rahmen, dezente dunkle Fläche
+   Drei Schichten wie bei einem Metallrahmen: äußerer Rahmen (dunkel → hell),
+   innere Kante (hell → dunkles Gold → hell), Fläche (helles → dunkleres Gold).
+   Nur Tokens + color-mix, keine festen Hex-Werte.
+
+   Zwei Bauweisen:
+   - Direkt (.ghost-btn, .btn-primary): rechteckig mit runden Ecken — border
+     trägt den Rahmen, ::before Kante + Fläche. Maße unverändert.
+   - Wrapper <span class="metal …"> (.btn-signage, .contact-action, Pfeile):
+     clip-path schneidet an der eigenen Box auch filter/box-shadow ab. Der
+     Wrapper ist deshalb UNGESCHNITTEN und trägt Schatten, Rahmen (::before,
+     geschnitten) und Zustände; das innere Element (.metal__btn) liefert
+     Kante + Fläche, jeweils um die Rahmenstärke eingerückt (Polygon der
+     Innenform = Außenform minus Einzug).
+   Zustände: Hover nur mit Maus (Helligkeit 1.05, Schatten, Lichtstreifen
+   einmal 600 ms), gedrückt (2,5 px einsinken, scale .97, kleinerer Schatten,
+   Touch: Blitz 250 ms), Fokus (Doppelring, der Form folgend), disabled.
+   ========================================================================== */
+.metal,
+.ghost-btn,
+.btn-primary,
+.mobile-cta-bar__item {
+  --m-dark: color-mix(in srgb, var(--accent) 45%, var(--primary));
+  --m-mid: color-mix(in srgb, var(--accent-hover) 70%, var(--primary));
+  --m-light: color-mix(in srgb, var(--accent) 55%, var(--text-light));
+  --m-frame: linear-gradient(to bottom, var(--m-dark), var(--m-light));
+  --m-edge: linear-gradient(to bottom, var(--m-light), var(--m-mid) 50%, var(--m-light));
+  --m-face-1: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 70%, var(--text-light)), var(--accent) 48%, color-mix(in srgb, var(--accent) 82%, var(--primary)));
+  --m-face-2: linear-gradient(to bottom, color-mix(in srgb, var(--primary) 84%, var(--text-light)), var(--primary) 55%, color-mix(in srgb, var(--primary) 94%, var(--accent)));
+  --m-face-3: linear-gradient(to bottom, color-mix(in srgb, var(--primary) 86%, var(--accent)), color-mix(in srgb, var(--primary) 93%, var(--accent)));
+  --m-ease: cubic-bezier(0.1, 0.4, 0.2, 1);
+  --streak: 60%;
+  --face: var(--m-face-1);
+  --ink: var(--primary);
+  --emboss: 0 1px 0 color-mix(in srgb, var(--text-light) 55%, transparent);
+  --m-shadow: drop-shadow(0 2px 2px color-mix(in srgb, var(--primary) 28%, transparent));
+  --m-shadow-hover: drop-shadow(0 4px 4px color-mix(in srgb, var(--primary) 34%, transparent));
+  --m-shadow-down: drop-shadow(0 1px 1px color-mix(in srgb, var(--primary) 30%, transparent));
+  --m-focus: drop-shadow(2px 0 0 var(--primary)) drop-shadow(-2px 0 0 var(--primary)) drop-shadow(0 2px 0 var(--primary)) drop-shadow(0 -2px 0 var(--primary))
+    drop-shadow(2px 0 0 var(--accent)) drop-shadow(-2px 0 0 var(--accent)) drop-shadow(0 2px 0 var(--accent)) drop-shadow(0 -2px 0 var(--accent));
+}
+
+/* Sechsecke/Pfeile stehen oft auf hellem Grund: Schatten dort ~30 % dezenter
+   (Deckkraft und Radius). */
+.metal {
+  --m-shadow: drop-shadow(0 1.4px 1.4px color-mix(in srgb, var(--primary) 20%, transparent));
+  --m-shadow-hover: drop-shadow(0 2.8px 2.8px color-mix(in srgb, var(--primary) 24%, transparent));
+  --m-shadow-down: drop-shadow(0 0.7px 0.7px color-mix(in srgb, var(--primary) 21%, transparent));
+}
+
+.metal--p1 { --face: var(--m-face-1); --ink: var(--primary); --emboss: 0 1px 0 color-mix(in srgb, var(--text-light) 55%, transparent); }
+.metal--p2 { --streak: 22%; --face: var(--m-face-2); --ink: var(--accent); --emboss: 0 1px 0 color-mix(in srgb, var(--primary) 70%, transparent); }
+.metal--p3 { --streak: 22%; --face: var(--m-face-3); --ink: var(--accent); --emboss: none; --d1: 1px; --d2: 2px; }
+
+@keyframes metal-streak {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(260%); }
+}
+
+/* ---------- Direkte Variante: runde Ecken, Maße unverändert ---------- */
+.ghost-btn,
+.btn-primary {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--m-frame);
+  color: var(--ink);
+  text-shadow: var(--emboss);
+  filter: var(--m-shadow);
+  transition: transform 250ms var(--m-ease), filter 250ms var(--m-ease);
+}
+
+.ghost-btn { --streak: 22%; --face: var(--m-face-2); --ink: var(--accent); --emboss: 0 1px 0 color-mix(in srgb, var(--primary) 70%, transparent); }
+
+.ghost-btn--primary,
+.btn-primary { --streak: 60%; --face: var(--m-face-1); --ink: var(--primary); --emboss: 0 1px 0 color-mix(in srgb, var(--text-light) 55%, transparent); }
+
+/* .btn-primary hatte keinen Rand: den 2px-Rahmen vom Innenabstand abziehen,
+   damit die Maße gleich bleiben. */
+.btn-primary { padding: calc(var(--space-3) - 2px) calc(var(--space-6) - 2px); }
+
+.ghost-btn::before,
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -1px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: var(--face) padding-box, var(--m-edge) border-box;
+  transition: filter 250ms var(--m-ease);
+}
+
+.btn-primary::before { border-radius: calc(var(--radius-sm) - 1px); }
+
+.ghost-btn::after,
+.btn-primary::after,
+.metal__btn::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 20%, color-mix(in srgb, var(--text-light) var(--streak), transparent) 50%, transparent 80%);
+  transform: translateX(-120%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ghost-btn:hover,
+  .ghost-btn--primary:hover,
+  .btn-primary:hover {
+    background: var(--m-frame);
+    border-color: transparent;
+    color: var(--ink);
+    filter: var(--m-shadow-hover);
+  }
+
+  .ghost-btn:hover::before,
+  .btn-primary:hover::before { filter: brightness(1.05); }
+
+  .ghost-btn:hover::after,
+  .btn-primary:hover::after { animation: metal-streak 600ms var(--m-ease) 1 both; }
+}
+
+.ghost-btn:active,
+.ghost-btn--primary:active,
+.btn-primary:active {
+  background: var(--m-frame);
+  border-color: transparent;
+  color: var(--ink);
+  transform: translateY(2.5px) scale(0.97);
+  filter: var(--m-shadow-down);
+}
+
+.ghost-btn:active::after,
+.btn-primary:active::after { animation: metal-streak 250ms var(--m-ease) 1 both; }
+
+.ghost-btn:focus-visible,
+.btn-primary:focus-visible {
+  box-shadow: none;
+  filter: var(--m-shadow) var(--m-focus);
+}
+
+.ghost-btn:disabled,
+.btn-primary:disabled {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  pointer-events: none;
+}
+
+/* ---------- Wrapper-Variante für clip-path-Formen ---------- */
+.metal {
+  --n: 20px;
+  --d1: 1.25px;
+  --d2: 2.25px;
+  position: relative;
+  display: inline-flex;
+  filter: var(--m-shadow);
+  transition: transform 250ms var(--m-ease), filter 250ms var(--m-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.metal--sig { --n: var(--btn-signage-notch, 20px); }
+.metal--block { --n: var(--badge-notch); }
+.metal--icon { --n: 14px; }
+
+.metal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--m-frame);
+}
+
+.metal > .metal__btn {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  margin: var(--d1);
+  border: 0;
+  background: var(--m-edge);
+  color: var(--ink);
+  text-shadow: var(--emboss);
+  transform: none;
+  transition: none;
+}
+
+.metal > .metal__btn::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: calc(var(--d2) - var(--d1));
+  background: var(--face);
+  transition: filter 250ms var(--m-ease);
+}
+
+/* Sechseck (btn-signage, contact-action) */
+.metal--hex::before { clip-path: polygon(0 50%, var(--n) 0, calc(100% - var(--n)) 0, 100% 50%, calc(100% - var(--n)) 100%, var(--n) 100%); }
+.metal--hex > .metal__btn { clip-path: polygon(0 50%, calc(var(--n) - var(--d1)) 0, calc(100% - var(--n) + var(--d1)) 0, 100% 50%, calc(100% - var(--n) + var(--d1)) 100%, calc(var(--n) - var(--d1)) 100%); }
+.metal--hex > .metal__btn::before { clip-path: polygon(0 50%, calc(var(--n) - var(--d2)) 0, calc(100% - var(--n) + var(--d2)) 0, 100% 50%, calc(100% - var(--n) + var(--d2)) 100%, calc(var(--n) - var(--d2)) 100%); }
+
+/* Pfeile */
+.metal--next::before { clip-path: polygon(0 0, calc(100% - var(--n)) 0, 100% 50%, calc(100% - var(--n)) 100%, 0 100%); }
+.metal--next > .metal__btn { clip-path: polygon(0 0, calc(100% - var(--n) + var(--d1)) 0, 100% 50%, calc(100% - var(--n) + var(--d1)) 100%, 0 100%); }
+.metal--next > .metal__btn::before { clip-path: polygon(0 0, calc(100% - var(--n) + var(--d2)) 0, 100% 50%, calc(100% - var(--n) + var(--d2)) 100%, 0 100%); }
+.metal--prev::before { clip-path: polygon(0 50%, var(--n) 0, 100% 0, 100% 100%, var(--n) 100%); }
+.metal--prev > .metal__btn { clip-path: polygon(0 50%, calc(var(--n) - var(--d1)) 0, 100% 0, 100% 100%, calc(var(--n) - var(--d1)) 100%); }
+.metal--prev > .metal__btn::before { clip-path: polygon(0 50%, calc(var(--n) - var(--d2)) 0, 100% 0, 100% 100%, calc(var(--n) - var(--d2)) 100%); }
+
+/* Größen: Gesamtmaß (Wrapper) bleibt wie vorher, die Rahmenstärke wird vom
+   inneren Element abgezogen. */
+.metal > .btn-signage {
+  min-height: calc(var(--btn-signage-h) - 2 * var(--d1));
+  padding: 0 calc(var(--space-8) - var(--d1)) 0 calc(76px - var(--d1));
+}
+
+.metal > .btn-signage > .btn-signage__stripes {
+  top: calc(var(--d2) - var(--d1));
+  bottom: calc(var(--d2) - var(--d1));
+}
+
+.metal > .contact-action {
+  flex: 1;
+  min-height: calc(var(--space-24) - 2 * var(--d1));
+  padding: calc(var(--space-6) - var(--d1));
+}
+
+.metal > .contact-form__submit { width: auto; flex: 1; }
+
+.metal--block { display: flex; }
+.contact-actions > .metal { flex: 1; }
+
+/* Texte/Icons in Sekundär-Flächen (Schwarz-Chrom) */
+.metal--p2 > .contact-action .contact-action__sub { color: color-mix(in srgb, var(--text-light) 70%, transparent); }
+.metal--p1 > .contact-action .contact-action__sub { color: color-mix(in srgb, var(--primary) 70%, transparent); }
+
+/* alte Einzel-Zustände der Innenelemente neutralisieren (Hebung, Fokusring,
+   Fokus-Umfärbung) — Zustände trägt jetzt der Wrapper */
+.metal > .metal__btn:hover,
+.metal > .metal__btn:active { transform: none; }
+.metal > .metal__btn:focus-visible { outline: none; box-shadow: none; color: var(--ink); }
+.metal > .metal__btn:focus-visible::before { inset: calc(var(--d2) - var(--d1)); }
+.metal > .contact-action:focus-visible .contact-action__sub { color: inherit; }
+.metal--p1 > .contact-action:focus-visible .contact-action__sub { color: color-mix(in srgb, var(--primary) 70%, transparent); }
+.metal--p2 > .contact-action:focus-visible .contact-action__sub { color: color-mix(in srgb, var(--text-light) 70%, transparent); }
+
+/* Pfeile: Wrapper übernimmt Position und Sichtbarkeit */
+.metal--arrow {
+  position: absolute;
+  top: calc(var(--card-w) * 0.3125);
+  z-index: 3;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  margin: calc(var(--tap-target) / -2) 0 0;
+  transition: transform 250ms var(--m-ease), filter 250ms var(--m-ease), opacity var(--transition-base), visibility var(--transition-base);
+}
+
+.metal--arrow.metal--prev { left: calc(-1 * var(--carousel-pad)); }
+.metal--arrow.metal--next { right: calc(-1 * var(--carousel-pad)); }
+.metal--arrow.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+
+.metal > .carousel-arrow {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  width: auto;
+  height: auto;
+  flex: 1;
+  margin: var(--d1);
+  transition: none;
+}
+
+.metal > .carousel-arrow svg { z-index: 1; }
+
+@media (hover: none) {
+  .metal--arrow { display: none; }
+}
+
+/* ---------- Zustände (Wrapper) ---------- */
+@media (hover: hover) and (pointer: fine) {
+  .metal:hover { filter: var(--m-shadow-hover); }
+  .metal:hover > .metal__btn::before { filter: brightness(1.05); }
+  .metal:hover > .metal__btn::after { animation: metal-streak 600ms var(--m-ease) 1 both; }
+}
+
+.metal:active {
+  transform: translateY(2.5px) scale(0.97);
+  filter: var(--m-shadow-down);
+}
+
+.metal:active > .metal__btn::after { animation: metal-streak 250ms var(--m-ease) 1 both; }
+
+/* Fokus nur per Tastatur (focus-visible); der Doppelring folgt der Form,
+   weil er als Schatten-Kette am ungeschnittenen Wrapper hängt. */
+.metal:has(> :focus-visible) { filter: var(--m-shadow) var(--m-focus); }
+
+@supports not selector(:has(*)) {
+  .metal:focus-within { filter: var(--m-shadow) var(--m-focus); }
+}
+
+.metal:has(> :disabled) {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  pointer-events: none;
+}
+
+/* ---------- Mobile Anruf-Leiste: nur Metall-Fläche ---------- */
+.mobile-cta-bar__item {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  text-shadow: var(--emboss);
+  filter: none;
+  transition: none;
+}
+
+.mobile-cta-bar__item--call { --streak: 60%; background: var(--m-face-1); color: var(--primary); }
+
+.mobile-cta-bar__item--whatsapp {
+  --streak: 22%;
+  --face: var(--m-face-2);
+  --ink: var(--accent);
+  --emboss: 0 1px 0 color-mix(in srgb, var(--primary) 70%, transparent);
+  background: var(--m-face-2);
+  color: var(--text-light);
+}
+
+.mobile-cta-bar__item::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 20%, color-mix(in srgb, var(--text-light) var(--streak), transparent) 50%, transparent 80%);
+  transform: translateX(-120%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mobile-cta-bar__item--call:hover,
+  .mobile-cta-bar__item--whatsapp:hover {
+    background-image: linear-gradient(color-mix(in srgb, var(--text-light) 5%, transparent), color-mix(in srgb, var(--text-light) 5%, transparent)), var(--face);
+  }
+  .mobile-cta-bar__item:hover::after { animation: metal-streak 600ms var(--m-ease) 1 both; }
+}
+
+.mobile-cta-bar__item--call:active { background: var(--m-face-1); }
+.mobile-cta-bar__item--whatsapp:active { background: var(--m-face-2); }
+.mobile-cta-bar__item:active::after { animation: metal-streak 250ms var(--m-ease) 1 both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .metal,
+  .metal--arrow,
+  .ghost-btn,
+  .btn-primary,
+  .metal > .metal__btn::before,
+  .ghost-btn::before,
+  .btn-primary::before { transition: none; }
+
+  .metal:active,
+  .ghost-btn:active,
+  .btn-primary:active { transform: none; }
+
+  .metal__btn::after,
+  .ghost-btn::after,
+  .btn-primary::after,
+  .mobile-cta-bar__item::after { display: none; }
+}

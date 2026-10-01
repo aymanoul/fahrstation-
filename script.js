@@ -537,18 +537,23 @@
     function makeArrow(direction) {
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'carousel-arrow carousel-arrow--' + direction;
+      btn.className = 'metal__btn carousel-arrow carousel-arrow--' + direction;
       btn.setAttribute('aria-label', direction === 'prev' ? 'Vorherige Klasse anzeigen' : 'Nächste Klasse anzeigen');
       btn.innerHTML =
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true" focusable="false">' +
         '<path d="' + (direction === 'prev' ? 'M15 4l-8 8 8 8' : 'M9 4l8 8-8 8') + '"/></svg>';
+      // Gold-Metall: der Wrapper trägt Rahmen, Schatten und Zustände (siehe
+      // „Gold-Metall-Buttons“ in styles.css), der Button bleibt der echte Button.
+      var wrap = document.createElement('span');
+      wrap.className = 'metal metal--' + direction + ' metal--arrow metal--icon metal--p3';
+      wrap.appendChild(btn);
       return btn;
     }
 
     var prev = makeArrow('prev');
     var next = makeArrow('next');
-    viewport.appendChild(prev);
-    viewport.appendChild(next);
+    viewport.appendChild(prev.parentNode);
+    viewport.appendChild(next.parentNode);
 
     // Abstand von Kartenanfang zu Kartenanfang (Kartenbreite + gap).
     function step() {
@@ -585,7 +590,7 @@
 
     function setArrow(btn, hidden) {
       if (hidden && document.activeElement === btn) track.focus({ preventScroll: true });
-      btn.classList.toggle('is-hidden', hidden);
+      btn.parentNode.classList.toggle('is-hidden', hidden);
       btn.tabIndex = hidden ? -1 : 0;
     }
 
