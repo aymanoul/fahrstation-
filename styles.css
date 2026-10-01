@@ -3794,6 +3794,14 @@ section {
 .metal--hex > .metal__btn { clip-path: polygon(0 50%, calc(var(--n) - var(--d1)) 0, calc(100% - var(--n) + var(--d1)) 0, 100% 50%, calc(100% - var(--n) + var(--d1)) 100%, calc(var(--n) - var(--d1)) 100%); }
 .metal--hex > .metal__btn::before { clip-path: polygon(0 50%, calc(var(--n) - var(--d2)) 0, calc(100% - var(--n) + var(--d2)) 0, 100% 50%, calc(100% - var(--n) + var(--d2)) 100%, calc(var(--n) - var(--d2)) 100%); }
 
+/* Rechteck mit vier gefasten Ecken (.contact-action), Fase = --badge-notch wie
+   bei .location-card. Innenfase = Außenfase − 0,586 × Randbreite, damit der
+   Rahmen an den Schrägen überall gleich dick ist (Einzug d: Schräge rückt um
+   d·√2 nach innen, die Box um 2d → Fase − (2 − √2)·d). */
+.metal--chamfer::before { clip-path: polygon(var(--n) 0, calc(100% - var(--n)) 0, 100% var(--n), 100% calc(100% - var(--n)), calc(100% - var(--n)) 100%, var(--n) 100%, 0 calc(100% - var(--n)), 0 var(--n)); }
+.metal--chamfer > .metal__btn { --c1: calc(var(--n) - 0.586 * var(--d1)); clip-path: polygon(var(--c1) 0, calc(100% - var(--c1)) 0, 100% var(--c1), 100% calc(100% - var(--c1)), calc(100% - var(--c1)) 100%, var(--c1) 100%, 0 calc(100% - var(--c1)), 0 var(--c1)); }
+.metal--chamfer > .metal__btn::before { --c2: calc(var(--n) - 0.586 * var(--d2)); clip-path: polygon(var(--c2) 0, calc(100% - var(--c2)) 0, 100% var(--c2), 100% calc(100% - var(--c2)), calc(100% - var(--c2)) 100%, var(--c2) 100%, 0 calc(100% - var(--c2)), 0 var(--c2)); }
+
 /* Pfeile */
 .metal--next::before { clip-path: polygon(0 0, calc(100% - var(--n)) 0, 100% 50%, calc(100% - var(--n)) 100%, 0 100%); }
 .metal--next > .metal__btn { clip-path: polygon(0 0, calc(100% - var(--n) + var(--d1)) 0, 100% 50%, calc(100% - var(--n) + var(--d1)) 100%, 0 100%); }
