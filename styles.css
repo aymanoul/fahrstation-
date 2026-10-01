@@ -3972,3 +3972,35 @@ section {
   .btn-primary::after,
   .mobile-cta-bar__item::after { display: none; }
 }
+
+/* ---------- „Absenden“: volle Breite, vier Fasen, Pfeil ----------
+   Gleiche Fase (--badge-notch) wie die Kontakt-Kästen; die Fasen-Polygone
+   kommen von .metal--chamfer. Keine Schrägstreifen mehr, Text mittig, dahinter
+   ein Pfeil, der bei Maus-Hover 4 px nach rechts gleitet. */
+.metal--wide {
+  --n: var(--badge-notch);
+  display: flex;
+  width: 100%;
+}
+
+.metal.metal--wide > .contact-form__submit {
+  flex: 1;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: calc(56px - 2 * var(--d1));
+  padding: 0 calc(var(--space-6) - var(--d1));
+}
+
+.contact-form__arrow {
+  display: inline-block;
+  transition: transform 250ms var(--m-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .metal:hover .contact-form__arrow { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-form__arrow { transition: none; }
+  .metal:hover .contact-form__arrow { transform: none; }
+}
