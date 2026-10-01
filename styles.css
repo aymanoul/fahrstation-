@@ -3973,17 +3973,20 @@ section {
   .mobile-cta-bar__item::after { display: none; }
 }
 
-/* ---------- „Absenden“: volle Breite, vier Fasen, Pfeil ----------
+/* ---------- „Absenden“ und „Jetzt voranmelden“: vier Fasen, Pfeil ----------
    Gleiche Fase (--badge-notch) wie die Kontakt-Kästen; die Fasen-Polygone
    kommen von .metal--chamfer. Keine Schrägstreifen mehr, Text mittig, dahinter
    ein Pfeil, der bei Maus-Hover 4 px nach rechts gleitet. */
+.metal--wide,
+.metal--cta { --n: var(--badge-notch); }
+
 .metal--wide {
-  --n: var(--badge-notch);
   display: flex;
   width: 100%;
 }
 
-.metal.metal--wide > .contact-form__submit {
+.metal.metal--wide > .btn-signage,
+.metal.metal--cta > .btn-signage {
   flex: 1;
   justify-content: center;
   gap: var(--space-2);
@@ -3991,16 +3994,20 @@ section {
   padding: 0 calc(var(--space-6) - var(--d1));
 }
 
-.contact-form__arrow {
+/* „Jetzt voranmelden“ (.kb-cta): gleicher Stil, aber nur so breit wie sein
+   Inhalt (zentriert im Textfluss), etwas mehr Luft links/rechts. */
+.metal.metal--cta > .btn-signage { padding-inline: calc(var(--space-8) - var(--d1)); }
+
+.metal__arrow {
   display: inline-block;
   transition: transform 250ms var(--m-ease);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .metal:hover .contact-form__arrow { transform: translateX(4px); }
+  .metal:hover .metal__arrow { transform: translateX(4px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .contact-form__arrow { transition: none; }
-  .metal:hover .contact-form__arrow { transform: none; }
+  .metal__arrow { transition: none; }
+  .metal:hover .metal__arrow { transform: none; }
 }
