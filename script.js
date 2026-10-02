@@ -1329,7 +1329,7 @@
     if (!items.length) return;
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    // Eintritt: Label, Überschrift und Karten steigen beim Sichtbarwerden
+    // Eintritt: Überschrift und Karten steigen beim Sichtbarwerden
     // gestaffelt auf (CSS: .faq--pending versteckt, .is-inview animiert).
     var faq = document.getElementById('faq');
     if (faq && !reduce.matches && 'IntersectionObserver' in window) {

@@ -4029,7 +4029,9 @@ section {
    ========================================================================== */
 .faq {
   background-color: var(--background-light);
-  padding-block: var(--space-20);
+  /* oben knapper als unten: die Überschrift soll nicht in einer großen
+     Lücke unter dem dunklen Kontaktbereich schweben */
+  padding-block: var(--space-12) var(--space-20);
 }
 
 .faq__inner {
@@ -4040,8 +4042,6 @@ section {
   margin-inline: auto;
   padding-inline: var(--space-4);
 }
-
-.faq__label { margin: 0 0 var(--space-4); }
 
 .faq__heading {
   margin: 0 0 var(--space-10);
@@ -4360,25 +4360,25 @@ section {
   outline-offset: 2px;
 }
 
-/* Eintritt beim Scrollen: Label, Überschrift und Karten steigen gestaffelt auf.
+/* Eintritt beim Scrollen: Überschrift und Karten steigen gestaffelt auf.
    initFaq() setzt .faq--pending (versteckt) und beim Sichtbarwerden
    .is-inview; ohne JS oder mit reduzierter Bewegung steht alles sofort da. */
 @keyframes faq-rise {
   from { opacity: 0; translate: 0 20px; }
 }
 
-.faq--pending :where(.faq__label, .faq__heading, .faq-item) { opacity: 0; }
+.faq--pending :where(.faq__heading, .faq-item) { opacity: 0; }
 
-.faq.is-inview :where(.faq__label, .faq__heading, .faq-item) {
+.faq.is-inview :where(.faq__heading, .faq-item) {
   animation: faq-rise 560ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 }
 
-.faq.is-inview .faq__heading { animation-delay: 80ms; }
-.faq.is-inview .faq-item:nth-child(1) { animation-delay: 170ms; }
-.faq.is-inview .faq-item:nth-child(2) { animation-delay: 240ms; }
-.faq.is-inview .faq-item:nth-child(3) { animation-delay: 310ms; }
-.faq.is-inview .faq-item:nth-child(4) { animation-delay: 380ms; }
-.faq.is-inview .faq-item:nth-child(5) { animation-delay: 450ms; }
+.faq.is-inview .faq__heading { animation-delay: 0ms; }
+.faq.is-inview .faq-item:nth-child(1) { animation-delay: 90ms; }
+.faq.is-inview .faq-item:nth-child(2) { animation-delay: 160ms; }
+.faq.is-inview .faq-item:nth-child(3) { animation-delay: 230ms; }
+.faq.is-inview .faq-item:nth-child(4) { animation-delay: 300ms; }
+.faq.is-inview .faq-item:nth-child(5) { animation-delay: 370ms; }
 
 /* Weiches Auf-/Zuklappen (CSS-Pfad) */
 .faq-item::details-content {
@@ -4390,7 +4390,7 @@ section {
 .faq-item[open]::details-content { block-size: auto; }
 
 @media (min-width: 768px) {
-  .faq { padding-block: var(--space-30); }
+  .faq { padding-block: var(--space-16) var(--space-30); }
   .faq-item__q { font-size: calc(var(--font-size-body) + 2px); }
   .faq-item__summary { padding-inline: var(--space-8) var(--space-4); }
   .faq-item__a { padding-inline: var(--space-8); }
@@ -4407,7 +4407,7 @@ section {
   .faq-item[open] .faq-item__a,
   .faq-item[open] :where(.faq-rows__row, .faq-check li, .faq-note) { transition: none; }
 
-  .faq.is-inview :where(.faq__label, .faq__heading, .faq-item) { animation: none; }
+  .faq.is-inview :where(.faq__heading, .faq-item) { animation: none; }
 }
 
 /* Footer unter der hellen FAQ: abgerundete Oberkante, Zwickel in der Farbe der FAQ */
