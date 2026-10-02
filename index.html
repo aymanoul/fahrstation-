@@ -18,7 +18,7 @@
 
   <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="design-tokens.css?v=1425defe">
-  <link rel="stylesheet" href="styles.css?v=1856afef">
+  <link rel="stylesheet" href="styles.css?v=be8e6690">
 
   <script type="application/ld+json">
   {
@@ -75,7 +75,7 @@
         "name": "Wie melde ich mich an und was brauche ich dafür?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Komm einfach vorbei, ruf an oder schreib uns per WhatsApp. Für den Antrag brauchst du einen gültigen Ausweis, ein biometrisches Passfoto, einen Sehtest und den Nachweis über einen Erste-Hilfe-Kurs. Beim Antrag helfen wir dir gerne."
+          "text": "Für den Antrag brauchst du einen gültigen Ausweis, ein biometrisches Passfoto, einen Sehtest und den Nachweis über einen Erste-Hilfe-Kurs. Beim Antrag helfen wir dir gerne."
         }
       },
       {
@@ -83,7 +83,7 @@
         "name": "Wann findet der Theorieunterricht statt?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Dienstags und donnerstags um 18:30 Uhr sowie samstags um 11:00 Uhr. Wenn es schnell gehen soll: Im Crashkurs schaffst du die Theorie in nur 7 Abenden."
+          "text": "Dienstag und Donnerstag um 18:30 Uhr, Samstag um 11:00 Uhr. Im Crashkurs schaffst du die Theorie in nur 7 Abenden."
         }
       },
       {
@@ -99,7 +99,7 @@
         "name": "Wie viele Fahrstunden brauche ich und was kostet der Führerschein?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Das ist bei jedem anders und hängt davon ab, wie schnell du sicher fährst. Dazu kommen die vorgeschriebenen Sonderfahrten (Überland, Autobahn, Nacht). Wir fahren in deinem Tempo und sagen dir ehrlich, wann du bereit bist. Ein persönliches Angebot bekommst du direkt bei uns."
+          "text": "Die Zahl der Fahrstunden ist bei jedem anders und hängt davon ab, wie schnell du sicher fährst. Wir fahren in deinem Tempo und sagen dir ehrlich, wann du bereit bist. Vorgeschrieben sind außerdem die Sonderfahrten Überland, Autobahn und Nacht. Ein persönliches Angebot bekommst du direkt bei uns."
         }
       },
       {
@@ -107,7 +107,7 @@
         "name": "Wann erreiche ich euch?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Montag bis Freitag 10:30–18:00 Uhr und samstags 11:00–15:00 Uhr unter 0211 15828104 – oder direkt bei uns in der Kölner Straße 292. Per WhatsApp erreichst du uns auch außerhalb der Öffnungszeiten."
+          "text": "Montag bis Freitag 10:30–18:00 Uhr, Samstag 11:00–15:00 Uhr. Telefon: 0211 15828104. Vor Ort: Kölner Straße 292. Per WhatsApp erreichst du uns auch außerhalb der Öffnungszeiten."
         }
       }
     ]
@@ -567,23 +567,60 @@
         <div class="faq__list">
         <details class="faq-item">
           <summary class="faq-item__summary"><span class="faq-item__q">Wie melde ich mich an und was brauche ich dafür?</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
-          <div class="faq-item__a"><p>Komm einfach vorbei, ruf an oder schreib uns per WhatsApp. Für den Antrag brauchst du einen gültigen Ausweis, ein biometrisches Passfoto, einen Sehtest und den Nachweis über einen Erste-Hilfe-Kurs. Beim Antrag helfen wir dir gerne.</p></div>
+          <div class="faq-item__a">
+            <p>Für den Antrag brauchst du:</p>
+            <ul class="faq-check">
+              <li>Gültiger Ausweis</li>
+              <li>Biometrisches Passfoto</li>
+              <li>Sehtest</li>
+              <li>Nachweis über einen Erste-Hilfe-Kurs</li>
+            </ul>
+            <p class="faq-note">Beim Antrag helfen wir dir gerne.</p>
+          </div>
         </details>
         <details class="faq-item">
           <summary class="faq-item__summary"><span class="faq-item__q">Wann findet der Theorieunterricht statt?</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
-          <div class="faq-item__a"><p>Dienstags und donnerstags um 18:30 Uhr sowie samstags um 11:00 Uhr. Wenn es schnell gehen soll: Im Crashkurs schaffst du die Theorie in nur 7 Abenden.</p></div>
+          <div class="faq-item__a">
+            <dl class="faq-rows">
+              <div class="faq-rows__row"><dt>Dienstag</dt><dd>18:30 Uhr</dd></div>
+              <div class="faq-rows__row"><dt>Donnerstag</dt><dd>18:30 Uhr</dd></div>
+              <div class="faq-rows__row"><dt>Samstag</dt><dd>11:00 Uhr</dd></div>
+            </dl>
+            <p class="faq-note"><strong>Schnell durch?</strong> Im <a href="theorie/">Crashkurs</a> schaffst du die Theorie in nur 7 Abenden.</p>
+          </div>
         </details>
         <details class="faq-item">
           <summary class="faq-item__summary"><span class="faq-item__q">Ab welchem Alter darf ich welchen Führerschein machen?</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
-          <div class="faq-item__a"><p><a href="klasse-b/">Auto</a> (B): ab 17 mit Begleitung, ab 18 allein. <a href="klasse-a/">Motorrad</a>: Mofa ab 15, A1 ab 16, A2 ab 18, A ab 24. <a href="klasse-c/">LKW</a>: C1 ab 18, C ab 21. <a href="klasse-d/">Bus</a>: D1 ab 18, D ab 24.</p></div>
+          <div class="faq-item__a">
+            <dl class="faq-rows">
+              <div class="faq-rows__row"><dt><a href="klasse-b/">Auto</a> (B)</dt><dd><ul class="faq-chips"><li>ab 17 mit Begleitung</li><li>ab 18 allein</li></ul></dd></div>
+              <div class="faq-rows__row"><dt><a href="klasse-a/">Motorrad</a></dt><dd><ul class="faq-chips"><li><b>Mofa</b> ab 15</li><li><b>A1</b> ab 16</li><li><b>A2</b> ab 18</li><li><b>A</b> ab 24</li></ul></dd></div>
+              <div class="faq-rows__row"><dt><a href="klasse-c/">LKW</a></dt><dd><ul class="faq-chips"><li><b>C1</b> ab 18</li><li><b>C</b> ab 21</li></ul></dd></div>
+              <div class="faq-rows__row"><dt><a href="klasse-d/">Bus</a></dt><dd><ul class="faq-chips"><li><b>D1</b> ab 18</li><li><b>D</b> ab 24</li></ul></dd></div>
+            </dl>
+          </div>
         </details>
         <details class="faq-item">
           <summary class="faq-item__summary"><span class="faq-item__q">Wie viele Fahrstunden brauche ich und was kostet der Führerschein?</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
-          <div class="faq-item__a"><p>Das ist bei jedem anders und hängt davon ab, wie schnell du sicher fährst. Dazu kommen die vorgeschriebenen Sonderfahrten (Überland, Autobahn, Nacht). Wir fahren in deinem Tempo und sagen dir ehrlich, wann du bereit bist. Ein persönliches Angebot bekommst du direkt bei uns.</p></div>
+          <div class="faq-item__a">
+            <dl class="faq-rows faq-rows--stack">
+              <div class="faq-rows__row"><dt>Fahrstunden</dt><dd>Das ist bei jedem anders und hängt davon ab, wie schnell du sicher fährst. Wir fahren in deinem Tempo und sagen dir ehrlich, wann du bereit bist.</dd></div>
+              <div class="faq-rows__row"><dt>Sonderfahrten</dt><dd>Vorgeschrieben: <ul class="faq-chips"><li>Überland</li><li>Autobahn</li><li>Nacht</li></ul></dd></div>
+              <div class="faq-rows__row"><dt>Kosten</dt><dd>Ein persönliches Angebot bekommst du direkt bei uns.</dd></div>
+            </dl>
+          </div>
         </details>
         <details class="faq-item">
           <summary class="faq-item__summary"><span class="faq-item__q">Wann erreiche ich euch?</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
-          <div class="faq-item__a"><p>Montag bis Freitag 10:30–18:00 Uhr und samstags 11:00–15:00 Uhr unter <a href="tel:+4921115828104">0211 15828104</a> – oder direkt bei uns in der Kölner Straße 292. Per <a href="https://wa.me/4915229653650" target="_blank" rel="noopener">WhatsApp</a> erreichst du uns auch außerhalb der Öffnungszeiten.</p></div>
+          <div class="faq-item__a">
+            <dl class="faq-rows">
+              <div class="faq-rows__row"><dt>Mo–Fr</dt><dd>10:30–18:00 Uhr</dd></div>
+              <div class="faq-rows__row"><dt>Samstag</dt><dd>11:00–15:00 Uhr</dd></div>
+              <div class="faq-rows__row"><dt>Telefon</dt><dd><a href="tel:+4921115828104">0211 15828104</a></dd></div>
+              <div class="faq-rows__row"><dt>Vor Ort</dt><dd>Kölner Straße 292</dd></div>
+              <div class="faq-rows__row"><dt>WhatsApp</dt><dd><a href="https://wa.me/4915229653650" target="_blank" rel="noopener">Nachricht schreiben</a> – auch außerhalb der Öffnungszeiten</dd></div>
+            </dl>
+          </div>
         </details>
         </div>
       </div>

@@ -4200,7 +4200,151 @@ section {
   }
 }
 
-.faq-item__a p { margin: 0; }
+.faq-item__a > * { margin: 0; }
+.faq-item__a > * + * { margin-top: var(--space-4); }
+
+/* --- Antworten strukturiert statt Fließtext --------------------------------
+   .faq-rows   Bezeichnung | Wert (Zeiten, Alter, Kosten, Kontakt) — eine
+               kleine Tabelle mit Haarlinien; unter 360px stehen Bezeichnung
+               und Wert untereinander.
+   .faq-check  Checkliste (Unterlagen) mit gelbem Fasen-Häkchen.
+   .faq-chips  kleine Marken für Kurzwerte (Altersstufen, Sonderfahrten).
+   .faq-note   Hinweiszeile mit gelber Kante links. */
+.faq-rows {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  margin: 0;
+}
+
+/* subgrid: die Bezeichnungsspalte ist so breit wie die längste Bezeichnung
+   der jeweiligen Antwort, alle Zeilen fluchten. */
+.faq-rows__row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: var(--space-1) var(--space-6);
+  align-items: baseline;
+  padding-block: var(--space-2);
+  border-top: 1px solid color-mix(in srgb, var(--primary) 10%, var(--text-light));
+}
+
+.faq-rows__row:first-child { border-top: 0; padding-top: 0; }
+.faq-rows__row:last-child { padding-bottom: 0; }
+
+.faq-rows dt {
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.faq-rows dt a { color: var(--text-dark); }
+
+.faq-rows dd {
+  margin: 0;
+  color: var(--text-dark);
+}
+
+.faq-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.faq-rows dd > .faq-chips:not(:first-child) { margin-top: var(--space-2); }
+
+.faq-chips li {
+  padding: 2px var(--space-2);
+  background-color: color-mix(in srgb, var(--accent) 32%, var(--text-light));
+  color: var(--text-dark);
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+  clip-path: polygon(5px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0 calc(100% - 5px), 0 5px);
+}
+
+.faq-check {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.faq-check li {
+  position: relative;
+  padding-left: calc(20px + var(--space-3));
+}
+
+/* Häkchen: gelbe Fasen-Kachel + dunkler Haken aus zwei Rahmenkanten */
+.faq-check li::before,
+.faq-check li::after {
+  content: "";
+  position: absolute;
+  top: 0.18em;
+}
+
+.faq-check li::before {
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background-color: var(--accent);
+  clip-path: polygon(5px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0 calc(100% - 5px), 0 5px);
+}
+
+.faq-check li::after {
+  left: 7px;
+  top: calc(0.18em + 3px);
+  width: 6px;
+  height: 11px;
+  border: solid var(--primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.faq-note {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 10%, var(--text-light));
+  color: var(--text-dark);
+}
+
+@media (min-width: 560px) {
+  .faq-check { grid-template-columns: 1fr 1fr; column-gap: var(--space-6); }
+}
+
+@media (max-width: 359px) {
+  .faq-rows { grid-template-columns: 1fr; }
+}
+
+/* Antworten mit längeren Sätzen (Fahrstunden/Kosten): auf dem Handy
+   Bezeichnung über dem Text, damit der Text nicht in eine schmale Spalte
+   gequetscht wird. */
+@media (max-width: 559px) {
+  .faq-rows--stack { grid-template-columns: 1fr; }
+}
+
+/* Beim Öffnen laufen Zeilen und Listenpunkte leicht gestaffelt ein. */
+.faq-item[open] :where(.faq-rows__row, .faq-check li, .faq-note) {
+  transition: opacity 260ms ease-out, translate 300ms ease-out;
+  transition-delay: calc(90ms + var(--faq-n, 0) * 45ms);
+}
+
+@starting-style {
+  .faq-item[open] :where(.faq-rows__row, .faq-check li, .faq-note) {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+
+:where(.faq-rows__row, .faq-check li):nth-child(2) { --faq-n: 1; }
+:where(.faq-rows__row, .faq-check li):nth-child(3) { --faq-n: 2; }
+:where(.faq-rows__row, .faq-check li):nth-child(4) { --faq-n: 3; }
+:where(.faq-rows__row, .faq-check li):nth-child(5) { --faq-n: 4; }
+.faq-note { --faq-n: 4; }
 
 .faq-item__a a {
   color: inherit;
@@ -4260,7 +4404,8 @@ section {
   .faq-item__icon,
   .faq-item__icon svg,
   .faq-item__a,
-  .faq-item[open] .faq-item__a { transition: none; }
+  .faq-item[open] .faq-item__a,
+  .faq-item[open] :where(.faq-rows__row, .faq-check li, .faq-note) { transition: none; }
 
   .faq.is-inview :where(.faq__label, .faq__heading, .faq-item) { animation: none; }
 }
