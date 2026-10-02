@@ -339,7 +339,8 @@ section {
 .kontakt-heading,
 .page-header__title,
 .page-cta__heading,
-.contact-form__success-heading {
+.contact-form__success-heading,
+.faq__heading {
   transform: skewX(-8deg);
   transform-origin: left bottom;
 }
@@ -4011,3 +4012,258 @@ section {
   .metal__arrow { transition: none; }
   .metal:hover .metal__arrow { transform: none; }
 }
+
+/* ==========================================================================
+   FAQ „Häufige Fragen“ (#faq, nur Startseite)
+   --------------------------------------------------------------------------
+   Helle Sektion zwischen dunklem Kontaktbereich und dunklem Footer
+   (.shine--silver). Jede Frage ist ein natives <details>/<summary> — läuft
+   ohne JS, ist per Tastatur bedienbar, mehrere dürfen offen sein.
+   Karte = Zwei-Ebenen-Technik mit gefasten Ecken (--badge-notch): ::before
+   Rahmen, ::after Fläche, die Fase der Fläche = Außenfase − 0,586 × Rand.
+   clip-path schneidet filter/box-shadow am Element selbst ab; der Schein
+   (offen) und der Fokus-Ring hängen deshalb als drop-shadow am ungeschnittenen
+   <details>, das nur die geclippten Pseudo-Ebenen trägt.
+   Auf-/Zuklappen: ::details-content + interpolate-size (CSS); wo das fehlt
+   (Safari), übernimmt initFaq() in script.js per Web Animations.
+   ========================================================================== */
+.faq {
+  background-color: var(--background-light);
+  padding-block: var(--space-20);
+}
+
+.faq__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 760px;
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+}
+
+.faq__label { margin: 0 0 var(--space-4); }
+
+.faq__heading {
+  margin: 0 0 var(--space-10);
+  font-family: var(--font-display);
+  font-size: var(--font-size-section-heading);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  text-align: center;
+  text-wrap: balance;
+  /* Auf hellem Grund durchgehend --text-dark (Gelb wäre dort unlesbar);
+     auf dunklem Grund wäre „Antworten“ hier --accent. */
+  color: var(--text-dark);
+}
+
+.faq__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.faq-item {
+  --faq-bw: 1.5px;
+  --faq-cut: var(--badge-notch);
+  --faq-cut-in: calc(var(--faq-cut) - 0.586 * var(--faq-bw));
+  --faq-frame: color-mix(in srgb, var(--primary) 16%, var(--background-light));
+  --faq-ink: color-mix(in srgb, var(--text-dark) 74%, var(--text-light));
+  position: relative;
+  isolation: isolate;
+  interpolate-size: allow-keywords;
+  color: var(--faq-ink);
+  filter: drop-shadow(0 0 0 transparent);
+  transition: filter 300ms ease, color 200ms ease;
+}
+
+.faq-item::before,
+.faq-item::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.faq-item::before {
+  inset: 0;
+  background-color: var(--faq-frame);
+  clip-path: polygon(var(--faq-cut) 0, calc(100% - var(--faq-cut)) 0, 100% var(--faq-cut), 100% calc(100% - var(--faq-cut)), calc(100% - var(--faq-cut)) 100%, var(--faq-cut) 100%, 0 calc(100% - var(--faq-cut)), 0 var(--faq-cut));
+  transition: background-color 200ms ease;
+}
+
+.faq-item::after {
+  inset: var(--faq-bw);
+  background-color: var(--text-light);
+  clip-path: polygon(var(--faq-cut-in) 0, calc(100% - var(--faq-cut-in)) 0, 100% var(--faq-cut-in), 100% calc(100% - var(--faq-cut-in)), calc(100% - var(--faq-cut-in)) 100%, var(--faq-cut-in) 100%, 0 calc(100% - var(--faq-cut-in)), 0 var(--faq-cut-in));
+}
+
+.faq-item[open] {
+  --faq-frame: var(--accent);
+  color: var(--text-dark);
+  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 38%, transparent));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .faq-item:not([open]):hover { --faq-frame: color-mix(in srgb, var(--accent) 65%, var(--background-light)); color: var(--text-dark); }
+}
+
+.faq-item__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-6);
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.faq-item__summary::-webkit-details-marker { display: none; }
+.faq-item__summary:focus-visible { outline: none; }
+
+/* Formfolgender Fokus-Ring: Doppelring als drop-shadow-Kette am <details>. */
+.faq-item:has(> .faq-item__summary:focus-visible) {
+  filter:
+    drop-shadow(2px 0 0 var(--primary)) drop-shadow(-2px 0 0 var(--primary)) drop-shadow(0 2px 0 var(--primary)) drop-shadow(0 -2px 0 var(--primary))
+    drop-shadow(2px 0 0 var(--accent)) drop-shadow(-2px 0 0 var(--accent)) drop-shadow(0 2px 0 var(--accent)) drop-shadow(0 -2px 0 var(--accent));
+}
+
+.faq-item__q {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: calc(var(--font-size-body) + 1px);
+  line-height: 1.35;
+}
+
+/* Plus-Symbol: gelbe Fläche mit dunklem Plus (Gelb allein hätte auf Hell
+   kaum Kontrast); beim Öffnen dreht sich nur das Symbol zum ×. */
+.faq-item__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: var(--accent);
+  color: var(--primary);
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+}
+
+.faq-item__icon {
+  transition: scale 200ms ease-out;
+}
+
+.faq-item__icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: square;
+  /* leichte Überschwing-Kurve: das Plus „rastet“ beim × ein */
+  transition: transform 260ms cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .faq-item__summary:hover .faq-item__icon { scale: 1.1; }
+}
+
+.faq-item__summary:active .faq-item__icon { scale: 0.92; }
+
+.faq-item[open] .faq-item__icon svg { transform: rotate(45deg); }
+
+.faq-item__a {
+  padding: 0 var(--space-6) var(--space-4);
+  color: var(--text-dark);
+  line-height: 1.6;
+  /* Schließen: Text blendet schneller aus, als die Karte einfährt. */
+  opacity: 0;
+  translate: 0 -6px;
+  transition: opacity 180ms ease-in-out, translate 300ms ease-in-out;
+}
+
+/* Öffnen: Text folgt der aufgehenden Karte mit kurzem Versatz (@starting-style
+   liefert den Startzustand; ohne Unterstützung steht der Text sofort da). */
+.faq-item[open] .faq-item__a {
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 260ms ease-out 90ms, translate 300ms ease-out 60ms;
+}
+
+@starting-style {
+  .faq-item[open] .faq-item__a {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+}
+
+.faq-item__a p { margin: 0; }
+
+.faq-item__a a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-hover);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.faq-item__a a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Eintritt beim Scrollen: Label, Überschrift und Karten steigen gestaffelt auf.
+   initFaq() setzt .faq--pending (versteckt) und beim Sichtbarwerden
+   .is-inview; ohne JS oder mit reduzierter Bewegung steht alles sofort da. */
+@keyframes faq-rise {
+  from { opacity: 0; translate: 0 20px; }
+}
+
+.faq--pending :where(.faq__label, .faq__heading, .faq-item) { opacity: 0; }
+
+.faq.is-inview :where(.faq__label, .faq__heading, .faq-item) {
+  animation: faq-rise 560ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+
+.faq.is-inview .faq__heading { animation-delay: 80ms; }
+.faq.is-inview .faq-item:nth-child(1) { animation-delay: 170ms; }
+.faq.is-inview .faq-item:nth-child(2) { animation-delay: 240ms; }
+.faq.is-inview .faq-item:nth-child(3) { animation-delay: 310ms; }
+.faq.is-inview .faq-item:nth-child(4) { animation-delay: 380ms; }
+.faq.is-inview .faq-item:nth-child(5) { animation-delay: 450ms; }
+
+/* Weiches Auf-/Zuklappen (CSS-Pfad) */
+.faq-item::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition: block-size 300ms ease-in-out, content-visibility 300ms ease-in-out allow-discrete;
+}
+
+.faq-item[open]::details-content { block-size: auto; }
+
+@media (min-width: 768px) {
+  .faq { padding-block: var(--space-30); }
+  .faq-item__q { font-size: calc(var(--font-size-body) + 2px); }
+  .faq-item__summary { padding-inline: var(--space-8) var(--space-4); }
+  .faq-item__a { padding-inline: var(--space-8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item,
+  .faq-item::before,
+  .faq-item::after,
+  .faq-item::details-content,
+  .faq-item__icon,
+  .faq-item__icon svg,
+  .faq-item__a,
+  .faq-item[open] .faq-item__a { transition: none; }
+
+  .faq.is-inview :where(.faq__label, .faq__heading, .faq-item) { animation: none; }
+}
+
+/* Footer unter der hellen FAQ: abgerundete Oberkante, Zwickel in der Farbe der FAQ */
+.site-footer.round-t { --wedge-above: var(--background-light); }

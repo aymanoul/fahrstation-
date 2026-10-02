@@ -1317,6 +1317,83 @@
     window.addEventListener('click', retryPlayOnFirstGesture, { once: true });
   }
 
+  /* FAQ (#faq): die Karten sind native <details>. Der Eintritt beim Scrollen
+     (gestaffeltes Aufsteigen) setzt diese Funktion per IntersectionObserver
+     an; das weiche Auf-/Zuklappen
+     übernimmt CSS (::details-content + interpolate-size); nur wo das fehlt
+     (Safari/iOS), animiert sie die Höhe der Antwort per Web
+     Animations. Ohne JS, mit reduzierter Bewegung oder ohne Web Animations
+     bleibt das Standardverhalten (sofort auf/zu). */
+  function initFaq() {
+    var items = document.querySelectorAll('.faq-item');
+    if (!items.length) return;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // Eintritt: Label, Überschrift und Karten steigen beim Sichtbarwerden
+    // gestaffelt auf (CSS: .faq--pending versteckt, .is-inview animiert).
+    var faq = document.getElementById('faq');
+    if (faq && !reduce.matches && 'IntersectionObserver' in window) {
+      faq.classList.add('faq--pending');
+      var seen = new IntersectionObserver(function (entries) {
+        if (!entries.some(function (e) { return e.isIntersecting; })) return;
+        seen.disconnect();
+        faq.classList.remove('faq--pending');
+        faq.classList.add('is-inview');
+      }, { threshold: 0.1 });
+      seen.observe(faq);
+    }
+
+    if (window.CSS && window.CSS.supports && window.CSS.supports('selector(::details-content)')) return;
+    if (!window.Element || !Element.prototype.animate) return;
+
+    Array.prototype.forEach.call(items, function (item) {
+      var summary = item.querySelector('.faq-item__summary');
+      var panel = item.querySelector('.faq-item__a');
+      if (!summary || !panel) return;
+      var anim = null;
+      var closing = false;
+
+      function run(from, to, done) {
+        var fadeOut = to === 0;
+        if (anim) {
+          anim.onfinish = null;
+          anim.cancel();
+        }
+        panel.style.overflow = 'hidden';
+        // fill: 'forwards' hält den Endzustand, bis done() gelaufen ist — sonst
+        // blitzt die Antwort zwischen Animationsende und Schließen kurz auf.
+        anim = panel.animate(
+          [{ height: from + 'px', opacity: fadeOut ? 1 : 0 }, { height: to + 'px', opacity: fadeOut ? 0 : 1 }],
+          { duration: 300, easing: 'ease-in-out', fill: 'forwards' }
+        );
+        anim.onfinish = function () {
+          var finished = anim;
+          panel.style.overflow = '';
+          anim = null;
+          if (done) done();
+          finished.cancel();
+        };
+      }
+
+      summary.addEventListener('click', function (event) {
+        if (reduce.matches) return;
+        event.preventDefault();
+        var h = panel.getBoundingClientRect().height;
+        if (item.open && !closing) {
+          closing = true;
+          run(h, 0, function () {
+            item.open = false;
+            closing = false;
+          });
+        } else {
+          closing = false;
+          item.open = true;
+          run(h, panel.scrollHeight);
+        }
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initStickyHeader();
     initMobileMenu();
@@ -1330,6 +1407,7 @@
     initClassCarousel();
     initReviewColumns();
     initKontaktForm();
+    initFaq();
     initHeroVideo();
   });
 })();
