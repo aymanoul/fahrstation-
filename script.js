@@ -1343,6 +1343,20 @@
       seen.observe(faq);
     }
 
+    // Immer nur eine Antwort offen: öffnet eine Karte (Klick, Tastatur oder
+    // Skript), schließen sich die anderen — mit der jeweils passenden
+    // Animation (CSS-Pfad: einfach open entfernen, Safari-Pfad: _faqClose).
+    Array.prototype.forEach.call(items, function (item) {
+      item.addEventListener('toggle', function () {
+        if (!item.open) return;
+        Array.prototype.forEach.call(items, function (other) {
+          if (other === item || !other.open) return;
+          if (other._faqClose) other._faqClose();
+          else other.open = false;
+        });
+      });
+    });
+
     if (window.CSS && window.CSS.supports && window.CSS.supports('selector(::details-content)')) return;
     if (!window.Element || !Element.prototype.animate) return;
 
@@ -1375,17 +1389,28 @@
         };
       }
 
+      function close() {
+        if (!item.open || closing) return;
+        if (reduce.matches) {
+          item.open = false;
+          return;
+        }
+        closing = true;
+        run(panel.getBoundingClientRect().height, 0, function () {
+          item.open = false;
+          closing = false;
+        });
+      }
+
+      item._faqClose = close;
+
       summary.addEventListener('click', function (event) {
         if (reduce.matches) return;
         event.preventDefault();
-        var h = panel.getBoundingClientRect().height;
         if (item.open && !closing) {
-          closing = true;
-          run(h, 0, function () {
-            item.open = false;
-            closing = false;
-          });
+          close();
         } else {
+          var h = panel.getBoundingClientRect().height;
           closing = false;
           item.open = true;
           run(h, panel.scrollHeight);
