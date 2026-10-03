@@ -1329,27 +1329,33 @@
     if (!items.length) return;
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    // Eintritt: Überschrift und Karten steigen beim Sichtbarwerden
-    // gestaffelt auf (CSS: .faq--pending versteckt, .is-inview animiert).
-    var faq = document.getElementById('faq');
-    if (faq && !reduce.matches && 'IntersectionObserver' in window) {
-      faq.classList.add('faq--pending');
-      var seen = new IntersectionObserver(function (entries) {
-        if (!entries.some(function (e) { return e.isIntersecting; })) return;
-        seen.disconnect();
-        faq.classList.remove('faq--pending');
-        faq.classList.add('is-inview');
-      }, { threshold: 0.1 });
-      seen.observe(faq);
+    // Eintritt: Überschrift und Karten jedes FAQ-Abschnitts (.faq — Startseite
+    // und „Weitere Klassen“ auf den Klassen-Seiten) steigen beim
+    // Sichtbarwerden gestaffelt auf (CSS: .faq--pending versteckt,
+    // .is-inview animiert).
+    if (!reduce.matches && 'IntersectionObserver' in window) {
+      Array.prototype.forEach.call(document.querySelectorAll('.faq'), function (faq) {
+        faq.classList.add('faq--pending');
+        var seen = new IntersectionObserver(function (entries) {
+          if (!entries.some(function (e) { return e.isIntersecting; })) return;
+          seen.disconnect();
+          faq.classList.remove('faq--pending');
+          faq.classList.add('is-inview');
+        }, { threshold: 0.1 });
+        seen.observe(faq);
+      });
     }
 
-    // Immer nur eine Antwort offen: öffnet eine Karte (Klick, Tastatur oder
-    // Skript), schließen sich die anderen — mit der jeweils passenden
-    // Animation (CSS-Pfad: einfach open entfernen, Safari-Pfad: _faqClose).
+    // Immer nur eine Antwort je Liste offen: öffnet eine Karte (Klick,
+    // Tastatur oder Skript), schließen sich die anderen derselben Liste —
+    // mit der jeweils passenden Animation (CSS-Pfad: einfach open
+    // entfernen, Safari-Pfad: _faqClose).
     Array.prototype.forEach.call(items, function (item) {
+      var list = item.closest('.faq__list') || document;
+      var siblings = list.querySelectorAll('.faq-item');
       item.addEventListener('toggle', function () {
         if (!item.open) return;
-        Array.prototype.forEach.call(items, function (other) {
+        Array.prototype.forEach.call(siblings, function (other) {
           if (other === item || !other.open) return;
           if (other._faqClose) other._faqClose();
           else other.open = false;

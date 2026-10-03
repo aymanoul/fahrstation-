@@ -16,7 +16,7 @@
   <link rel="manifest" href="../manifest.json">
 
   <link rel="stylesheet" href="../design-tokens.css?v=1425defe">
-  <link rel="stylesheet" href="../styles.css?v=486b6e6c">
+  <link rel="stylesheet" href="../styles.css?v=3fc4ccab">
 
   <script type="application/ld+json">
   {
@@ -98,96 +98,6 @@
       font-family: var(--font-body);
       font-size: var(--font-size-body);
       line-height: var(--line-height-base);
-    }
-
-    .kb-section-heading {
-      margin: 0 0 var(--space-6);
-      font-family: var(--font-display);
-      font-size: var(--font-size-h2);
-      line-height: var(--line-height-tight);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      color: var(--text-dark);
-    }
-
-    /* Akkordeon über natives <details>/<summary> — funktioniert ohne
-       JavaScript, deshalb keine Ergänzung in script.js nötig. */
-    .kb-accordion-item {
-      border-top: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item:last-of-type {
-      border-bottom: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item__summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-      min-height: var(--tap-target);
-      padding: var(--space-4) 0;
-      list-style: none;
-      font-family: var(--font-display);
-      font-size: var(--font-size-h3);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .kb-accordion-item__summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .kb-accordion-item__summary:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .kb-accordion-item__chevron {
-      flex-shrink: 0;
-      display: inline-flex;
-      transition: transform var(--transition-base);
-    }
-
-    .kb-accordion-item[open] .kb-accordion-item__chevron {
-      transform: rotate(180deg);
-    }
-
-    .kb-accordion-item__panel {
-      padding: 0 0 var(--space-6);
-      font-family: var(--font-body);
-      font-size: var(--font-size-body);
-      line-height: var(--line-height-base);
-    }
-
-    .kb-accordion-item__panel p {
-      margin: 0 0 var(--space-4);
-    }
-
-    .kb-accordion-item__panel p:last-child {
-      margin-bottom: 0;
-    }
-
-    .kb-accordion-item__facts {
-      margin: 0 0 var(--space-4);
-      padding: 0;
-      font-size: var(--font-size-small);
-      color: color-mix(in srgb, var(--text-dark) 75%, transparent);
-    }
-
-    .kb-accordion-item__facts div {
-      margin: 0 0 var(--space-1);
-    }
-
-    .kb-accordion-item__facts dt {
-      display: inline;
-      font-weight: 700;
-    }
-
-    .kb-accordion-item__facts dd {
-      display: inline;
-      margin: 0 0 0 var(--space-2);
     }
   </style>
 </head>
@@ -284,49 +194,43 @@
           <p class="kb-info-card__a">PKW bis zu 3500 kg, bis zu 9 Personen (inklusive Fahrer), Anhänger bis zu 750 kg, Quads, Fahrzeuge der Klassen AM und L</p>
         </div>
       </div>
-
-      <h2 class="kb-section-heading">Weitere Klassen im Überblick</h2>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          BF17 – Begleitetes Fahren ab 17
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Übung macht den Meister – und wer ab 17 Jahren begleitet durch die Straßen fährt, ist mit 18 in der Regel sicherer unterwegs.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>17 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>AM, L und Mofa</dd></div>
-          </dl>
-
-          <p>Für den BF17-Führerschein gilt grundsätzlich dasselbe wie für die Klasse B. Du kannst damit die gleichen Fahrzeuge führen. Beim Antrag auf die Erteilung der Fahrerlaubnis musst du mindestens eine Person auswählen und angeben, die dich begleitet. Du darfst nur dann hinterm Steuer sitzen, wenn diese Begleitperson mitfährt. Das begleitete Fahren ist eine Möglichkeit, die Automatismen des Fahrens zu üben, bevor man volljährig ist.</p>
-
-          <p>Wer kommt als Begleitperson infrage? Personen, die über 30 Jahre alt sind, seit mindestens 5 Jahren einen Führerschein der Klasse B besitzen und maximal einen Punkt im Fahreignungsregister haben.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          BE – Auto mit Anhänger
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Falls dir die zugelassenen 750 kg der Klasse B nicht ausreichen, benötigst du einen Anhängerführerschein.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>18 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>keine</dd></div>
-          </dl>
-
-          <p>Du darfst alle Anhänger ziehen, die insgesamt zwischen 750 kg und 3500 kg schwer sind. Wer bereits weiß, dass das zugelassene Gewicht der Klasse B nicht ausreichend ist, kann den Führerschein gemeinsam mit der Fahrerlaubnis für PKW (Klasse B) machen. Andernfalls gibt es jederzeit die Möglichkeit, nachträglich die Fahrerlaubnis für schwere Anhänger zu erwerben. Wer Anhänger über 3500 kg ziehen möchte, sollte über einen Führerschein der Klassen C1E oder CE nachdenken.</p>
-        </div>
-      </details>
     </div>
+
+    <section class="faq faq--klassen shine shine--silver shine--tr" aria-labelledby="klassen-heading">
+      <div class="faq__inner">
+        <h2 class="faq__heading" id="klassen-heading">Weitere Klassen im Überblick</h2>
+        <div class="faq__list">
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">BF17 – Begleitetes Fahren ab 17</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Übung macht den Meister – und wer ab 17 Jahren begleitet durch die Straßen fährt, ist mit 18 in der Regel sicherer unterwegs.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>17 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>AM, L und Mofa</dd></div>
+              </dl>
+
+              <p>Für den BF17-Führerschein gilt grundsätzlich dasselbe wie für die Klasse B. Du kannst damit die gleichen Fahrzeuge führen. Beim Antrag auf die Erteilung der Fahrerlaubnis musst du mindestens eine Person auswählen und angeben, die dich begleitet. Du darfst nur dann hinterm Steuer sitzen, wenn diese Begleitperson mitfährt. Das begleitete Fahren ist eine Möglichkeit, die Automatismen des Fahrens zu üben, bevor man volljährig ist.</p>
+
+              <p>Wer kommt als Begleitperson infrage? Personen, die über 30 Jahre alt sind, seit mindestens 5 Jahren einen Führerschein der Klasse B besitzen und maximal einen Punkt im Fahreignungsregister haben.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">BE – Auto mit Anhänger</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Falls dir die zugelassenen 750 kg der Klasse B nicht ausreichen, benötigst du einen Anhängerführerschein.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>18 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>keine</dd></div>
+              </dl>
+
+              <p>Du darfst alle Anhänger ziehen, die insgesamt zwischen 750 kg und 3500 kg schwer sind. Wer bereits weiß, dass das zugelassene Gewicht der Klasse B nicht ausreichend ist, kann den Führerschein gemeinsam mit der Fahrerlaubnis für PKW (Klasse B) machen. Andernfalls gibt es jederzeit die Möglichkeit, nachträglich die Fahrerlaubnis für schwere Anhänger zu erwerben. Wer Anhänger über 3500 kg ziehen möchte, sollte über einen Führerschein der Klassen C1E oder CE nachdenken.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
 
     <!-- Abschluss-CTA — identisch auf jeder Unterseite, nicht als Platzhalter gedacht -->
     <section class="page-cta shine shine--gold shine--soft shine--bl round-t">
@@ -405,6 +309,6 @@
   </footer>
 
 
-  <script src="../script.js?v=390f86d5"></script>
+  <script src="../script.js?v=638b7de8"></script>
 </body>
 </html>

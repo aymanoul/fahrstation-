@@ -16,7 +16,7 @@
   <link rel="manifest" href="../manifest.json">
 
   <link rel="stylesheet" href="../design-tokens.css?v=1425defe">
-  <link rel="stylesheet" href="../styles.css?v=486b6e6c">
+  <link rel="stylesheet" href="../styles.css?v=3fc4ccab">
 
   <script type="application/ld+json">
   {
@@ -98,96 +98,6 @@
       font-family: var(--font-body);
       font-size: var(--font-size-body);
       line-height: var(--line-height-base);
-    }
-
-    .kb-section-heading {
-      margin: 0 0 var(--space-6);
-      font-family: var(--font-display);
-      font-size: var(--font-size-h2);
-      line-height: var(--line-height-tight);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      color: var(--text-dark);
-    }
-
-    /* Akkordeon über natives <details>/<summary> — funktioniert ohne
-       JavaScript, deshalb keine Ergänzung in script.js nötig. */
-    .kb-accordion-item {
-      border-top: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item:last-of-type {
-      border-bottom: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item__summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-      min-height: var(--tap-target);
-      padding: var(--space-4) 0;
-      list-style: none;
-      font-family: var(--font-display);
-      font-size: var(--font-size-h3);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .kb-accordion-item__summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .kb-accordion-item__summary:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .kb-accordion-item__chevron {
-      flex-shrink: 0;
-      display: inline-flex;
-      transition: transform var(--transition-base);
-    }
-
-    .kb-accordion-item[open] .kb-accordion-item__chevron {
-      transform: rotate(180deg);
-    }
-
-    .kb-accordion-item__panel {
-      padding: 0 0 var(--space-6);
-      font-family: var(--font-body);
-      font-size: var(--font-size-body);
-      line-height: var(--line-height-base);
-    }
-
-    .kb-accordion-item__panel p {
-      margin: 0 0 var(--space-4);
-    }
-
-    .kb-accordion-item__panel p:last-child {
-      margin-bottom: 0;
-    }
-
-    .kb-accordion-item__facts {
-      margin: 0 0 var(--space-4);
-      padding: 0;
-      font-size: var(--font-size-small);
-      color: color-mix(in srgb, var(--text-dark) 75%, transparent);
-    }
-
-    .kb-accordion-item__facts div {
-      margin: 0 0 var(--space-1);
-    }
-
-    .kb-accordion-item__facts dt {
-      display: inline;
-      font-weight: 700;
-    }
-
-    .kb-accordion-item__facts dd {
-      display: inline;
-      margin: 0 0 0 var(--space-2);
     }
   </style>
 </head>
@@ -282,65 +192,53 @@
           <p class="kb-info-card__a">Busse mit mehr als 8 Personen, Anhänger bis zu 750 kg</p>
         </div>
       </div>
-
-      <h2 class="kb-section-heading">Weitere Klassen im Überblick</h2>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          D1 – Der kleine Busführerschein
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Perfekt für den öffentlichen Nahverkehr geeignet.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>18 Jahre bzw. 21 Jahre</dd></div>
-          </dl>
-
-          <p>Mit dieser Fahrerlaubnis darfst du Busse fahren, die bis zu 8 Meter lang sind und bis zu 16 Personen fassen. Als Voraussetzung für diesen Führerschein musst du neben dem obligatorischen Erste-Hilfe-Kurs und einem Sehtest auch ein ärztliches Zeugnis sowie ein Gutachten über deine Belastungsfähigkeit vorlegen.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          D1E – Bus fahren mit Anhänger
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Wenn du einen Führerschein der Klasse D1 besitzt.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>21 Jahre, Berufskraftfahrer: 18 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>BE, C1E bei Besitz eines Führerscheins der Klasse C1</dd></div>
-          </dl>
-
-          <p>Diese Fahrerlaubnis befähigt zum Führen von Bussen bis 8 Meter Länge und einem Anhänger, der (inklusive Ladung) mehr als 750 kg wiegt. Die Erlaubnis zum Transportieren schwerer Lasten im Anhänger gilt ebenfalls für Anhänger an PKW/LKW, sofern man die Fahrerlaubnis für einen Lastkraftwagen besitzt.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          DE – Bus fahren mit schweren Lasten
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Wenn du einen Führerschein der Klasse D besitzt.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>24 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>BE, D1E, C1E bei Besitz eines Führerscheins der Klasse C1</dd></div>
-          </dl>
-
-          <p>Mit dieser Fahrerlaubnis darfst du einen Bus fahren, der auch länger als acht Meter ist, und zusätzlich einen Anhänger mit einem Gewicht befördern, das mehr als 750 kg beträgt. Das Mindestalter kann man umgehen, sofern man sich in einer Ausbildung zum Kraftfahrer befindet, allerdings gelten bis zum 20. Geburtstag bestimmte Einschränkungen, etwa dass eine Fahrt nicht weiter als 50 km sein darf.</p>
-        </div>
-      </details>
     </div>
+
+    <section class="faq faq--klassen shine shine--silver shine--tr" aria-labelledby="klassen-heading">
+      <div class="faq__inner">
+        <h2 class="faq__heading" id="klassen-heading">Weitere Klassen im Überblick</h2>
+        <div class="faq__list">
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">D1 – Der kleine Busführerschein</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Perfekt für den öffentlichen Nahverkehr geeignet.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>18 Jahre bzw. 21 Jahre</dd></div>
+              </dl>
+
+              <p>Mit dieser Fahrerlaubnis darfst du Busse fahren, die bis zu 8 Meter lang sind und bis zu 16 Personen fassen. Als Voraussetzung für diesen Führerschein musst du neben dem obligatorischen Erste-Hilfe-Kurs und einem Sehtest auch ein ärztliches Zeugnis sowie ein Gutachten über deine Belastungsfähigkeit vorlegen.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">D1E – Bus fahren mit Anhänger</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Wenn du einen Führerschein der Klasse D1 besitzt.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>21 Jahre, Berufskraftfahrer: 18 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>BE, C1E bei Besitz eines Führerscheins der Klasse C1</dd></div>
+              </dl>
+
+              <p>Diese Fahrerlaubnis befähigt zum Führen von Bussen bis 8 Meter Länge und einem Anhänger, der (inklusive Ladung) mehr als 750 kg wiegt. Die Erlaubnis zum Transportieren schwerer Lasten im Anhänger gilt ebenfalls für Anhänger an PKW/LKW, sofern man die Fahrerlaubnis für einen Lastkraftwagen besitzt.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">DE – Bus fahren mit schweren Lasten</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Wenn du einen Führerschein der Klasse D besitzt.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>24 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>BE, D1E, C1E bei Besitz eines Führerscheins der Klasse C1</dd></div>
+              </dl>
+
+              <p>Mit dieser Fahrerlaubnis darfst du einen Bus fahren, der auch länger als acht Meter ist, und zusätzlich einen Anhänger mit einem Gewicht befördern, das mehr als 750 kg beträgt. Das Mindestalter kann man umgehen, sofern man sich in einer Ausbildung zum Kraftfahrer befindet, allerdings gelten bis zum 20. Geburtstag bestimmte Einschränkungen, etwa dass eine Fahrt nicht weiter als 50 km sein darf.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
 
     <!-- Abschluss-CTA — identisch auf jeder Unterseite, nicht als Platzhalter gedacht -->
     <section class="page-cta shine shine--gold shine--soft shine--bl round-t">
@@ -419,6 +317,6 @@
   </footer>
 
 
-  <script src="../script.js?v=390f86d5"></script>
+  <script src="../script.js?v=638b7de8"></script>
 </body>
 </html>

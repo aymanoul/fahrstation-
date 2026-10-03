@@ -16,7 +16,7 @@
   <link rel="manifest" href="../manifest.json">
 
   <link rel="stylesheet" href="../design-tokens.css?v=1425defe">
-  <link rel="stylesheet" href="../styles.css?v=486b6e6c">
+  <link rel="stylesheet" href="../styles.css?v=3fc4ccab">
 
   <script type="application/ld+json">
   {
@@ -98,96 +98,6 @@
       font-family: var(--font-body);
       font-size: var(--font-size-body);
       line-height: var(--line-height-base);
-    }
-
-    .kb-section-heading {
-      margin: 0 0 var(--space-6);
-      font-family: var(--font-display);
-      font-size: var(--font-size-h2);
-      line-height: var(--line-height-tight);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      color: var(--text-dark);
-    }
-
-    /* Akkordeon über natives <details>/<summary> — funktioniert ohne
-       JavaScript, deshalb keine Ergänzung in script.js nötig. */
-    .kb-accordion-item {
-      border-top: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item:last-of-type {
-      border-bottom: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item__summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-      min-height: var(--tap-target);
-      padding: var(--space-4) 0;
-      list-style: none;
-      font-family: var(--font-display);
-      font-size: var(--font-size-h3);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .kb-accordion-item__summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .kb-accordion-item__summary:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .kb-accordion-item__chevron {
-      flex-shrink: 0;
-      display: inline-flex;
-      transition: transform var(--transition-base);
-    }
-
-    .kb-accordion-item[open] .kb-accordion-item__chevron {
-      transform: rotate(180deg);
-    }
-
-    .kb-accordion-item__panel {
-      padding: 0 0 var(--space-6);
-      font-family: var(--font-body);
-      font-size: var(--font-size-body);
-      line-height: var(--line-height-base);
-    }
-
-    .kb-accordion-item__panel p {
-      margin: 0 0 var(--space-4);
-    }
-
-    .kb-accordion-item__panel p:last-child {
-      margin-bottom: 0;
-    }
-
-    .kb-accordion-item__facts {
-      margin: 0 0 var(--space-4);
-      padding: 0;
-      font-size: var(--font-size-small);
-      color: color-mix(in srgb, var(--text-dark) 75%, transparent);
-    }
-
-    .kb-accordion-item__facts div {
-      margin: 0 0 var(--space-1);
-    }
-
-    .kb-accordion-item__facts dt {
-      display: inline;
-      font-weight: 700;
-    }
-
-    .kb-accordion-item__facts dd {
-      display: inline;
-      margin: 0 0 0 var(--space-2);
     }
   </style>
 </head>
@@ -282,65 +192,53 @@
           <p class="kb-info-card__a">Alle Fahrzeuge über 3500 kg plus Anhänger bis zu 750 kg</p>
         </div>
       </div>
-
-      <h2 class="kb-section-heading">Weitere Klassen im Überblick</h2>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          C1 – LKW fahren ab 18
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Die Fahrerlaubnis Klasse C1 unterscheidet sich von der Klasse C durch das Mindestalter.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>18 Jahre</dd></div>
-          </dl>
-
-          <p>Für die Fahrerlaubnis C1 gelten grundsätzlich die gleichen Bedingungen wie für alle C-Klassen. Es ist auch hier eine ärztliche Untersuchung erforderlich, die deine Fahrfitness und -eignung bestätigen soll. Der entscheidende Unterschied ist das Mindestalter, denn den Führerschein der Klasse C1 können alle geeigneten Personen ab 18 Jahren erwerben.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          C1E – LKW und Anhänger
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Du darfst LKW mit Anhänger fahren, Gesamtgewicht: 12000 kg.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>18 Jahre (gewerbliche Nutzung: 21 Jahre)</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>BE, D1E bei Vorbesitz der Klasse D1</dd></div>
-          </dl>
-
-          <p>Die Klasse C1E baut auf die Fahrerlaubnis der Klasse C1 auf, der Besitz eines Führerscheins dieser Klasse ist also Grundvoraussetzung. Wie bei jeder Fahrerlaubnis der C-Klassen ist auch hier eine medizinische Untersuchung notwendig, um ein sicheres Fahren zu garantieren. Auch die Fahrerlaubnis der Klasse C1E muss alle 5 Jahre erneuert werden.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          CE – Grenzenlos fahren
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Diese Fahrerlaubnis kennt keine Grenzen, was die zulässige Gesamtmasse anbelangt.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>21 Jahre (Ausnahme: Berufskraftfahrer)</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>C1, C1E, BE, T</dd></div>
-          </dl>
-
-          <p>Für die Königsklasse der LKW-Führerscheine gelten grundsätzlich dieselben Voraussetzungen wie bei den anderen C-Klassen auch. Die ärztliche Untersuchung, um gesundheitliche Risiken für die Fahrsicherheit auszuschließen, gehört hier ebenfalls zum Pflichtprogramm. Auch diese Fahrerlaubnis muss alle 5 Jahre erneuert werden.</p>
-        </div>
-      </details>
     </div>
+
+    <section class="faq faq--klassen shine shine--silver shine--tr" aria-labelledby="klassen-heading">
+      <div class="faq__inner">
+        <h2 class="faq__heading" id="klassen-heading">Weitere Klassen im Überblick</h2>
+        <div class="faq__list">
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">C1 – LKW fahren ab 18</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Die Fahrerlaubnis Klasse C1 unterscheidet sich von der Klasse C durch das Mindestalter.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>18 Jahre</dd></div>
+              </dl>
+
+              <p>Für die Fahrerlaubnis C1 gelten grundsätzlich die gleichen Bedingungen wie für alle C-Klassen. Es ist auch hier eine ärztliche Untersuchung erforderlich, die deine Fahrfitness und -eignung bestätigen soll. Der entscheidende Unterschied ist das Mindestalter, denn den Führerschein der Klasse C1 können alle geeigneten Personen ab 18 Jahren erwerben.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">C1E – LKW und Anhänger</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Du darfst LKW mit Anhänger fahren, Gesamtgewicht: 12000 kg.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>18 Jahre (gewerbliche Nutzung: 21 Jahre)</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>BE, D1E bei Vorbesitz der Klasse D1</dd></div>
+              </dl>
+
+              <p>Die Klasse C1E baut auf die Fahrerlaubnis der Klasse C1 auf, der Besitz eines Führerscheins dieser Klasse ist also Grundvoraussetzung. Wie bei jeder Fahrerlaubnis der C-Klassen ist auch hier eine medizinische Untersuchung notwendig, um ein sicheres Fahren zu garantieren. Auch die Fahrerlaubnis der Klasse C1E muss alle 5 Jahre erneuert werden.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">CE – Grenzenlos fahren</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Diese Fahrerlaubnis kennt keine Grenzen, was die zulässige Gesamtmasse anbelangt.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>21 Jahre (Ausnahme: Berufskraftfahrer)</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>C1, C1E, BE, T</dd></div>
+              </dl>
+
+              <p>Für die Königsklasse der LKW-Führerscheine gelten grundsätzlich dieselben Voraussetzungen wie bei den anderen C-Klassen auch. Die ärztliche Untersuchung, um gesundheitliche Risiken für die Fahrsicherheit auszuschließen, gehört hier ebenfalls zum Pflichtprogramm. Auch diese Fahrerlaubnis muss alle 5 Jahre erneuert werden.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
 
     <!-- Abschluss-CTA — identisch auf jeder Unterseite, nicht als Platzhalter gedacht -->
     <section class="page-cta shine shine--gold shine--soft shine--bl round-t">
@@ -419,6 +317,6 @@
   </footer>
 
 
-  <script src="../script.js?v=390f86d5"></script>
+  <script src="../script.js?v=638b7de8"></script>
 </body>
 </html>

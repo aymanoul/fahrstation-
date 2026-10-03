@@ -4217,7 +4217,10 @@ section {
 .faq-rows {
   display: grid;
   grid-template-columns: max-content 1fr;
-  margin: 0;
+  /* nur seitlich/unten nullen — der Abstand nach oben kommt aus
+     .faq-item__a > * + * (z. B. wenn ein Einleitungssatz davorsteht) */
+  margin-inline: 0;
+  margin-bottom: 0;
 }
 
 /* subgrid: die Bezeichnungsspalte ist so breit wie die längste Bezeichnung
@@ -4413,6 +4416,11 @@ section {
 
   .faq.is-inview :where(.faq__heading, .faq-item) { animation: none; }
 }
+
+/* „Weitere Klassen im Überblick“ auf den Klassen-Seiten nutzt denselben
+   FAQ-Abschnitt (.faq/.faq-item). Der folgende dunkle Abschluss (.page-cta,
+   round-t) bekommt dort Zwickel in der hellgrauen FAQ-Farbe statt Weiß. */
+.faq + .page-cta { --wedge-above: var(--background-light); }
 
 /* Footer unter der hellen FAQ: abgerundete Oberkante, Zwickel in der Farbe der FAQ */
 .site-footer.round-t { --wedge-above: var(--background-light); }

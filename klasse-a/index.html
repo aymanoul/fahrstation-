@@ -16,7 +16,7 @@
   <link rel="manifest" href="../manifest.json">
 
   <link rel="stylesheet" href="../design-tokens.css?v=1425defe">
-  <link rel="stylesheet" href="../styles.css?v=486b6e6c">
+  <link rel="stylesheet" href="../styles.css?v=3fc4ccab">
 
   <script type="application/ld+json">
   {
@@ -100,102 +100,12 @@
       line-height: var(--line-height-base);
     }
 
-    .kb-section-heading {
-      margin: 0 0 var(--space-6);
-      font-family: var(--font-display);
-      font-size: var(--font-size-h2);
-      line-height: var(--line-height-tight);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      color: var(--text-dark);
-    }
-
-    /* Akkordeon über natives <details>/<summary> — funktioniert ohne
-       JavaScript, deshalb keine Ergänzung in script.js nötig. */
-    .kb-accordion-item {
-      border-top: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item:last-of-type {
-      border-bottom: 1px solid color-mix(in srgb, var(--text-dark) 15%, transparent);
-    }
-
-    .kb-accordion-item__summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-      min-height: var(--tap-target);
-      padding: var(--space-4) 0;
-      list-style: none;
-      font-family: var(--font-display);
-      font-size: var(--font-size-h3);
-      letter-spacing: var(--letter-spacing-display);
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .kb-accordion-item__summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .kb-accordion-item__summary:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .kb-accordion-item__chevron {
-      flex-shrink: 0;
-      display: inline-flex;
-      transition: transform var(--transition-base);
-    }
-
-    .kb-accordion-item[open] .kb-accordion-item__chevron {
-      transform: rotate(180deg);
-    }
-
-    .kb-accordion-item__panel {
-      padding: 0 0 var(--space-6);
-      font-family: var(--font-body);
-      font-size: var(--font-size-body);
-      line-height: var(--line-height-base);
-    }
-
-    .kb-accordion-item__panel p {
-      margin: 0 0 var(--space-4);
-    }
-
-    .kb-accordion-item__panel p:last-child {
-      margin-bottom: 0;
-    }
-
-    .kb-accordion-item__facts {
-      margin: 0 0 var(--space-4);
-      padding: 0;
-      font-size: var(--font-size-small);
-      color: color-mix(in srgb, var(--text-dark) 75%, transparent);
-    }
-
-    .kb-accordion-item__facts div {
-      margin: 0 0 var(--space-1);
-    }
-
-    .kb-accordion-item__facts dt {
-      display: inline;
-      font-weight: 700;
-    }
-
-    .kb-accordion-item__facts dd {
-      display: inline;
-      margin: 0 0 0 var(--space-2);
-    }
-
-    /* Nur auf dieser Seite gebraucht (Mofa-Bedingungen) — .kb-accordion-item__panel
-       ul erbt sonst den globalen Reset (list-style: none; padding: 0) aus
+    /* Nur auf dieser Seite gebraucht (Mofa-Bedingungen) — .faq-item__a ul
+       erbt sonst den globalen Reset (list-style: none; padding: 0) aus
        styles.css und würde ohne diese Regel ohne Aufzählungspunkte
        erscheinen. */
     .kb-accordion-item__list {
-      margin: 0 0 var(--space-4);
+      margin-inline: 0;
       padding-left: var(--space-6);
       list-style: disc;
     }
@@ -304,91 +214,73 @@
           <p class="kb-info-card__a">A1, A2, AM und Mofa</p>
         </div>
       </div>
-
-      <h2 class="kb-section-heading">Weitere Klassen im Überblick</h2>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          A1 – Für junge Motorradfans
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Wenn du noch nicht 18 bist, aber trotzdem Motorrad fahren willst.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>16 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>AM und Mofa</dd></div>
-          </dl>
-
-          <p>Mit diesem Führerschein kannst du Motorräder bis zu 125 ccm fahren und eine maximale Motorleistung von 11 kW besitzen. Darüber hinaus darfst du auch auf dreirädrigen Gefährten die Straßen befahren, sofern deren Räder symmetrisch angeordnet sind und nicht schneller als 45 km/h fahren können. Ein Sehtest und ein Erste-Hilfe-Kurs sind natürlich Voraussetzung.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          A2 – Volljährig? Ab jetzt schneller unterwegs
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Für schnellere Motorräder ab dem 18. Geburtstag.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>18 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>A1, AM und Mofa</dd></div>
-          </dl>
-
-          <p>Ab dem 18. Geburtstag kannst du schneller sein – wenn du nach dem A1-Führerschein jetzt die Fahrerlaubnis der Klasse A2 erwirbst. Damit kannst du dann mit bis zu 48 PS durch die Gegend brausen – wer noch schneller sein will, benötigt die Fahrerlaubnis der Klasse A. Es ist auch möglich, einen Direkteinstieg in die Klasse A2 zu wagen, ohne vorher den A1-Führerschein gemacht zu haben. Obligatorische Voraussetzungen neben der Volljährigkeit: Sehtest und Erste-Hilfe-Kurs.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          AM – Mit dem Roller unterwegs
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Der klassische Rollerführerschein für die motorisierte Fortbewegung.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>16 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>Mofa</dd></div>
-          </dl>
-
-          <p>Mit diesem Führerschein darfst du zwei-, drei- und vierrädrige Krafträder fahren, sofern die maximale Geschwindigkeit nicht höher als 45 km/h ist und der Hubraum nicht größer als 50 ccm ist. Das Mindestalter in NRW beträgt 16 Jahre und selbstverständlich sind ein bestandener Sehtest sowie das nachgewiesene Absolvieren eines Erste-Hilfe-Kurses Bedingung für den Erwerb des Führerscheins.</p>
-        </div>
-      </details>
-
-      <details class="kb-accordion-item">
-        <summary class="kb-accordion-item__summary">
-          Mofa – Für die jüngsten motorisierten Verkehrsteilnehmer
-          <span class="kb-accordion-item__chevron" aria-hidden="true">
-            <svg width="12" height="7" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </summary>
-        <div class="kb-accordion-item__panel">
-          <p>Wer bereits vor dem 16. Geburtstag motorisiert unterwegs sein will, fährt Mofa.</p>
-
-          <dl class="kb-accordion-item__facts">
-            <div><dt>Mindestalter:</dt> <dd>15 Jahre</dd></div>
-            <div><dt>Eingeschlossene Klassen:</dt> <dd>keine</dd></div>
-          </dl>
-
-          <p>Folgende Bedingungen gelten für dein Mofa:</p>
-
-          <ul class="kb-accordion-item__list">
-            <li>nicht mehr als 50 ccm Hubraum</li>
-            <li>Maximalgeschwindigkeit nicht schneller als 25 km/h</li>
-            <li>nur ein Sitzplatz darf verwendet werden</li>
-          </ul>
-        </div>
-      </details>
     </div>
+
+    <section class="faq faq--klassen shine shine--silver shine--tr" aria-labelledby="klassen-heading">
+      <div class="faq__inner">
+        <h2 class="faq__heading" id="klassen-heading">Weitere Klassen im Überblick</h2>
+        <div class="faq__list">
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">A1 – Für junge Motorradfans</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Wenn du noch nicht 18 bist, aber trotzdem Motorrad fahren willst.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>16 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>AM und Mofa</dd></div>
+              </dl>
+
+              <p>Mit diesem Führerschein kannst du Motorräder bis zu 125 ccm fahren und eine maximale Motorleistung von 11 kW besitzen. Darüber hinaus darfst du auch auf dreirädrigen Gefährten die Straßen befahren, sofern deren Räder symmetrisch angeordnet sind und nicht schneller als 45 km/h fahren können. Ein Sehtest und ein Erste-Hilfe-Kurs sind natürlich Voraussetzung.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">A2 – Volljährig? Ab jetzt schneller unterwegs</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Für schnellere Motorräder ab dem 18. Geburtstag.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>18 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>A1, AM und Mofa</dd></div>
+              </dl>
+
+              <p>Ab dem 18. Geburtstag kannst du schneller sein – wenn du nach dem A1-Führerschein jetzt die Fahrerlaubnis der Klasse A2 erwirbst. Damit kannst du dann mit bis zu 48 PS durch die Gegend brausen – wer noch schneller sein will, benötigt die Fahrerlaubnis der Klasse A. Es ist auch möglich, einen Direkteinstieg in die Klasse A2 zu wagen, ohne vorher den A1-Führerschein gemacht zu haben. Obligatorische Voraussetzungen neben der Volljährigkeit: Sehtest und Erste-Hilfe-Kurs.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">AM – Mit dem Roller unterwegs</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Der klassische Rollerführerschein für die motorisierte Fortbewegung.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>16 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>Mofa</dd></div>
+              </dl>
+
+              <p>Mit diesem Führerschein darfst du zwei-, drei- und vierrädrige Krafträder fahren, sofern die maximale Geschwindigkeit nicht höher als 45 km/h ist und der Hubraum nicht größer als 50 ccm ist. Das Mindestalter in NRW beträgt 16 Jahre und selbstverständlich sind ein bestandener Sehtest sowie das nachgewiesene Absolvieren eines Erste-Hilfe-Kurses Bedingung für den Erwerb des Führerscheins.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary class="faq-item__summary"><span class="faq-item__q">Mofa – Für die jüngsten motorisierten Verkehrsteilnehmer</span><span class="faq-item__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+            <div class="faq-item__a">
+              <p>Wer bereits vor dem 16. Geburtstag motorisiert unterwegs sein will, fährt Mofa.</p>
+
+              <dl class="faq-rows faq-rows--stack">
+                <div class="faq-rows__row"><dt>Mindestalter:</dt> <dd>15 Jahre</dd></div>
+                <div class="faq-rows__row"><dt>Eingeschlossene Klassen:</dt> <dd>keine</dd></div>
+              </dl>
+
+              <p>Folgende Bedingungen gelten für dein Mofa:</p>
+
+              <ul class="kb-accordion-item__list">
+                <li>nicht mehr als 50 ccm Hubraum</li>
+                <li>Maximalgeschwindigkeit nicht schneller als 25 km/h</li>
+                <li>nur ein Sitzplatz darf verwendet werden</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
 
     <!-- Abschluss-CTA — identisch auf jeder Unterseite, nicht als Platzhalter gedacht -->
     <section class="page-cta shine shine--gold shine--soft shine--bl round-t">
@@ -467,6 +359,6 @@
   </footer>
 
 
-  <script src="../script.js?v=390f86d5"></script>
+  <script src="../script.js?v=638b7de8"></script>
 </body>
 </html>
