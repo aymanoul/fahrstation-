@@ -4617,7 +4617,8 @@ section {
   list-style: none;
 }
 
-.page-header__facts li {
+.page-header__facts li,
+.kb-info-card__q {
   padding: var(--space-1) var(--space-3);
   background-color: var(--accent);
   color: var(--primary);
@@ -4715,4 +4716,80 @@ section {
   .page-header--klasse-b { --kh-x: 50%; --kh-y: 70%; }
   .page-header--klasse-c { --kh-x: 50%; --kh-y: 25%; }
   .page-header--klasse-d { --kh-x: 50%; --kh-y: 30%; }
+}
+
+/* ==========================================================================
+   Steckbrief-Schild „Wer? / Wie? / Was?“ (.kb-info-cards, Klassen-Seiten)
+   --------------------------------------------------------------------------
+   EIN dunkles Schild statt drei Kästen: gefaste Ecken (--badge-notch),
+   oben die gelbe Doppellinie wie im Klassen-Kopf (4px Gelb, 3px Dunkel,
+   2px Gelb), innen drei Zeilen mit feinen gelben Trennlinien. Dazu der
+   gelbe Schimmer (.shine--gold.shine--soft im Markup). Dessen Ebenen
+   (::before/::after, z-index -1) liegen über dem eigenen Hintergrund des
+   Schilds — die Doppellinie sitzt deshalb im Hintergrund der obersten
+   Zeile(n), also über dem Schimmer, und wird nicht abgedunkelt.
+   Das Etikett „Wer?“ usw. nutzt den Stil der Info-Schilder im Klassen-Kopf
+   (.page-header__facts li). Mobil untereinander, ab 768px drei Spalten mit
+   senkrechten Trennlinien.
+   ========================================================================== */
+.kb-info-cards {
+  --kh-rule: 9px;
+  --kb-cut: var(--badge-notch);
+  --kb-line: color-mix(in srgb, var(--accent) 30%, transparent);
+  --kb-rule-bg: linear-gradient(to bottom, var(--accent) 0 4px, var(--primary) 4px 7px, var(--accent) 7px 9px) top / 100% var(--kh-rule) no-repeat;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 0 0 var(--space-16);
+  background-color: var(--primary);
+  clip-path: polygon(var(--kb-cut) 0, calc(100% - var(--kb-cut)) 0, 100% var(--kb-cut), 100% calc(100% - var(--kb-cut)), calc(100% - var(--kb-cut)) 100%, var(--kb-cut) 100%, 0 calc(100% - var(--kb-cut)), 0 var(--kb-cut));
+}
+
+.kb-info-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+}
+
+.kb-info-card + .kb-info-card {
+  border-top: 1px solid var(--kb-line);
+}
+
+/* Doppellinie oben (mobil: über der ersten Zeile) */
+.kb-info-card:first-child {
+  padding-top: calc(var(--space-4) + var(--kh-rule));
+  background: var(--kb-rule-bg);
+}
+
+.kb-info-card__q {
+  margin: 0;
+}
+
+.kb-info-card__a {
+  margin: 0;
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-base);
+}
+
+@media (min-width: 768px) {
+  .kb-info-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Desktop: Doppellinie über allen drei Spalten */
+  .kb-info-card,
+  .kb-info-card:first-child {
+    gap: var(--space-3);
+    padding: calc(var(--space-6) + var(--kh-rule)) var(--space-6) var(--space-6);
+    background: var(--kb-rule-bg);
+  }
+
+  .kb-info-card + .kb-info-card {
+    border-top: 0;
+    border-left: 1px solid var(--kb-line);
+  }
 }
