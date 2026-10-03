@@ -411,7 +411,11 @@ section {
   align-items: flex-start;
   gap: var(--space-3);
   width: 100%;
-  animation: hero-enter 400ms ease-out both;
+  /* backwards statt both: eine nach dem Ende gehaltene Animation (opacity/
+     transform) bleibt ein Backdrop-Root und würde den backdrop-filter des
+     Milchglas-Buttons (.ghost-btn--glass) abschneiden. Optik identisch, weil
+     der Endzustand der Keyframes dem Normalzustand entspricht. */
+  animation: hero-enter 400ms ease-out backwards;
   animation-delay: 240ms;
 }
 
@@ -4412,3 +4416,86 @@ section {
 
 /* Footer unter der hellen FAQ: abgerundete Oberkante, Zwickel in der Farbe der FAQ */
 .site-footer.round-t { --wedge-above: var(--background-light); }
+
+/* ==========================================================================
+   Hero „Jetzt anrufen“ als Milchglas (.ghost-btn--glass)
+   --------------------------------------------------------------------------
+   Statt Schwarz-Chrom: halbtransparentes Weiß mit backdrop-filter, das Video
+   (bzw. das Poster) dahinter wird weichgezeichnet. Größe, Form (8px), Text und
+   Position bleiben wie bei allen .ghost-btn.
+   Wichtig für den Blur: am Button und an den Eltern bis zum Video darf kein
+   filter / clip-path / mask / opacity < 1 / will-change liegen, sonst bricht
+   der Backdrop ab (Backdrop-Root) — darum Schatten und Fokus-Ring per
+   box-shadow, nicht per drop-shadow. Der Goldrand ist der echte 2px-border (Maß
+   unverändert); ::before ist nur der Glanz. overflow:hidden schneidet am
+   Innenrand ab, ein Rahmen im Pseudo-Element wäre deshalb unsichtbar.
+   ========================================================================== */
+.ghost-btn.ghost-btn--glass {
+  --streak: 16%;
+  --glass: color-mix(in srgb, var(--text-light) 16%, transparent);
+  --glass-hover: color-mix(in srgb, var(--text-light) 24%, transparent);
+  /* leichter dunkler Schleier (--primary 20 %) unter dem Weiß: hält die helle
+     Schrift auch vor hellen Videostellen über 4,5:1 */
+  --veil: linear-gradient(color-mix(in srgb, var(--primary) 20%, transparent), color-mix(in srgb, var(--primary) 20%, transparent));
+  background: var(--veil), var(--glass);
+  background-clip: padding-box;
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  color: var(--text-light);
+  text-shadow: 0 1px 2px color-mix(in srgb, var(--primary) 40%, transparent);
+  filter: none;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text-light) 25%, transparent),
+    0 6px 20px color-mix(in srgb, var(--primary) 35%, transparent);
+  transition: transform 250ms var(--m-ease), background-color 250ms var(--m-ease), border-color 250ms var(--m-ease), box-shadow 250ms var(--m-ease);
+}
+
+/* feiner Glanz oben (Weiß 20 % → 0 % zur Mitte) */
+.ghost-btn.ghost-btn--glass::before {
+  inset: 0;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--text-light) 20%, transparent) 0%, transparent 50%);
+  filter: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ghost-btn.ghost-btn--glass:hover {
+    background: var(--veil), var(--glass-hover);
+    background-clip: padding-box;
+    border-color: var(--accent);
+    color: var(--text-light);
+    filter: none;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--text-light) 25%, transparent),
+      0 8px 24px color-mix(in srgb, var(--primary) 40%, transparent);
+  }
+
+  .ghost-btn.ghost-btn--glass:hover::before { filter: none; }
+}
+
+.ghost-btn.ghost-btn--glass:active {
+  background: var(--veil), var(--glass-hover);
+  background-clip: padding-box;
+  border-color: var(--accent);
+  color: var(--text-light);
+  filter: none;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text-light) 25%, transparent),
+    0 2px 8px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+/* Fokus-Ring wie früher (Doppelring per box-shadow; kein filter am Button) */
+.ghost-btn.ghost-btn--glass:focus-visible {
+  filter: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Ohne backdrop-filter-Unterstützung: dunkler Schleier, damit die Schrift
+   auf dem Video lesbar bleibt. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ghost-btn.ghost-btn--glass,
+  .ghost-btn.ghost-btn--glass:hover,
+  .ghost-btn.ghost-btn--glass:active { background: color-mix(in srgb, var(--primary) 45%, transparent); background-clip: padding-box; }
+}
