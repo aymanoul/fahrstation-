@@ -4499,3 +4499,212 @@ section {
   .ghost-btn.ghost-btn--glass:hover,
   .ghost-btn.ghost-btn--glass:active { background: color-mix(in srgb, var(--primary) 45%, transparent); background-clip: padding-box; }
 }
+
+/* ==========================================================================
+   Kopfbereich der Klassen-Seiten (.page-header--cover)
+   --------------------------------------------------------------------------
+   Das Fahrzeugfoto ist der Hintergrund des Kopfbereichs: unverzerrt
+   (object-fit: cover), Ausschnitt pro Klasse über --kh-x / --kh-y. Ein
+   dunkler Verlauf (--primary) hält Brotkrumen, Titel, Untertitel und die
+   gelben Info-Schilder unten links lesbar. Unten ein gerader Abschluss mit
+   gelber Doppellinie — keine runden Ecken, kein Schimmer.
+   Mobil steht das Foto im Fluss (fast quadratisch, Fahrzeug ganz sichtbar) und der
+   Text überlappt nur dessen dunkel auslaufenden unteren Rand; so kann der
+   Text nie über helle Bildteile rutschen, egal wie lang Untertitel oder
+   Schilder umbrechen. Ab 900px steht das Foto rechts (ca. 60 % der Breite)
+   und läuft nach links weich in --primary aus; der Text steht links auf
+   dunklem Grund.
+   ========================================================================== */
+.page-header--cover {
+  --kh-x: 50%;
+  --kh-y: 100%;
+  /* Doppellinie unten: 4px Gelb, 3px Dunkel, 2px Gelb */
+  --kh-rule: 9px;
+  --kh-overlap: 56px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: block;
+  min-height: 0;
+  padding-bottom: var(--kh-rule);
+  background-color: var(--primary);
+}
+
+.page-header--cover .page-header__bg {
+  position: relative;
+  z-index: -1;
+  margin: 0;
+  /* etwas höher als das 5:4-Foto (nur leichter seitlicher Anschnitt), damit
+     der Kopf mobil rund zwei Drittel der Bildschirmhöhe einnimmt */
+  aspect-ratio: 21 / 20;
+  /* greift erst auf breiteren Bildschirmen (Tablet hochkant), auf dem Handy
+     ist das Foto ohnehin niedriger */
+  max-height: 62svh;
+}
+
+.page-header--cover .page-header__bg picture,
+.page-header--cover .page-header__bg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.page-header--cover .page-header__bg img {
+  object-fit: cover;
+  object-position: var(--kh-x) var(--kh-y);
+}
+
+/* Verlauf: oben leicht abgedunkelt (Kopfleiste), in der Mitte offen fürs
+   Fahrzeug, zum unteren Fotorand deckend in --primary. */
+.page-header--cover .page-header__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--primary) 30%, transparent) 0%,
+    transparent 18%,
+    transparent 58%,
+    color-mix(in srgb, var(--primary) 60%, transparent) 72%,
+    color-mix(in srgb, var(--primary) 90%, transparent) 82%,
+    var(--primary) 100%
+  );
+}
+
+/* gelbe Doppellinie als gerader Abschluss */
+.page-header--cover::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--kh-rule);
+  background-image: linear-gradient(
+    to bottom,
+    var(--accent) 0 4px,
+    var(--primary) 4px 7px,
+    var(--accent) 7px 9px
+  );
+}
+
+.page-header--cover .page-header__inner {
+  position: relative;
+  margin-top: calc(-1 * var(--kh-overlap));
+  padding-block: 0 var(--space-8);
+}
+
+.page-header--cover .breadcrumb {
+  color: color-mix(in srgb, var(--text-light) 75%, transparent);
+}
+
+.page-header--cover .page-header__subtitle {
+  color: color-mix(in srgb, var(--text-light) 85%, transparent);
+}
+
+/* --- gelbe Info-Schilder (nur Fakten, die auf der Seite stehen) --- */
+.page-header__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page-header__facts li {
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--accent);
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: var(--font-size-small);
+  line-height: 1.4;
+  letter-spacing: var(--letter-spacing-badge);
+  text-transform: uppercase;
+  white-space: nowrap;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+}
+
+/* Ausschnitt pro Klasse (mobil): Fahrzeug im Bild halten */
+.page-header--klasse-a { --kh-x: 85%; }
+.page-header--klasse-b { --kh-x: 50%; }
+.page-header--klasse-c { --kh-x: 55%; }
+.page-header--klasse-d { --kh-x: 55%; }
+
+/* Abstand zum folgenden Text deutlich kleiner */
+.page-header--cover + .page-body { padding-top: var(--space-10); }
+
+@media (min-width: 900px) {
+  .page-header--cover {
+    display: flex;
+    align-items: center;
+    min-height: min(70svh, 720px);
+  }
+
+  /* Foto rechts, höchstens 1400px breit (= Originalbreite): bei max. 720px
+     Höhe wird es so nie über seine echte Größe hochskaliert. */
+  .page-header--cover .page-header__bg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: var(--kh-rule);
+    width: min(60%, 1400px);
+    max-height: none;
+    aspect-ratio: auto;
+  }
+
+  /* Weicher Auslauf nach links in --primary (viele Zwischenstufen, damit
+     keine Kante sichtbar wird) plus leichte Abdunklung unten. */
+  .page-header--cover .page-header__bg::after {
+    background-image:
+      linear-gradient(
+        to right,
+        var(--primary) 0%,
+        color-mix(in srgb, var(--primary) 94%, transparent) 4%,
+        color-mix(in srgb, var(--primary) 80%, transparent) 9%,
+        color-mix(in srgb, var(--primary) 60%, transparent) 14%,
+        color-mix(in srgb, var(--primary) 38%, transparent) 19%,
+        color-mix(in srgb, var(--primary) 20%, transparent) 24%,
+        color-mix(in srgb, var(--primary) 8%, transparent) 29%,
+        transparent 34%
+      ),
+      linear-gradient(to bottom, transparent 70%, color-mix(in srgb, var(--primary) 35%, transparent) 100%);
+  }
+
+  .page-header--cover .page-header__inner {
+    margin-top: 0;
+    padding-block: var(--space-16) var(--space-12);
+  }
+
+  .page-header--cover .page-header__text {
+    max-width: 46%;
+  }
+
+  /* Größer am Desktop: Titel wie die großen Überschriften (z. B. „Bereit?“),
+     Untertitel und Schilder passend dazu. */
+  .page-header--cover .page-header__title {
+    font-size: var(--font-size-contact-heading);
+  }
+
+  .page-header--cover .page-header__subtitle {
+    font-size: var(--font-size-h3);
+    line-height: 1.4;
+  }
+
+  .page-header--cover .page-header__facts {
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+  }
+
+  .page-header--cover .page-header__facts li {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-body);
+    clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  }
+
+  .page-header--cover + .page-body { padding-top: var(--space-12); }
+
+  /* Ausschnitt: Foto füllt die Breite des rechten Felds, vertikal so,
+     dass Dach bzw. ganzes Motorrad sichtbar bleiben */
+  .page-header--klasse-a { --kh-x: 50%; --kh-y: 100%; }
+  .page-header--klasse-b { --kh-x: 50%; --kh-y: 70%; }
+  .page-header--klasse-c { --kh-x: 50%; --kh-y: 25%; }
+  .page-header--klasse-d { --kh-x: 50%; --kh-y: 30%; }
+}
