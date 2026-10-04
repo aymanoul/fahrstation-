@@ -18,7 +18,7 @@
 
   <script>document.documentElement.classList.add('js');</script>
   <link rel="stylesheet" href="design-tokens.css?v=1425defe">
-  <link rel="stylesheet" href="styles.css?v=042ef628">
+  <link rel="stylesheet" href="styles.css?v=4c4ed79c">
 
   <script type="application/ld+json">
   {
@@ -291,7 +291,79 @@
         </div>
       </div>
     </section>
-    <section id="klassen" class="classes shine shine--gold shine--strong shine--join-b shine--br round-t">
+    <section id="warum" class="why shine shine--gold shine--tl shine--join-b round-t" aria-labelledby="why-heading">
+      <div class="why__inner">
+        <h2 class="why__heading" id="why-heading"><span class="why__word">Warum</span> <span class="why__word">Fahrstation?</span></h2>
+
+        <div class="why__switch" role="group" aria-label="Ansicht der Karten">
+          <span class="why__switch-thumb" aria-hidden="true"></span>
+          <button class="why__switch-btn" type="button" data-mode="ask" aria-pressed="false">Worauf achten?</button>
+          <button class="why__switch-btn" type="button" data-mode="do" aria-pressed="true">So machen wir's</button>
+        </div>
+
+        <div class="why__cards" data-mode="do">
+          <article class="why-card">
+            <div class="why-card__face why-card__face--ask">
+              <span class="why-card__mark" aria-hidden="true">?</span>
+              <p class="why-card__q">Passt der Theorieunterricht in deinen Alltag?</p>
+            </div>
+            <div class="why-card__face why-card__face--do">
+              <p class="why-card__stat"><span data-count-to="7">7</span> Abende</p>
+              <h3 class="why-card__title">Flexible Theorie</h3>
+              <ul class="faq-check why-card__list">
+                <li>Theorie Di &amp; Do 18:30 und Sa 11:00</li>
+                <li>Crashkurs in 7 Abenden</li>
+                <li>Büro Mo–Fr 10:30–18:00, Sa 11:00–15:00</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="why-card why-card--plus">
+            <span class="why-card__tag">Unser Plus</span>
+            <div class="why-card__face why-card__face--ask">
+              <span class="why-card__mark" aria-hidden="true">?</span>
+              <p class="why-card__q">Kannst du später auch Motorrad, Lkw oder Bus bei derselben Fahrschule machen?</p>
+            </div>
+            <div class="why-card__face why-card__face--do">
+              <p class="why-card__stat">A bis <span data-count-letters="A-D">D</span></p>
+              <h3 class="why-card__title">Alle Klassen unter einem Dach</h3>
+              <ul class="faq-check why-card__list">
+                <li>Motorrad, Auto, Lkw und Bus</li>
+                <li>Begleitetes Fahren ab 17, auch Automatik</li>
+                <li>Eigene Fahrzeuge im Fahrstation-Design</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="why-card">
+            <div class="why-card__face why-card__face--ask">
+              <span class="why-card__mark" aria-hidden="true">?</span>
+              <p class="why-card__q">Wirst du in deiner Sprache verstanden?</p>
+            </div>
+            <div class="why-card__face why-card__face--do">
+              <p class="why-card__stat">Seit <span data-count-to="2018" data-count-from="2000">2018</span></p>
+              <h3 class="why-card__title">Persönlich und mehrsprachig</h3>
+              <ul class="faq-check why-card__list">
+                <li>Seit 2018 in Düsseldorf, Kölner Straße 292</li>
+                <!-- OFFEN: Sprachenliste und Quelle 5,0 vom Inhaber bestätigen lassen -->
+                <li>Unterricht auch auf Englisch und Arabisch</li>
+                <!-- OFFEN: Sprachenliste und Quelle 5,0 vom Inhaber bestätigen lassen -->
+                <li>5,0 Sterne von Fahrschülern</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+
+        <div class="why__cta">
+          <p class="why__cta-text">Überzeug dich selbst</p>
+          <div class="why__cta-actions">
+            <span class="metal metal--chamfer metal--cta metal--p1"><a class="metal__btn btn-signage" href="tel:+4921115828104"><span class="btn-signage__label">Jetzt anrufen</span></a></span>
+            <span class="metal metal--chamfer metal--cta metal--p2"><a class="metal__btn btn-signage" href="https://wa.me/4915229653650" target="_blank" rel="noopener"><span class="btn-signage__label">WhatsApp</span></a></span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="klassen" class="classes shine shine--gold shine--strong shine--join-t shine--join-b shine--br">
       <div class="classes__inner">
         <h2 class="classes__heading">Welchen Führerschein<br><span class="classes__heading-accent">willst du?</span></h2>
         <div class="classes__carousel" role="region" aria-roledescription="Karussell" aria-label="Führerscheinklassen">
@@ -665,6 +737,6 @@
     <div class="site-footer__mark" aria-hidden="true"><span class="site-footer__mark-text">FAHRSTATION</span></div>
   </footer>
 
-  <script src="script.js?v=638b7de8"></script>
+  <script src="script.js?v=909f8a61"></script>
 </body>
 </html>

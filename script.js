@@ -113,6 +113,20 @@
     el.textContent = new Date().getFullYear();
   }
 
+  /* Gemeinsame Zähl-Animation (Bewertungs-Karte und Kennzahlen in #warum):
+     ease-out-cubic über requestAnimationFrame. render(eased, done) bekommt
+     den geglätteten Fortschritt 0…1; bei done setzt render den Endtext. */
+  function countUp(duration, render) {
+    var t0 = 0;
+    render(0);
+    window.requestAnimationFrame(function step(ts) {
+      if (!t0) t0 = ts;
+      var progress = Math.min((ts - t0) / duration, 1);
+      render(1 - Math.pow(1 - progress, 3), progress >= 1);
+      if (progress < 1) window.requestAnimationFrame(step);
+    });
+  }
+
   /* Bewertungs-Karte in #vertrauen: beim ersten Sichtbarwerden zählen "5,0"
      (eine Nachkommastelle, Komma) und die Bewertungszahl (0 bis 1200) gleichzeitig
      hoch, die Sterne füllen sich parallel nach dem Wert der Note (Stern i voll
@@ -141,11 +155,10 @@
     var scoreFinal = scoreEl.parentNode.getAttribute('data-final') || scoreEl.textContent;
     var countFinal = countEl.parentNode.getAttribute('data-final') || countEl.textContent;
 
-    function render(progress) {
-      var eased = 1 - Math.pow(1 - progress, 3);
+    function render(eased, done) {
       var value = SCORE * eased;
-      scoreEl.textContent = progress >= 1 ? scoreFinal : value.toFixed(1).replace('.', ',');
-      countEl.textContent = progress >= 1 ? countFinal : String(Math.round(COUNT * eased));
+      scoreEl.textContent = done ? scoreFinal : value.toFixed(1).replace('.', ',');
+      countEl.textContent = done ? countFinal : String(Math.round(COUNT * eased));
       Array.prototype.forEach.call(clips, function (rect, i) {
         var fill = Math.max(0, Math.min(1, value - i));
         rect.setAttribute('width', (STAR_SIZE * fill).toFixed(2));
@@ -157,14 +170,7 @@
     function start() {
       if (started) return;
       started = true;
-      var t0 = 0;
-      render(0);
-      window.requestAnimationFrame(function step(ts) {
-        if (!t0) t0 = ts;
-        var progress = Math.min((ts - t0) / DURATION, 1);
-        render(progress);
-        if (progress < 1) window.requestAnimationFrame(step);
-      });
+      countUp(DURATION, render);
     }
 
     var rect = card.getBoundingClientRect();
@@ -1317,6 +1323,84 @@
     window.addEventListener('click', retryPlayOnFirstGesture, { once: true });
   }
 
+  /* „Warum Fahrstation?“ (#warum): Schalter zwischen „Worauf achten?“ und
+     „So machen wir's“ (aria-pressed, gelbes Schild gleitet zur aktiven
+     Option), Eintritt beim Scrollen (Überschrift Wort für Wort, Karten
+     nacheinander) und Zähl-Animation der Kennzahlen. Ohne JS bleibt der
+     Zustand „So machen wir's“ stehen, der Schalter ist ausgeblendet. */
+  function initWhy() {
+    var section = document.getElementById('warum');
+    if (!section) return;
+    var cards = section.querySelector('.why__cards');
+    var thumb = section.querySelector('.why__switch-thumb');
+    var buttons = Array.prototype.slice.call(section.querySelectorAll('.why__switch-btn'));
+    if (!cards || !thumb || !buttons.length) return;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function counters() {
+      if (reduce.matches || !window.requestAnimationFrame) return;
+      Array.prototype.forEach.call(section.querySelectorAll('[data-count-to]'), function (el) {
+        var to = parseInt(el.getAttribute('data-count-to'), 10);
+        var from = parseInt(el.getAttribute('data-count-from') || '0', 10);
+        var final = el.textContent;
+        countUp(2000, function (p, done) {
+          el.textContent = done ? final : String(Math.round(from + (to - from) * p));
+        });
+      });
+      Array.prototype.forEach.call(section.querySelectorAll('[data-count-letters]'), function (el) {
+        var range = el.getAttribute('data-count-letters').split('-');
+        var a = range[0].charCodeAt(0);
+        var b = range[1].charCodeAt(0);
+        var final = el.textContent;
+        countUp(2000, function (p, done) {
+          el.textContent = done ? final : String.fromCharCode(Math.round(a + (b - a) * p));
+        });
+      });
+    }
+
+    function place() {
+      var active = buttons.filter(function (b) { return b.getAttribute('aria-pressed') === 'true'; })[0];
+      if (!active) return;
+      thumb.style.width = active.offsetWidth + 'px';
+      thumb.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+    }
+
+    function setMode(mode) {
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-mode') === mode ? 'true' : 'false');
+      });
+      cards.setAttribute('data-mode', mode);
+      place();
+      if (mode === 'do') counters();
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (b.getAttribute('aria-pressed') === 'true') return;
+        setMode(b.getAttribute('data-mode'));
+      });
+    });
+
+    // Erste Position ohne Gleiten setzen, danach mit Übergang
+    thumb.style.transition = 'none';
+    place();
+    void thumb.offsetWidth;
+    thumb.style.transition = '';
+    window.addEventListener('resize', place, { passive: true });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+
+    if (reduce.matches || !('IntersectionObserver' in window)) return;
+    section.classList.add('why--pending');
+    var seen = new IntersectionObserver(function (entries) {
+      if (!entries.some(function (e) { return e.isIntersecting; })) return;
+      seen.disconnect();
+      section.classList.remove('why--pending');
+      section.classList.add('is-inview');
+      if (cards.getAttribute('data-mode') === 'do') counters();
+    }, { threshold: 0.2 });
+    seen.observe(section);
+  }
+
   /* FAQ (#faq): die Karten sind native <details>. Der Eintritt beim Scrollen
      (gestaffeltes Aufsteigen) setzt diese Funktion per IntersectionObserver
      an; das weiche Auf-/Zuklappen
@@ -1439,6 +1523,7 @@
     initReviewColumns();
     initKontaktForm();
     initFaq();
+    initWhy();
     initHeroVideo();
   });
 })();
